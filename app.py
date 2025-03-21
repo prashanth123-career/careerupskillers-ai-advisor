@@ -2,6 +2,10 @@ import streamlit as st
 import requests
 import openai
 from datetime import datetime
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 import os
 
 # Set Streamlit page config
@@ -15,11 +19,50 @@ google_sheets_url = st.secrets.get("GOOGLE_SHEETS_URL")
 RAZORPAY_KEY_ID = st.secrets["razorpay"]["key_id"]
 RAZORPAY_KEY_SECRET = st.secrets["razorpay"]["key_secret"]
 
+# Email credentials (replace with your actual email credentials)
+EMAIL_HOST = st.secrets["email"]["host"]
+EMAIL_PORT = st.secrets["email"]["port"]
+EMAIL_USER = st.secrets["email"]["user"]
+EMAIL_PASSWORD = st.secrets["email"]["password"]
+
 # Google Drive link to the zip file (replace with your actual link)
 ZIP_FILE_LINK = "https://drive.google.com/file/d/1qqcKvQEfJJMkZ84PxXySdyPH0sK8ICz8/view?usp=drive_link"
 
 # Country codes dropdown
 dial_codes = {"+91": "India", "+1": "USA", "+44": "UK", "+971": "UAE", "+972": "Israel"}
+
+# Function to send email with attachment
+def send_email_with_attachment(to_email, subject, body, attachment_url):
+    # Create the email
+    msg = MIMEMultipart()
+    msg["From"] = EMAIL_USER
+    msg["To"] = to_email
+    msg["Subject"] = subject
+
+    # Add body to the email
+    msg.attach(MIMEText(body, "plain"))
+
+    # Download the attachment from the URL
+    response = requests.get(attachment_url)
+    if response.status_code == 200:
+        attachment = MIMEBase("application", "zip")
+        attachment.set_payload(response.content)
+        encoders.encode_base64(attachment)
+        attachment.add_header(
+            "Content-Disposition",
+            f"attachment; filename=ai_career_kit.zip",
+        )
+        msg.attach(attachment)
+
+    # Send the email
+    try:
+        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
+            server.starttls()
+            server.login(careerupskillers@gmail.com,Career@123!@#)
+            server.sendmail(EMAIL_USER, to_email, msg.as_string())
+        st.success("Email sent successfully!")
+    except Exception as e:
+        st.error(f"Error sending email: {e}")
 
 # Header with enhanced UI
 def show_header():
@@ -264,5 +307,19 @@ if st.session_state.completed:
                 """,
                 unsafe_allow_html=True
             )
+
+            # Send email with zip file
+            user_email = user_data.get("email")
+            if user_email:
+                subject = "Your AI Career Kit is Here!"
+                body = f"""
+                Hi {user_data.get('name')},
+
+                Thank you for purchasing the AI Career Kit! Please find the attached zip file containing your kit.
+
+                Best regards,
+                CareerUpskillers Team
+                """
+                send_email_with_attachment(user_email, subject, body, ZIP_FILE_LINK)
     except Exception as e:
         st.error(f"❌ Error calling OpenAI: {e}")
