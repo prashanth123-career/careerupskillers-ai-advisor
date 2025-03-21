@@ -11,6 +11,14 @@ st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🚀")
 openai.api_key = st.secrets["API_KEY"]
 google_sheets_url = st.secrets.get("GOOGLE_SHEETS_URL")
 
+# Razorpay credentials (replace with your actual keys)
+RAZORPAY_KEY_ID = st.secrets["razorpay"]["key_id"]
+RAZORPAY_KEY_SECRET = st.secrets["razorpay"]["key_secret"]
+
+# Google Drive link to the zip file (replace with your actual link)
+ZIP_FILE_LINK = "https://drive.google.com/file/d/1qqcKvQEfJJMkZ84PxXySdyPH0sK8ICz8/view?usp=drive_link
+"
+
 # Country codes dropdown
 dial_codes = {"+91": "India", "+1": "USA", "+44": "UK", "+971": "UAE", "+972": "Israel"}
 
@@ -77,6 +85,25 @@ def show_testimonials():
         unsafe_allow_html=True
     )
 
+# Razorpay payment function
+def create_razorpay_order(amount, currency="INR"):
+    data = {
+        "amount": amount * 100,  # Razorpay expects amount in paise
+        "currency": currency,
+        "payment_capture": 1  # Auto-capture payment
+    }
+    order = requests.post(
+        "https://api.razorpay.com/v1/orders",
+        auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET),
+        json=data
+    ).json()
+    return order
+
+# Show header, countdown, and testimonials
+show_header()
+show_countdown()
+show_testimonials()
+
 # Questions
 questions = [
     ("👋 Hi! What's your Name?", "This helps us personalize your AI career journey!"),
@@ -98,11 +125,6 @@ if "answers" not in st.session_state:
     st.session_state.answers = {}
     st.session_state.q_index = 0
     st.session_state.completed = False
-
-# Show header, countdown, and testimonials
-show_header()
-show_countdown()
-show_testimonials()
 
 # Show form with progress bar
 if not st.session_state.completed:
@@ -145,10 +167,11 @@ if st.session_state.completed:
     User: {user_data.get('name')}, Job Role: {user_data.get('job_role')}, Company: {user_data.get('company_details')},
     Skills: {user_data.get('skills')}, Location: {user_data.get('location')}, Salary: {user_data.get('salary')}, Experience: {user_data.get('experience')} years.
     
-    Generate a concise AI career roadmap, including:
+    Generate a persuasive AI career roadmap, including:
     - Custom AI career plan with milestones
     - In-demand AI job insights
-    - Companies hiring in {user_data.get('location')}
+    - Latest industry changes for {user_data.get('company_details')}
+    - Higher salary opportunities with top companies
     - Actionable steps for a successful AI career
     - Final CTA for ₹499 AI Career Kit & ₹199 Personal Counseling
     """
@@ -157,10 +180,10 @@ if st.session_state.completed:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a career advisor bot that provides concise AI career roadmaps."},
+                {"role": "system", "content": "You are a career advisor bot that provides highly persuasive AI career roadmaps."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=500  # Shorter response
+            max_tokens=1000
         )
         analysis = response.choices[0].message["content"]
         st.success("✅ Here's your personalized AI Career Plan!")
@@ -168,7 +191,30 @@ if st.session_state.completed:
         
         # Final CTA buttons
         if st.button("🚀 Unlock AI Career Success for ₹499 Now!"):
-            st.markdown("[👉 Buy AI Career Starter Kit](https://rzp.io/rzp/ViDMMYS)")
+            order = create_razorpay_order(amount=499)
+            st.session_state.order_id = order["id"]
+            st.write(f"Please complete the payment to proceed. Order ID: {order['id']}")
+
+            # Embed Razorpay payment button
+            st.markdown(
+                f"""
+                <script src="https://checkout.razorpay.com/v1/checkout.js"
+                        data-key="{RAZORPAY_KEY_ID}"
+                        data-amount="{499 * 100}"
+                        data-currency="INR"
+                        data-order_id="{order['id']}"
+                        data-buttontext="Pay ₹499"
+                        data-name="CareerUpskillers"
+                        data-description="AI Career Kit"
+                        data-image="https://example.com/logo.png"  # Replace with your logo
+                        data-prefill.name="{user_data.get('name')}"
+                        data-prefill.email="{user_data.get('email')}"
+                        data-theme.color="#F37254">
+                </script>
+                """,
+                unsafe_allow_html=True
+            )
+
         if st.button("💎 Get Personalized Career Counseling for ₹199"):
             st.markdown("[👉 Book Your Session](https://rzp.io/rzp/VnUcj8FR)")
 
@@ -202,22 +248,22 @@ if st.session_state.completed:
             unsafe_allow_html=True
         )
 
-        # Additional message about freelancing as a backup plan
-        st.markdown(
-            """
-            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 10px; margin: 10px 0;">
-                <h3 style="color: #1E90FF;">💡 Don't Depend on Your Job Alone!</h3>
-                <p>
-                    With automation on the rise, many people are losing their jobs. Always keep a backup plan. 
-                    Our freelancer kit will help you build an alternative income by working just 4 hours on weekends. 
-                    In 3 months, you can automate your freelance job and secure your future.
-                </p>
-                <p>
-                    Along with the ₹499 kit, you'll get all the tools and guidance you need to start freelancing today!
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        # Handle payment success
+        if "order_id" in st.session_state:
+            st.write("Payment successful! Thank you for purchasing the AI Career Kit.")
+            st.markdown(
+                f"""
+                <div style="text-align: center; padding: 20px;">
+                    <h2 style="color: #1E90FF;">🎉 Download Your AI Career Kit!</h2>
+                    <p>Click the button below to download the zip file:</p>
+                    <a href="{https://drive.google.com/file/d/1qqcKvQEfJJMkZ84PxXySdyPH0sK8ICz8/view?usp=drive_link}" download>
+                        <button style="background-color: #1E90FF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                            Download Zip File
+                        </button>
+                    </a>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
     except Exception as e:
         st.error(f"❌ Error calling OpenAI: {e}")
