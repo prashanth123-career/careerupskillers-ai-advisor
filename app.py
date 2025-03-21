@@ -1,5 +1,3 @@
-# ✅ app.py (final update with enhanced UI and sales-driven chatbot)
-
 import streamlit as st
 import requests
 import openai
@@ -147,11 +145,10 @@ if st.session_state.completed:
     User: {user_data.get('name')}, Job Role: {user_data.get('job_role')}, Company: {user_data.get('company_details')},
     Skills: {user_data.get('skills')}, Location: {user_data.get('location')}, Salary: {user_data.get('salary')}, Experience: {user_data.get('experience')} years.
     
-    Generate a persuasive AI career roadmap, including:
+    Generate a concise AI career roadmap, including:
     - Custom AI career plan with milestones
     - In-demand AI job insights
-    - Latest industry changes for {user_data.get('company_details')}
-    - Higher salary opportunities with top companies
+    - Companies hiring in {user_data.get('location')}
     - Actionable steps for a successful AI career
     - Final CTA for ₹499 AI Career Kit & ₹199 Personal Counseling
     """
@@ -160,10 +157,10 @@ if st.session_state.completed:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a career advisor bot that provides highly persuasive AI career roadmaps."},
+                {"role": "system", "content": "You are a career advisor bot that provides concise AI career roadmaps."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=1000
+            max_tokens=500  # Shorter response
         )
         analysis = response.choices[0].message["content"]
         st.success("✅ Here's your personalized AI Career Plan!")
@@ -200,6 +197,24 @@ if st.session_state.completed:
                 <p>Your AI career plan is ready. Take the next step now:</p>
                 <p><a href="https://rzp.io/rzp/ViDMMYS">👉 Buy AI Career Starter Kit</a></p>
                 <p><a href="https://rzp.io/rzp/VnUcj8FR">👉 Book Personalized Counseling</a></p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # Additional message about freelancing as a backup plan
+        st.markdown(
+            """
+            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 10px; margin: 10px 0;">
+                <h3 style="color: #1E90FF;">💡 Don't Depend on Your Job Alone!</h3>
+                <p>
+                    With automation on the rise, many people are losing their jobs. Always keep a backup plan. 
+                    Our freelancer kit will help you build an alternative income by working just 4 hours on weekends. 
+                    In 3 months, you can automate your freelance job and secure your future.
+                </p>
+                <p>
+                    Along with the ₹499 kit, you'll get all the tools and guidance you need to start freelancing today!
+                </p>
             </div>
             """,
             unsafe_allow_html=True
