@@ -16,8 +16,7 @@ RAZORPAY_KEY_ID = st.secrets["razorpay"]["key_id"]
 RAZORPAY_KEY_SECRET = st.secrets["razorpay"]["key_secret"]
 
 # Google Drive link to the zip file (replace with your actual link)
-ZIP_FILE_LINK = "https://drive.google.com/file/d/1qqcKvQEfJJMkZ84PxXySdyPH0sK8ICz8/view?usp=drive_link
-"
+ZIP_FILE_LINK = "https://drive.google.com/file/d/1qqcKvQEfJJMkZ84PxXySdyPH0sK8ICz8/view?usp=drive_link"
 
 # Country codes dropdown
 dial_codes = {"+91": "India", "+1": "USA", "+44": "UK", "+971": "UAE", "+972": "Israel"}
