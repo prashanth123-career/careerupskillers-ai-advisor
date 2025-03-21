@@ -1,18 +1,27 @@
 import streamlit as st
 from openai import OpenAI
-import os
 
-# Clear proxy
-os.environ.pop("HTTP_PROXY", None)
-os.environ.pop("HTTPS_PROXY", None)
+st.set_page_config(page_title="Test OpenAI Key", page_icon="🤖")
 
-# Page settings
-st.set_page_config(page_title="Test OpenAI Init", page_icon="🤖")
+st.title("🔐 OpenAI API Key Test")
 
-# Initialize OpenAI
 try:
+    # Get API key from Streamlit secrets
     api_key = st.secrets["API_KEY"]
-    client = OpenAI(api_key=api_key)  # ✅ NO proxies
-    st.success("✅ OpenAI client initialized!")
+    
+    # ✅ Initialize OpenAI client (no proxies!)
+    client = OpenAI(api_key=api_key)
+
+    # ✅ Test with a small call to OpenAI
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "user", "content": "Say Hello in one line!"}
+        ]
+    )
+
+    st.success("✅ OpenAI client connected successfully!")
+    st.write("Response:", response.choices[0].message.content)
+
 except Exception as e:
     st.error(f"❌ Error initializing OpenAI client: {str(e)}")
