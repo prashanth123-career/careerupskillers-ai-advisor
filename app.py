@@ -2,11 +2,6 @@ import streamlit as st
 import requests
 import openai
 from datetime import datetime
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email import encoders
-from email.mime.text import MIMEText
 
 # Set Streamlit page config
 st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🚀")
@@ -19,54 +14,14 @@ google_sheets_url = st.secrets.get("GOOGLE_SHEETS_URL")
 RAZORPAY_KEY_ID = st.secrets["razorpay"]["key_id"]
 RAZORPAY_KEY_SECRET = st.secrets["razorpay"]["key_secret"]
 
-# Email credentials (replace with your actual email credentials)
-EMAIL_HOST = "smtp.gmail.com"  # Gmail SMTP server
-EMAIL_PORT = 587  # Gmail SMTP port
-EMAIL_USER = "careerupskillers@gmail.com"  # Replace with your email
-EMAIL_PASSWORD = st.secrets["email"]["password"]  # Replace with your email password
-
 # Google Drive link to the zip file (replace with your actual link)
 ZIP_FILE_LINK = "https://drive.google.com/uc?export=download&id=1qqcKvQEfJJMkZ84PxXySdyPH0sK8ICz8"
 
+# WhatsApp link (replace with your actual WhatsApp number and message)
+WHATSAPP_LINK = "https://wa.me/917975931377?text=Hi!%20I%20just%20purchased%20the%20AI%20Career%20Kit.%20Please%20send%20me%20the%20download%20link."
+
 # Country codes dropdown
 dial_codes = {"+91": "India", "+1": "USA", "+44": "UK", "+971": "UAE", "+972": "Israel"}
-
-# Function to send email with attachment
-def send_email_with_attachment(to_email):
-    # Email details
-    subject = "Careerupskileers AI Starter Kit"
-    body = "Please find your attached CareerUpskillers AI Starter Kit. For any queries, WhatsApp on +91 7975931377."
-
-    # Create the email
-    msg = MIMEMultipart()
-    msg["From"] = EMAIL_USER  # Sender's email
-    msg["To"] = to_email  # Recipient's email
-    msg["Subject"] = subject  # Email subject
-
-    # Add body to the email
-    msg.attach(MIMEText(body, "plain"))
-
-    # Download the attachment from the URL
-    response = requests.get(ZIP_FILE_LINK)
-    if response.status_code == 200:
-        attachment = MIMEBase("application", "zip")
-        attachment.set_payload(response.content)
-        encoders.encode_base64(attachment)
-        attachment.add_header(
-            "Content-Disposition",
-            f"attachment; filename=ai_career_kit.zip",
-        )
-        msg.attach(attachment)
-
-    # Send the email
-    try:
-        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:  # Gmail SMTP server
-            server.starttls()  # Secure the connection
-            server.login(EMAIL_USER, EMAIL_PASSWORD)  # Login to the email account
-            server.sendmail(EMAIL_USER, to_email, msg.as_string())  # Send the email
-        st.success("Email sent successfully!")
-    except Exception as e:
-        st.error(f"Error sending email: {e}")
 
 # Header with enhanced UI
 def show_header():
@@ -300,21 +255,16 @@ if st.session_state.completed:
             st.markdown(
                 f"""
                 <div style="text-align: center; padding: 20px;">
-                    <h2 style="color: #1E90FF;">🎉 Download Your AI Career Kit!</h2>
-                    <p>Click the button below to download the zip file:</p>
-                    <a href="{ZIP_FILE_LINK}" download>
-                        <button style="background-color: #1E90FF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
-                            Download Zip File
+                    <h2 style="color: #1E90FF;">🎉 Get Your AI Career Kit!</h2>
+                    <p>Click the button below to message us on WhatsApp and receive your download link:</p>
+                    <a href="{WHATSAPP_LINK}" target="_blank">
+                        <button style="background-color: #25D366; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                            📲 Get Download Link on WhatsApp
                         </button>
                     </a>
                 </div>
                 """,
                 unsafe_allow_html=True
             )
-
-            # Send email with zip file
-            user_email = user_data.get("email")
-            if user_email:
-                send_email_with_attachment(user_email)
     except Exception as e:
         st.error(f"❌ Error calling OpenAI: {e}")
