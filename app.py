@@ -1,25 +1,23 @@
 import streamlit as st
-import requests
 from openai import OpenAI
-from datetime import datetime
-import re
 import os
 
-# Remove proxy environment variables (avoid connection issues)
+# ✅ Remove proxy environment variables just in case
 os.environ.pop("HTTP_PROXY", None)
 os.environ.pop("HTTPS_PROXY", None)
 
-# Page Config
+# ✅ Streamlit config
 st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🚀")
 
-# ✅ Initialize OpenAI
+# ✅ OpenAI Initialization
 try:
     api_key = st.secrets["API_KEY"]
-    client = OpenAI(api_key=api_key)
-    st.success("✅ OpenAI client initialized!")
+    client = OpenAI(api_key=api_key)  # ✅ DO NOT pass proxies
+    st.success("✅ OpenAI client initialized successfully!")
 except Exception as e:
     st.error(f"❌ Error initializing OpenAI client: {str(e)}")
     st.stop()
+
 
 # 🔐 Google Sheets URL from secrets
 google_sheets_url = st.secrets.get("GOOGLE_SHEETS_URL", "")
