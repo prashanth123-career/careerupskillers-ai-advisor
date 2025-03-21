@@ -15,6 +15,9 @@ openai.api_key = st.secrets["API_KEY"]
 
 google_sheets_url = st.secrets.get("GOOGLE_SHEETS_URL")
 
+# Country codes dropdown
+dial_codes = {"+91": "India", "+1": "USA", "+44": "UK", "+971": "UAE", "+972": "Israel"}
+
 # Header with enhanced UI
 def show_header():
     st.markdown(
@@ -46,16 +49,16 @@ show_header()
 
 # Questions
 questions = [
-    "👋 Hi! What's your Name?",
-    "📧 Please provide your Email:",
-    "📱 Phone Number:",
-    "🌍 Your current job role and company:",
-    "🏢 Tell us about your company:",
-    "🤖 Are you aware of automation in your industry?",
-    "🛠️ What are your primary skills?",
-    "📍 Your current location:",
-    "💰 Your current monthly salary (INR):",
-    "📅 Years of experience in your field?"
+    ("👋 Hi! What's your Name?", "This helps us personalize your AI career journey!"),
+    ("📧 Please provide your Email:", "We send exclusive AI job insights and high-paying freelance opportunities to your inbox!"),
+    ("📱 Phone Number:", "We'll share updates and career offers directly. Select your country code first!"),
+    ("🌍 Your current job role and company:", "This helps us analyze high-paying AI roles similar to yours!"),
+    ("🏢 Tell us about your company:", "Understanding your company helps us suggest industry-specific AI growth paths!"),
+    ("🤖 Are you aware of automation in your industry?", "Many jobs are being automated—stay ahead with AI skills!"),
+    ("🛠️ What are your primary skills?", "We'll suggest AI niches where your skills are most profitable!"),
+    ("📍 Your current location:", "We'll find high-paying AI job and freelancing opportunities near you!"),
+    ("💰 Your current monthly salary (INR):", "We'll analyze if you're underpaid and suggest a target salary!"),
+    ("📅 Years of experience in your field?", "Experience plays a key role in determining your AI career growth!")
 ]
 
 keys = ["name", "email", "phone", "job_role", "company_details", "automation_awareness", "skills", "location", "salary", "experience"]
@@ -68,10 +71,21 @@ if "answers" not in st.session_state:
 
 # Show form
 if not st.session_state.completed:
-    current_question = questions[st.session_state.q_index]
+    question, justification = questions[st.session_state.q_index]
     with st.form(key=f"form_{st.session_state.q_index}"):
-        user_input = st.text_input(current_question, key=f"input_{st.session_state.q_index}")
-        submit_button = st.form_submit_button("Submit")
+        st.write(f"**{question}**")
+        st.caption(justification)
+        
+        if st.session_state.q_index == 2:  # Phone number question
+            country_code = st.selectbox("Select Country Code", list(dial_codes.keys()), index=0, key="country_code")
+            phone_number = st.text_input("Enter your phone number:", key="phone_input")
+            user_input = f"{country_code} {phone_number}"
+            if country_code not in dial_codes:
+                st.warning("Sorry, we do not currently support this country. Please send an email to careerupskillers@gmail.com for assistance.")
+        else:
+            user_input = st.text_input("", key=f"input_{st.session_state.q_index}")
+        
+        submit_button = st.form_submit_button("Double Click to Submit")
         if submit_button and user_input:
             st.session_state.answers[keys[st.session_state.q_index]] = user_input
             st.session_state.q_index += 1
@@ -89,7 +103,7 @@ if st.session_state.completed:
     prompt = f"""
     User: {user_data.get('name')}, Job Role: {user_data.get('job_role')}, Company: {user_data.get('company_details')},
     Skills: {user_data.get('skills')}, Location: {user_data.get('location')}, Salary: {user_data.get('salary')}, Experience: {user_data.get('experience')} years.
-
+    
     Generate a persuasive AI career roadmap, including:
     - Custom AI career plan with milestones
     - In-demand AI job insights
