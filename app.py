@@ -6,7 +6,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
-import os
+from email.mime.text import MIMEText
 
 # Set Streamlit page config
 st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🚀")
@@ -20,30 +20,34 @@ RAZORPAY_KEY_ID = st.secrets["razorpay"]["key_id"]
 RAZORPAY_KEY_SECRET = st.secrets["razorpay"]["key_secret"]
 
 # Email credentials (replace with your actual email credentials)
-EMAIL_HOST = st.secrets["email"]["host"]
-EMAIL_PORT = st.secrets["email"]["port"]
-EMAIL_USER = st.secrets["email"]["user"]
-EMAIL_PASSWORD = st.secrets["email"]["password"]
+EMAIL_HOST = "smtp.gmail.com"  # Gmail SMTP server
+EMAIL_PORT = 587  # Gmail SMTP port
+EMAIL_USER = "careerupskillers@gmail.com"  # Replace with your email
+EMAIL_PASSWORD = st.secrets["email"]["password"]  # Replace with your email password
 
 # Google Drive link to the zip file (replace with your actual link)
-ZIP_FILE_LINK = "https://drive.google.com/file/d/1qqcKvQEfJJMkZ84PxXySdyPH0sK8ICz8/view?usp=drive_link"
+ZIP_FILE_LINK = "https://drive.google.com/uc?export=download&id=1qqcKvQEfJJMkZ84PxXySdyPH0sK8ICz8"
 
 # Country codes dropdown
 dial_codes = {"+91": "India", "+1": "USA", "+44": "UK", "+971": "UAE", "+972": "Israel"}
 
 # Function to send email with attachment
-def send_email_with_attachment(to_email, subject, body, attachment_url):
+def send_email_with_attachment(to_email):
+    # Email details
+    subject = "Careerupskileers AI Starter Kit"
+    body = "Please find your attached CareerUpskillers AI Starter Kit. For any queries, WhatsApp on +91 7975931377."
+
     # Create the email
     msg = MIMEMultipart()
-    msg["From"] = EMAIL_USER
-    msg["To"] = to_email
-    msg["Subject"] = subject
+    msg["From"] = EMAIL_USER  # Sender's email
+    msg["To"] = to_email  # Recipient's email
+    msg["Subject"] = subject  # Email subject
 
     # Add body to the email
     msg.attach(MIMEText(body, "plain"))
 
     # Download the attachment from the URL
-    response = requests.get(attachment_url)
+    response = requests.get(ZIP_FILE_LINK)
     if response.status_code == 200:
         attachment = MIMEBase("application", "zip")
         attachment.set_payload(response.content)
@@ -56,10 +60,10 @@ def send_email_with_attachment(to_email, subject, body, attachment_url):
 
     # Send the email
     try:
-        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
-            server.starttls()
-            server.login(careerupskillers@gmail.com,Career@123!@#)
-            server.sendmail(EMAIL_USER, to_email, msg.as_string())
+        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:  # Gmail SMTP server
+            server.starttls()  # Secure the connection
+            server.login(EMAIL_USER, EMAIL_PASSWORD)  # Login to the email account
+            server.sendmail(EMAIL_USER, to_email, msg.as_string())  # Send the email
         st.success("Email sent successfully!")
     except Exception as e:
         st.error(f"Error sending email: {e}")
@@ -298,7 +302,7 @@ if st.session_state.completed:
                 <div style="text-align: center; padding: 20px;">
                     <h2 style="color: #1E90FF;">🎉 Download Your AI Career Kit!</h2>
                     <p>Click the button below to download the zip file:</p>
-                    <a href="{https://drive.google.com/file/d/1qqcKvQEfJJMkZ84PxXySdyPH0sK8ICz8/view?usp=drive_link}" download>
+                    <a href="{ZIP_FILE_LINK}" download>
                         <button style="background-color: #1E90FF; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
                             Download Zip File
                         </button>
@@ -311,15 +315,6 @@ if st.session_state.completed:
             # Send email with zip file
             user_email = user_data.get("email")
             if user_email:
-                subject = "Your AI Career Kit is Here!"
-                body = f"""
-                Hi {user_data.get('name')},
-
-                Thank you for purchasing the AI Career Kit! Please find the attached zip file containing your kit.
-
-                Best regards,
-                CareerUpskillers Team
-                """
-                send_email_with_attachment(user_email, subject, body, ZIP_FILE_LINK)
+                send_email_with_attachment(user_email)
     except Exception as e:
         st.error(f"❌ Error calling OpenAI: {e}")
