@@ -1,7 +1,11 @@
+# ✅ app.py (final update with enhanced UI, currency detection, and persuasive sales flow)
+
 import streamlit as st
 import requests
 import openai
 from datetime import datetime
+import re
+import os
 
 # Set Streamlit page config
 st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🚀")
@@ -10,18 +14,9 @@ st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🚀")
 openai.api_key = st.secrets["API_KEY"]
 google_sheets_url = st.secrets.get("GOOGLE_SHEETS_URL")
 
-# Razorpay credentials (replace with your actual keys)
-RAZORPAY_KEY_ID = st.secrets["razorpay"]["key_id"]
-RAZORPAY_KEY_SECRET = st.secrets["razorpay"]["key_secret"]
-
-# Google Drive link to the zip file (replace with your actual link)
-ZIP_FILE_LINK = "https://drive.google.com/uc?export=download&id=1qqcKvQEfJJMkZ84PxXySdyPH0sK8ICz8"
-
-# WhatsApp link (replace with your actual WhatsApp number and message)
-WHATSAPP_LINK = "https://wa.me/917975931377?text=Hi!%20I%20just%20purchased%20the%20AI%20Career%20Kit.%20Please%20send%20me%20the%20download%20link."
-
 # Country codes dropdown
 dial_codes = {"+91": "India", "+1": "USA", "+44": "UK", "+971": "UAE", "+972": "Israel"}
+currency_map = {"India": "₹", "USA": "$", "UK": "£", "UAE": "AED", "Israel": "₪"}
 
 # Header with enhanced UI
 def show_header():
@@ -30,7 +25,7 @@ def show_header():
         <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
             <h1 style="color: #1E90FF; font-size: 2.5em;"> 🚀 Unlock Your AI Career Revolution! </h1>
             <p style="color: #333; font-size: 1.2em;">
-                Automation is reshaping jobs! Discover how AI freelancing can help you earn ₹50,000+/month, even starting from scratch. Over 3,000+ aspirants from the USA, Israel, UK, Dubai, and India have transformed their careers with us!
+                Automation is reshaping jobs! Discover how AI freelancing can help you earn ₹90,000 to ₹3 Lakhs/month—even starting from scratch. Over 3,000+ aspirants from the USA, Israel, UK, Dubai, and India have transformed their careers with us!
             </p>
             <p style="color: #FF4500; font-weight: bold; font-size: 1.1em;">
                 🎭 Is your skillset future-proof? Are you paid what you deserve? Which companies should you target?
@@ -50,60 +45,7 @@ def show_header():
         unsafe_allow_html=True
     )
 
-# Countdown timer for urgency
-def show_countdown():
-    deadline = datetime(2025, 3, 31, 23, 59, 59)
-    now = datetime.now()
-    time_left = deadline - now
-    days_left = time_left.days
-    hours_left = time_left.seconds // 3600
-
-    st.markdown(
-        f"""
-        <div style="background-color: #FF4500; padding: 10px; border-radius: 5px; text-align: center; color: white;">
-            ⏳ <strong>Hurry!</strong> Offer ends in {days_left} days and {hours_left} hours!
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-# Testimonials and social proof
-def show_testimonials():
-    st.markdown(
-        """
-        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 10px; margin: 10px 0;">
-            <h3 style="color: #1E90FF;">🌟 Success Stories</h3>
-            <blockquote>
-                "Thanks to CareerUpskillers, I landed a ₹1.2 Lakh/month AI freelancing gig within 3 months!"<br>
-                <em>- Priya, Bangalore</em>
-            </blockquote>
-            <blockquote>
-                "The AI Career Kit helped me transition from a traditional IT role to a high-paying AI job!"<br>
-                <em>- Rohan, Delhi</em>
-            </blockquote>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-# Razorpay payment function
-def create_razorpay_order(amount, currency="INR"):
-    data = {
-        "amount": amount * 100,  # Razorpay expects amount in paise
-        "currency": currency,
-        "payment_capture": 1  # Auto-capture payment
-    }
-    order = requests.post(
-        "https://api.razorpay.com/v1/orders",
-        auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET),
-        json=data
-    ).json()
-    return order
-
-# Show header, countdown, and testimonials
 show_header()
-show_countdown()
-show_testimonials()
 
 # Questions
 questions = [
@@ -127,34 +69,28 @@ if "answers" not in st.session_state:
     st.session_state.q_index = 0
     st.session_state.completed = False
 
-# Show form with progress bar
+# Show form
 if not st.session_state.completed:
-    progress = st.session_state.q_index / len(questions)
-    st.progress(progress)
-    st.caption(f"Progress: {int(progress * 100)}%")
-
     question, justification = questions[st.session_state.q_index]
     with st.form(key=f"form_{st.session_state.q_index}"):
-        st.write(f"**🤖 AI Career Advisor:** {question}")
+        st.write(f"**{question}**")
         st.caption(justification)
-        
-        if st.session_state.q_index == 2:  # Phone number question
+
+        if st.session_state.q_index == 2:
             country_code = st.selectbox("Select Country Code", list(dial_codes.keys()), index=0, key="country_code")
             phone_number = st.text_input("Enter your phone number:", key="phone_input")
             user_input = f"{country_code} {phone_number}"
             if country_code not in dial_codes:
                 st.warning("Sorry, we do not currently support this country. Please send an email to careerupskillers@gmail.com for assistance.")
         else:
-            user_input = st.text_input("Your response:", key=f"input_{st.session_state.q_index}")
-        
+            user_input = st.text_input("", key=f"input_{st.session_state.q_index}")
+
         submit_button = st.form_submit_button("Double Click to Submit")
         if submit_button and user_input:
             st.session_state.answers[keys[st.session_state.q_index]] = user_input
             st.session_state.q_index += 1
             if st.session_state.q_index >= len(questions):
                 st.session_state.completed = True
-            st.balloons()  # Fun animation
-            st.success("✅ Great! Let's move to the next step.")
 
 # After all questions
 if st.session_state.completed:
@@ -164,17 +100,25 @@ if st.session_state.completed:
     except:
         pass
 
+    country = dial_codes.get(user_data['phone'].split()[0], "India")
+    currency = currency_map.get(country, "₹")
+
     prompt = f"""
     User: {user_data.get('name')}, Job Role: {user_data.get('job_role')}, Company: {user_data.get('company_details')},
-    Skills: {user_data.get('skills')}, Location: {user_data.get('location')}, Salary: {user_data.get('salary')}, Experience: {user_data.get('experience')} years.
-    
+    Skills: {user_data.get('skills')}, Location: {user_data.get('location')}, Salary: {currency} {user_data.get('salary')}, Experience: {user_data.get('experience')} years.
+
     Generate a persuasive AI career roadmap, including:
     - Custom AI career plan with milestones
     - In-demand AI job insights
     - Latest industry changes for {user_data.get('company_details')}
     - Higher salary opportunities with top companies
-    - Actionable steps for a successful AI career
-    - Final CTA for ₹499 AI Career Kit & ₹199 Personal Counseling
+    - Actionable steps for a successful AI career (suggest they can start by spending 4 hrs on Sat and 4 hrs on Sun)
+    - Show how they can earn {currency}90,000–{currency}300,000/month by freelancing (especially selling chatbots)
+    - Mention they can continue their full-time job and switch to AI when confident
+    - Final CTA for {currency}499 AI Career Kit & {currency}199 Personal Counseling
+    - Include that we have 3,000+ happy AI aspirants globally
+    - Mention a free ready-to-use chatbot script is included after payment
+    - Provide a WhatsApp link to access chatbot after payment
     """
 
     try:
@@ -189,82 +133,10 @@ if st.session_state.completed:
         analysis = response.choices[0].message["content"]
         st.success("✅ Here's your personalized AI Career Plan!")
         st.markdown(analysis, unsafe_allow_html=True)
-        
-        # Final CTA buttons
-        if st.button("🚀 Unlock AI Career Success for ₹499 Now!"):
-            order = create_razorpay_order(amount=499)
-            st.session_state.order_id = order["id"]
-            st.write(f"Please complete the payment to proceed. Order ID: {order['id']}")
 
-            # Embed Razorpay payment button
-            st.markdown(
-                f"""
-                <script src="https://checkout.razorpay.com/v1/checkout.js"
-                        data-key="{RAZORPAY_KEY_ID}"
-                        data-amount="{499 * 100}"
-                        data-currency="INR"
-                        data-order_id="{order['id']}"
-                        data-buttontext="Pay ₹499"
-                        data-name="CareerUpskillers"
-                        data-description="AI Career Kit"
-                        data-image="https://example.com/logo.png"  # Replace with your logo
-                        data-prefill.name="{user_data.get('name')}"
-                        data-prefill.email="{user_data.get('email')}"
-                        data-theme.color="#F37254">
-                </script>
-                """,
-                unsafe_allow_html=True
-            )
-
-        if st.button("💎 Get Personalized Career Counseling for ₹199"):
+        if st.button(f"🚀 Unlock AI Career Success for {currency}499 Now!"):
+            st.markdown("[👉 Buy AI Career Starter Kit](https://rzp.io/rzp/ViDMMYS)")
+        if st.button(f"💎 Get Personalized Career Counseling for {currency}199"):
             st.markdown("[👉 Book Your Session](https://rzp.io/rzp/VnUcj8FR)")
-
-        # Upsell opportunities
-        st.markdown(
-            """
-            <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; margin: 10px 0;">
-                <h3 style="color: #1E90FF;">💎 Upgrade Your AI Career</h3>
-                <p>Take your AI career to the next level with our premium offerings:</p>
-                <ul>
-                    <li><strong>Advanced AI Certification:</strong> Master cutting-edge AI tools and techniques.</li>
-                    <li><strong>1:1 Mentorship:</strong> Get personalized guidance from industry experts.</li>
-                    <li><strong>Freelance Bootcamp:</strong> Learn how to land high-paying AI gigs.</li>
-                </ul>
-                <p><a href="https://rzp.io/rzp/ViDMMYS">👉 Explore Premium Plans</a></p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        # Thank-you page
-        st.markdown(
-            """
-            <div style="text-align: center; padding: 20px;">
-                <h2 style="color: #1E90FF;">🎉 Thank You!</h2>
-                <p>Your AI career plan is ready. Take the next step now:</p>
-                <p><a href="https://rzp.io/rzp/ViDMMYS">👉 Buy AI Career Starter Kit</a></p>
-                <p><a href="https://rzp.io/rzp/VnUcj8FR">👉 Book Personalized Counseling</a></p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        # Handle payment success
-        if "order_id" in st.session_state:
-            st.write("Payment successful! Thank you for purchasing the AI Career Kit.")
-            st.markdown(
-                f"""
-                <div style="text-align: center; padding: 20px;">
-                    <h2 style="color: #1E90FF;">🎉 Get Your AI Career Kit!</h2>
-                    <p>Click the button below to message us on WhatsApp and receive your download link:</p>
-                    <a href="{WHATSAPP_LINK}" target="_blank">
-                        <button style="background-color: #25D366; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
-                            📲 Get Download Link on WhatsApp
-                        </button>
-                    </a>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
     except Exception as e:
         st.error(f"❌ Error calling OpenAI: {e}")
