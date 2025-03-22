@@ -8,9 +8,9 @@ import os
 # Set Streamlit page config
 st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🚀")
 
-# Add viewport meta tag and mobile-friendly CSS
+# Add viewport meta tag and mobile-friendly CSS with higher specificity
 st.markdown("""
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -19,25 +19,28 @@ st.markdown("""
         background-color: #f5f5f5;
     }
     .container {
-        width: 100%;
-        max-width: 360px;
-        margin: 0 auto;
-        padding: 8px;
-        box-sizing: border-box;
+        width: 100% !important;
+        max-width: 340px !important;
+        margin: 0 auto !important;
+        padding: 6px !important;
+        box-sizing: border-box !important;
+    }
+    .container div, .container p, .container h1, .container strong {
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        word-break: break-word !important;
     }
     .flash-alert, .header, .counseling-promo, .career-plan, .cta, .warning, .testimonials, .trust-badge {
-        width: 100%;
-        padding: 10px;
-        box-sizing: border-box;
-        border-radius: 8px;
-        margin-bottom: 8px;
-        overflow-wrap: break-word;
-        word-wrap: break-word;
+        width: 100% !important;
+        padding: 8px !important;
+        box-sizing: border-box !important;
+        border-radius: 8px !important;
+        margin-bottom: 6px !important;
     }
     .flash-alert {
         background-color: #fff3cd;
         color: #856404;
-        font-size: 13px;
+        font-size: 12px;
         line-height: 1.3;
     }
     .header {
@@ -50,53 +53,53 @@ st.markdown("""
         border: 1px solid #1E90FF;
     }
     h1 {
-        font-size: 20px;
-        margin: 8px 0;
+        font-size: 18px !important;
+        margin: 6px 0 !important;
     }
     p, li, .caption {
-        font-size: 13px;
-        line-height: 1.4;
-        margin: 4px 0;
+        font-size: 12px !important;
+        line-height: 1.3 !important;
+        margin: 3px 0 !important;
     }
     button {
-        width: 100%;
-        max-width: 220px;
-        padding: 12px;
-        font-size: 15px;
-        border-radius: 5px;
-        border: none;
-        cursor: pointer;
-        margin: 8px auto;
-        display: block;
-        min-height: 44px;
+        width: 100% !important;
+        max-width: 200px !important;
+        padding: 10px !important;
+        font-size: 14px !important;
+        border-radius: 5px !important;
+        border: none !important;
+        cursor: pointer !important;
+        margin: 6px auto !important;
+        display: block !important;
+        min-height: 44px !important;
     }
     input, select {
-        width: 100%;
-        padding: 10px;
-        font-size: 15px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        margin: 5px 0;
-        box-sizing: border-box;
+        width: 100% !important;
+        padding: 8px !important;
+        font-size: 14px !important;
+        border-radius: 5px !important;
+        border: 1px solid #ccc !important;
+        margin: 4px 0 !important;
+        box-sizing: border-box !important;
     }
     .progress-text {
-        font-size: 13px;
-        text-align: center;
-        margin: 5px 0;
+        font-size: 12px !important;
+        text-align: center !important;
+        margin: 4px 0 !important;
     }
     @media (max-width: 600px) {
         h1 {
-            font-size: 18px;
+            font-size: 16px !important;
         }
         p, li, .caption {
-            font-size: 12px;
+            font-size: 11px !important;
         }
         button {
-            font-size: 14px;
-            padding: 10px;
+            font-size: 13px !important;
+            padding: 8px !important;
         }
         .flash-alert {
-            font-size: 12px;
+            font-size: 11px !important;
         }
     }
 </style>
