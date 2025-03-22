@@ -1,10 +1,11 @@
-# ✅ app.py (with testimonials, flash purchase alerts, dynamic countdown, slot limit)
+# ✅ app.py (with rotating flash purchase alerts and enhanced sales messaging)
 
 import streamlit as st
 import requests
 import openai
 from datetime import datetime
 import random
+import time
 import os
 
 # Set Streamlit page config
@@ -33,16 +34,23 @@ def show_header():
     </div>
     """, unsafe_allow_html=True)
 
-# Flash testimonials
-flash_names = ["USA", "UK", "UAE", "India", "Israel"]
-slots_left = random.randint(18, 49)
-latest_country = random.choice(flash_names)
+# Rotating flash testimonials
+if "flash_index" not in st.session_state:
+    st.session_state.flash_index = 0
+
+flash_countries = ["USA", "India", "UAE", "UK", "USA"]
+flash_country = flash_countries[st.session_state.flash_index % len(flash_countries)]
+slots_left = random.randint(20, 45)
 
 st.markdown(f"""
 <div style="background-color:#fff3cd; color:#856404; padding:10px; border-radius:5px; margin-top:10px;">
-  🔥 <strong>Flash Update:</strong> New purchase from <strong>{latest_country}</strong> | Only <strong>{slots_left}</strong> kits left!
+  🔥 <strong>Flash Update:</strong> New purchase from <strong>{flash_country}</strong> | Only <strong>{slots_left}</strong> kits left!
 </div>
 """, unsafe_allow_html=True)
+
+st.session_state.flash_index += 1
+if st.session_state.flash_index > 4:
+    st.session_state.flash_index = 4  # Stop cycling after 5
 
 show_header()
 
@@ -138,7 +146,7 @@ if st.session_state.completed:
         st.markdown("""
         <div style="margin-top:20px; padding:15px; background:#e6ffe6; border-radius:10px;">
         🎁 After payment, get your free chatbot instantly.<br>
-        📲 [Click to Access WhatsApp Chatbot](https://wa.me/919999999999)
+        📲 <a href="https://wa.me/919999999999">Click to Access WhatsApp Chatbot</a>
         </div>
         """, unsafe_allow_html=True)
 
