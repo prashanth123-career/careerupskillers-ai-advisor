@@ -106,13 +106,14 @@ if st.session_state.completed:
     User: {user.get('name')}, Role: {user.get('job_role')}, Company: {user.get('company_details')},
     Skills: {user.get('skills')}, Location: {user.get('location')}, Salary: {currency} {user.get('salary')}, Experience: {user.get('experience')} years.
 
-    Generate a short, crisp, persuasive AI career plan with:
-    - 4-hour/weekend roadmap
-    - Top 3 better-paying companies in their city
-    - Salary benchmark vs current
-    - AI niche suggestions
-    - Link to ₹499 kit and ₹199 1:1 counseling
-    - Mention 3000+ learners and free chatbot after payment
+    Generate a short, crisp, persuasive AI career plan including:
+    - 4-hour/weekend plan
+    - 3 top companies offering better salary in same city (mention names)
+    - Market salary vs user's salary comparison
+    - AI niche suggestions based on skills
+    - Add CTA for ₹499 AI Kit and ₹199 Counseling offer
+    - Mention 3,000+ learners and free chatbot after payment
+    - End with strong CTA and WhatsApp chatbot link
     """
 
     try:
@@ -135,7 +136,7 @@ if st.session_state.completed:
         st.markdown(f"""
         <div style='margin-top:20px;padding:15px;background:#e6ffe6;border-radius:10px;'>
         🎁 Free Chatbot access after payment!<br>
-        📲 <a href="https://wa.me/919999999999">WhatsApp Chatbot</a>
+        📲 <a href="https://wa.me/917975931377">WhatsApp Chatbot</a>
         </div>
         """, unsafe_allow_html=True)
 
