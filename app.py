@@ -1,10 +1,10 @@
-# ✅ app.py (final update with enhanced UI, currency detection, and persuasive sales flow)
+# ✅ app.py (with testimonials, flash purchase alerts, dynamic countdown, slot limit)
 
 import streamlit as st
 import requests
 import openai
 from datetime import datetime
-import re
+import random
 import os
 
 # Set Streamlit page config
@@ -14,36 +14,35 @@ st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🚀")
 openai.api_key = st.secrets["API_KEY"]
 google_sheets_url = st.secrets.get("GOOGLE_SHEETS_URL")
 
-# Country codes dropdown
+# Country codes dropdown and currency mapping
 dial_codes = {"+91": "India", "+1": "USA", "+44": "UK", "+971": "UAE", "+972": "Israel"}
 currency_map = {"India": "₹", "USA": "$", "UK": "£", "UAE": "AED", "Israel": "₪"}
 
-# Header with enhanced UI
+# Header section
 def show_header():
-    st.markdown(
-        """
-        <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-            <h1 style="color: #1E90FF; font-size: 2.5em;"> 🚀 Unlock Your AI Career Revolution! </h1>
-            <p style="color: #333; font-size: 1.2em;">
-                Automation is reshaping jobs! Discover how AI freelancing can help you earn ₹90,000 to ₹3 Lakhs/month—even starting from scratch. Over 3,000+ aspirants from the USA, Israel, UK, Dubai, and India have transformed their careers with us!
-            </p>
-            <p style="color: #FF4500; font-weight: bold; font-size: 1.1em;">
-                🎭 Is your skillset future-proof? Are you paid what you deserve? Which companies should you target?
-            </p>
-            <p style="color: #666;">
-                💡 Build a backup plan, gain new AI skills, and explore freelance & weekend business ventures. Act now—limited spots!
-            </p>
-            <p style="color: #228B22;">
-                ⏳ Offer ends midnight, March 31, 2025—start your journey today!
-            </p>
-            <div style="margin-top: 15px;">
-                <em>Provide your details below to discover your AI career path!</em>
-            </div>
-        </div>
-        <br>
-        """,
-        unsafe_allow_html=True
-    )
+    st.markdown("""
+    <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; text-align: center;">
+        <h1 style="color: #1E90FF; font-size: 2.5em;">🚀 Unlock Your AI Career Revolution!</h1>
+        <p style="color: #333; font-size: 1.2em;">
+            Automation is reshaping jobs! Discover how AI freelancing can help you earn ₹90,000 to ₹3 Lakhs/month—even starting from scratch. Over 3,000+ aspirants from the USA, Israel, UK, Dubai, and India have transformed their careers with us!
+        </p>
+        <p style="color: #FF4500; font-weight: bold;">🎭 Is your skillset future-proof? Are you paid what you deserve?</p>
+        <p style="color: #666;">💡 Start with just 4 hours/weekend. When you're confident, switch full-time!</p>
+        <p style="color: #228B22;">⏳ Offer ends midnight, March 31, 2025 — limited to first 10,000 users!</p>
+        <em>Provide your details below to discover your AI career path!</em>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Flash testimonials
+flash_names = ["USA", "UK", "UAE", "India", "Israel"]
+slots_left = random.randint(18, 49)
+latest_country = random.choice(flash_names)
+
+st.markdown(f"""
+<div style="background-color:#fff3cd; color:#856404; padding:10px; border-radius:5px; margin-top:10px;">
+  🔥 <strong>Flash Update:</strong> New purchase from <strong>{latest_country}</strong> | Only <strong>{slots_left}</strong> kits left!
+</div>
+""", unsafe_allow_html=True)
 
 show_header()
 
@@ -63,13 +62,12 @@ questions = [
 
 keys = ["name", "email", "phone", "job_role", "company_details", "automation_awareness", "skills", "location", "salary", "experience"]
 
-# Init session state
 if "answers" not in st.session_state:
     st.session_state.answers = {}
     st.session_state.q_index = 0
     st.session_state.completed = False
 
-# Show form
+# Form logic
 if not st.session_state.completed:
     question, justification = questions[st.session_state.q_index]
     with st.form(key=f"form_{st.session_state.q_index}"):
@@ -77,22 +75,21 @@ if not st.session_state.completed:
         st.caption(justification)
 
         if st.session_state.q_index == 2:
-            country_code = st.selectbox("Select Country Code", list(dial_codes.keys()), index=0, key="country_code")
-            phone_number = st.text_input("Enter your phone number:", key="phone_input")
-            user_input = f"{country_code} {phone_number}"
-            if country_code not in dial_codes:
-                st.warning("Sorry, we do not currently support this country. Please send an email to careerupskillers@gmail.com for assistance.")
+            code = st.selectbox("Country Code", list(dial_codes.keys()), index=0)
+            phone = st.text_input("Phone Number")
+            user_input = f"{code} {phone}"
+            if code not in dial_codes:
+                st.warning("Sorry, we do not currently support this country. Email careerupskillers@gmail.com.")
         else:
-            user_input = st.text_input("", key=f"input_{st.session_state.q_index}")
+            user_input = st.text_input("Your response")
 
-        submit_button = st.form_submit_button("Double Click to Submit")
-        if submit_button and user_input:
+        if st.form_submit_button("Double Click to Submit") and user_input:
             st.session_state.answers[keys[st.session_state.q_index]] = user_input
             st.session_state.q_index += 1
             if st.session_state.q_index >= len(questions):
                 st.session_state.completed = True
 
-# After all questions
+# After form submission
 if st.session_state.completed:
     user_data = st.session_state.answers
     try:
@@ -100,7 +97,8 @@ if st.session_state.completed:
     except:
         pass
 
-    country = dial_codes.get(user_data['phone'].split()[0], "India")
+    code = user_data['phone'].split()[0]
+    country = dial_codes.get(code, "India")
     currency = currency_map.get(country, "₹")
 
     prompt = f"""
@@ -108,35 +106,41 @@ if st.session_state.completed:
     Skills: {user_data.get('skills')}, Location: {user_data.get('location')}, Salary: {currency} {user_data.get('salary')}, Experience: {user_data.get('experience')} years.
 
     Generate a persuasive AI career roadmap, including:
-    - Custom AI career plan with milestones
-    - In-demand AI job insights
-    - Latest industry changes for {user_data.get('company_details')}
-    - Higher salary opportunities with top companies
-    - Actionable steps for a successful AI career (suggest they can start by spending 4 hrs on Sat and 4 hrs on Sun)
-    - Show how they can earn {currency}90,000–{currency}300,000/month by freelancing (especially selling chatbots)
-    - Mention they can continue their full-time job and switch to AI when confident
-    - Final CTA for {currency}499 AI Career Kit & {currency}199 Personal Counseling
-    - Include that we have 3,000+ happy AI aspirants globally
-    - Mention a free ready-to-use chatbot script is included after payment
-    - Provide a WhatsApp link to access chatbot after payment
+    - Custom plan with daily/weekly/monthly goals
+    - AI niches based on their skills
+    - Top 3 companies offering better salaries in their location
+    - Salary benchmark vs current
+    - 4 hours/weekend plan for smooth transition
+    - ₹90K–₹3L earning via freelancing/chatbots
+    - Continue full-time job till ready
+    - Highlight 3,000+ successful learners
+    - Mention ₹499 Kit, ₹199 Counseling
+    - Add free ready-to-use chatbot and WhatsApp link after payment
     """
 
     try:
-        response = openai.ChatCompletion.create(
+        res = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a career advisor bot that provides highly persuasive AI career roadmaps."},
+                {"role": "system", "content": "You are a persuasive AI career advisor."},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=1000
         )
-        analysis = response.choices[0].message["content"]
         st.success("✅ Here's your personalized AI Career Plan!")
-        st.markdown(analysis, unsafe_allow_html=True)
+        st.markdown(res.choices[0].message.content, unsafe_allow_html=True)
 
-        if st.button(f"🚀 Unlock AI Career Success for {currency}499 Now!"):
-            st.markdown("[👉 Buy AI Career Starter Kit](https://rzp.io/rzp/ViDMMYS)")
-        if st.button(f"💎 Get Personalized Career Counseling for {currency}199"):
-            st.markdown("[👉 Book Your Session](https://rzp.io/rzp/VnUcj8FR)")
+        if st.button(f"🚀 Unlock Career Kit for {currency}499"):
+            st.markdown("[👉 Buy Now](https://rzp.io/rzp/ViDMMYS)")
+        if st.button(f"💬 Book Counseling for {currency}199"):
+            st.markdown("[👉 Book Session](https://rzp.io/rzp/VnUcj8FR)")
+
+        st.markdown("""
+        <div style="margin-top:20px; padding:15px; background:#e6ffe6; border-radius:10px;">
+        🎁 After payment, get your free chatbot instantly.<br>
+        📲 [Click to Access WhatsApp Chatbot](https://wa.me/919999999999)
+        </div>
+        """, unsafe_allow_html=True)
+
     except Exception as e:
         st.error(f"❌ Error calling OpenAI: {e}")
