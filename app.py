@@ -1,158 +1,270 @@
 import streamlit as st
 import requests
 import openai
-from datetime import datetime, timedelta
-import random
-import os
+from datetime import datetime
 
 # Set Streamlit page config
 st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🚀")
 
-# Load API key and Google Sheets URL
+# Load API key from Streamlit secrets
 openai.api_key = st.secrets["API_KEY"]
 google_sheets_url = st.secrets.get("GOOGLE_SHEETS_URL")
 
-# Country codes and currency map
+# Razorpay credentials (replace with your actual keys)
+RAZORPAY_KEY_ID = st.secrets["razorpay"]["key_id"]
+RAZORPAY_KEY_SECRET = st.secrets["razorpay"]["key_secret"]
+
+# Google Drive link to the zip file (replace with your actual link)
+ZIP_FILE_LINK = "https://drive.google.com/uc?export=download&id=1qqcKvQEfJJMkZ84PxXySdyPH0sK8ICz8"
+
+# WhatsApp link (replace with your actual WhatsApp number and message)
+WHATSAPP_LINK = "https://wa.me/917975931377?text=Hi!%20I%20just%20purchased%20the%20AI%20Career%20Kit.%20Please%20send%20me%20the%20download%20link."
+
+# Country codes dropdown
 dial_codes = {"+91": "India", "+1": "USA", "+44": "UK", "+971": "UAE", "+972": "Israel"}
-currency_map = {"India": "₹", "USA": "$", "UK": "£", "UAE": "AED", "Israel": "₪"}
 
-# Dynamic Flash Purchase Alert with Timestamp and Decreasing Slots
-if "flash_index" not in st.session_state:
-    st.session_state.flash_index = 0
-if "slots_left" not in st.session_state:
-    st.session_state.slots_left = random.randint(15, 40)
+# Header with enhanced UI
+def show_header():
+    st.markdown(
+        """
+        <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <h1 style="color: #1E90FF; font-size: 2.5em;"> 🚀 Unlock Your AI Career Revolution! </h1>
+            <p style="color: #333; font-size: 1.2em;">
+                Automation is reshaping jobs! Discover how AI freelancing can help you earn ₹50,000+/month, even starting from scratch. Over 3,000+ aspirants from the USA, Israel, UK, Dubai, and India have transformed their careers with us!
+            </p>
+            <p style="color: #FF4500; font-weight: bold; font-size: 1.1em;">
+                🎭 Is your skillset future-proof? Are you paid what you deserve? Which companies should you target?
+            </p>
+            <p style="color: #666;">
+                💡 Build a backup plan, gain new AI skills, and explore freelance & weekend business ventures. Act now—limited spots!
+            </p>
+            <p style="color: #228B22;">
+                ⏳ Offer ends midnight, March 31, 2025—start your journey today!
+            </p>
+            <div style="margin-top: 15px;">
+                <em>Provide your details below to discover your AI career path!</em>
+            </div>
+        </div>
+        <br>
+        """,
+        unsafe_allow_html=True
+    )
 
-flash_countries = ["USA", "India", "UAE", "UK", "USA"]
-flash_country = flash_countries[st.session_state.flash_index % len(flash_countries)]
-time_ago = datetime.now() - timedelta(minutes=random.randint(1, 10))
+# Countdown timer for urgency
+def show_countdown():
+    deadline = datetime(2025, 3, 31, 23, 59, 59)
+    now = datetime.now()
+    time_left = deadline - now
+    days_left = time_left.days
+    hours_left = time_left.seconds // 3600
 
-st.markdown(f"""
-<div style="background-color:#fff3cd; color:#856404; padding:10px; border-radius:5px; margin-bottom:10px;">
-  ⚡ <strong>Flash Purchase:</strong> Someone just bought from <strong>{flash_country}</strong> {time_ago.strftime('%M mins ago')} | Only <strong>{st.session_state.slots_left}</strong> kits left!
-</div>
-""", unsafe_allow_html=True)
-st.session_state.flash_index += 1
-st.session_state.slots_left = max(5, st.session_state.slots_left - random.randint(1, 2))  # Decrease slots dynamically
+    st.markdown(
+        f"""
+        <div style="background-color: #FF4500; padding: 10px; border-radius: 5px; text-align: center; color: white;">
+            ⏳ <strong>Hurry!</strong> Offer ends in {days_left} days and {hours_left} hours!
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-# Header with Countdown Timer
-end_date = datetime(2025, 3, 31)
-time_left = end_date - datetime.now()
-days_left = time_left.days
+# Testimonials and social proof
+def show_testimonials():
+    st.markdown(
+        """
+        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 10px; margin: 10px 0;">
+            <h3 style="color: #1E90FF;">🌟 Success Stories</h3>
+            <blockquote>
+                "Thanks to CareerUpskillers, I landed a ₹1.2 Lakh/month AI freelancing gig within 3 months!"<br>
+                <em>- Priya, Bangalore</em>
+            </blockquote>
+            <blockquote>
+                "The AI Career Kit helped me transition from a traditional IT role to a high-paying AI job!"<br>
+                <em>- Rohan, Delhi</em>
+            </blockquote>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-st.markdown(f"""
-<div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; text-align: center;">
-    <h1 style="color: #1E90FF;">🚀 Unlock Your AI Career Revolution!</h1>
-    <p>Automation is reshaping jobs. Earn ₹90K–₹3L/month with AI freelancing—even from scratch.</p>
-    <p>Over 3,000+ learners from the USA, UK, UAE, Israel & India trust us!</p>
-    <p>Over Get free career insight on your job market and salary insight fill the form below</p>
-    <p style="color: #FF4500; font-weight: bold;">Is your skillset future-proof?</p>
-    <p style="color: #228B22;">⏳ Only {days_left} days left to grab this deal!</p>
-</div>
-""", unsafe_allow_html=True)
+# Razorpay payment function
+def create_razorpay_order(amount, currency="INR"):
+    data = {
+        "amount": amount * 100,  # Razorpay expects amount in paise
+        "currency": currency,
+        "payment_capture": 1  # Auto-capture payment
+    }
+    order = requests.post(
+        "https://api.razorpay.com/v1/orders",
+        auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET),
+        json=data
+    ).json()
+    return order
 
-# Shortened Questions with Hints
+# Show header, countdown, and testimonials
+show_header()
+show_countdown()
+show_testimonials()
+
+# Questions
 questions = [
-    ("👋 What's your Name?", "To personalize your AI roadmap!"),
-    ("📧 Email Address:", "Get job insights and gigs!"),
-    ("📱 Phone Number:", "Select your country code."),
-    ("🛠️ Your Primary Skills:", "We’ll match AI niches."),
-    ("📍 Current Location:", "Find roles near you."),
-    ("💰 Monthly Salary (in your currency):", "Compare with market rates."),
+    ("👋 Hi! What's your Name?", "This helps us personalize your AI career journey!"),
+    ("📧 Please provide your Email:", "We send exclusive AI job insights and high-paying freelance opportunities to your inbox!"),
+    ("📱 Phone Number:", "We'll share updates and career offers directly. Select your country code first!"),
+    ("🌍 Your current job role and company:", "This helps us analyze high-paying AI roles similar to yours!"),
+    ("🏢 Tell us about your company:", "Understanding your company helps us suggest industry-specific AI growth paths!"),
+    ("🤖 Are you aware of automation in your industry?", "Many jobs are being automated—stay ahead with AI skills!"),
+    ("🛠️ What are your primary skills?", "We'll suggest AI niches where your skills are most profitable!"),
+    ("📍 Your current location:", "We'll find high-paying AI job and freelancing opportunities near you!"),
+    ("💰 Your current monthly salary (INR):", "We'll analyze if you're underpaid and suggest a target salary!"),
+    ("📅 Years of experience in your field?", "Experience plays a key role in determining your AI career growth!")
 ]
 
-keys = ["name", "email", "phone", "skills", "location", "salary"]
+keys = ["name", "email", "phone", "job_role", "company_details", "automation_awareness", "skills", "location", "salary", "experience"]
 
-# Session State Initialization
+# Init session state
 if "answers" not in st.session_state:
     st.session_state.answers = {}
     st.session_state.q_index = 0
     st.session_state.completed = False
 
-# Form Logic with Progress Bar
+# Show form with progress bar
 if not st.session_state.completed:
-    q, hint = questions[st.session_state.q_index]
-    progress = (st.session_state.q_index / len(questions)) * 100
+    progress = st.session_state.q_index / len(questions)
     st.progress(progress)
-    st.write(f"Step {st.session_state.q_index + 1} of {len(questions)}")
-    
-    with st.form(key=f"form_{st.session_state.q_index}"):
-        st.write(f"**{q}**")
-        st.caption(hint)
-        if st.session_state.q_index == 2:  # Phone number question
-            code = st.selectbox("Country Code", list(dial_codes.keys()), index=0)
-            phone = st.text_input("Phone Number")
-            user_input = f"{code} {phone}"
-            if code not in dial_codes:
-                st.warning("Sorry, not available in this country. Email us at careerupskillers@gmail.com.")
-        else:
-            user_input = st.text_input("Your answer")
+    st.caption(f"Progress: {int(progress * 100)}%")
 
-        if st.form_submit_button("Next") and user_input:
+    question, justification = questions[st.session_state.q_index]
+    with st.form(key=f"form_{st.session_state.q_index}"):
+        st.write(f"**🤖 AI Career Advisor:** {question}")
+        st.caption(justification)
+        
+        if st.session_state.q_index == 2:  # Phone number question
+            country_code = st.selectbox("Select Country Code", list(dial_codes.keys()), index=0, key="country_code")
+            phone_number = st.text_input("Enter your phone number:", key="phone_input")
+            user_input = f"{country_code} {phone_number}"
+            if country_code not in dial_codes:
+                st.warning("Sorry, we do not currently support this country. Please send an email to careerupskillers@gmail.com for assistance.")
+        else:
+            user_input = st.text_input("Your response:", key=f"input_{st.session_state.q_index}")
+        
+        submit_button = st.form_submit_button("Double Click to Submit")
+        if submit_button and user_input:
             st.session_state.answers[keys[st.session_state.q_index]] = user_input
             st.session_state.q_index += 1
             if st.session_state.q_index >= len(questions):
                 st.session_state.completed = True
+            st.balloons()  # Fun animation
+            st.success("✅ Great! Let's move to the next step.")
 
-# After Submission
+# After all questions
 if st.session_state.completed:
-    user = st.session_state.answers
+    user_data = st.session_state.answers
     try:
-        requests.post(google_sheets_url, json=user)
+        requests.post(google_sheets_url, json=user_data)
     except:
         pass
 
-    country_code = user['phone'].split()[0]
-    country = dial_codes.get(country_code, "India")
-    currency = currency_map.get(country, "₹")
-
-    # Structured Career Plan
-    market_salary = int(user.get('salary', 0).replace(',', '')) * 1.5  # Dummy market salary (50% higher)
-    niche_based_on_skills = "AI Content Creation" if "writing" in user.get('skills', '').lower() else "AI Automation"
-    company1, company2, company3 = "TechCorp", "FutureAI", "InnoWorks"  # Replace with real data if available
-    salary1, salary2, salary3 = market_salary + 10000, market_salary + 20000, market_salary + 30000
-
-    career_plan = f"""
-    🎯 **{user.get('name')}'s AI Career Revolution Plan** 🎯  
-    **4-Hour Weekend Plan**: Learn AI basics (1h), build a micro-project (2h), network on X (1h).  
-    **Top Companies in {user.get('location')}:**  
-    - {company1}: {currency}{salary1:,}  
-    - {company2}: {currency}{salary2:,}  
-    - {company3}: {currency}{salary3:,}  
-    **Market Salary**: {currency}{market_salary:,} (Yours: {currency}{user.get('salary')})  
-    **AI Niche**: {niche_based_on_skills}  
-    **🚀 Next Step**: Get your ₹10,000 AI Starter Kit for just {currency}499 below. Check your email for access after payment!
+    prompt = f"""
+    User: {user_data.get('name')}, Job Role: {user_data.get('job_role')}, Company: {user_data.get('company_details')},
+    Skills: {user_data.get('skills')}, Location: {user_data.get('location')}, Salary: {user_data.get('salary')}, Experience: {user_data.get('experience')} years.
+    
+    Generate a persuasive AI career roadmap, including:
+    - Custom AI career plan with milestones
+    - In-demand AI job insights
+    - Latest industry changes for {user_data.get('company_details')}
+    - Higher salary opportunities with top companies
+    - Actionable steps for a successful AI career
+    - Final CTA for ₹499 AI Career Kit & ₹199 Personal Counseling
     """
-    st.success("✅ Your Personalized Plan is Ready!")
-    st.markdown(career_plan, unsafe_allow_html=True)
 
-    # Enhanced CTA Buttons for ₹499 Payment Link
-    st.markdown(f"""
-    <div style="text-align:center; margin-top:20px;">
-        <a href='https://rzp.io/rzp/t37swnF' target='_blank'><button style='background-color:#FF4500;color:white;padding:10px 20px;border:none;border-radius:5px;cursor:pointer;margin:5px;'>🚀 Get AI Kit ({currency}499)</button></a>
-    </div>
-    <p style='text-align:center;'>After payment, check your email for your AI Starter Kit!</p>
-    """, unsafe_allow_html=True)
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a career advisor bot that provides highly persuasive AI career roadmaps."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=1000
+        )
+        analysis = response.choices[0].message["content"]
+        st.success("✅ Here's your personalized AI Career Plan!")
+        st.markdown(analysis, unsafe_allow_html=True)
+        
+        # Final CTA buttons
+        if st.button("🚀 Unlock AI Career Success for ₹499 Now!"):
+            order = create_razorpay_order(amount=499)
+            st.session_state.order_id = order["id"]
+            st.write(f"Please complete the payment to proceed. Order ID: {order['id']}")
 
-    # Upsell ₹199 Counseling (Shown After ₹499 Pitch)
-    st.markdown(f"""
-    <div style='margin-top:20px;padding:15px;background:#e6ffe6;border-radius:10px;text-align:center;'>
-        🎯 Want more? Supercharge your plan with 1:1 Counseling for just {currency}199!<br>
-        <a href='https://rzp.io/rzp/FAsUJ9k' target='_blank'><button style='background-color:#1E90FF;color:white;padding:10px 20px;border:none;border-radius:5px;cursor:pointer;margin:5px;'>💬 Book Counseling ({currency}199)</button></a><br>
-        📲 Limited slots—act before March 31, 2025!
-    </div>
-    """, unsafe_allow_html=True)
+            # Embed Razorpay payment button
+            st.markdown(
+                f"""
+                <script src="https://checkout.razorpay.com/v1/checkout.js"
+                        data-key="{RAZORPAY_KEY_ID}"
+                        data-amount="{499 * 100}"
+                        data-currency="INR"
+                        data-order_id="{order['id']}"
+                        data-buttontext="Pay ₹499"
+                        data-name="CareerUpskillers"
+                        data-description="AI Career Kit"
+                        data-image="https://example.com/logo.png"  # Replace with your logo
+                        data-prefill.name="{user_data.get('name')}"
+                        data-prefill.email="{user_data.get('email')}"
+                        data-theme.color="#F37254">
+                </script>
+                """,
+                unsafe_allow_html=True
+            )
 
-    # Testimonials
-    testimonials = [
-        "“Landed a $2K gig with the AI Kit!” – Alex, USA",
-        "“From zero to ₹1L/month in 6 weeks!” – Neha, India",
-    ]
-    st.markdown(f"<div style='text-align:center; margin-top:20px;'>{random.choice(testimonials)}</div>", unsafe_allow_html=True)
+        if st.button("💎 Get Personalized Career Counseling for ₹199"):
+            st.markdown("[👉 Book Your Session](https://rzp.io/rzp/VnUcj8FR)")
 
-    # Trust Badge and Freebie (No WhatsApp)
-    st.markdown(f"""
-    <div style='margin-top:20px;padding:15px;background:#e6ffe6;border-radius:10px;text-align:center;'>
-        🎁 Free AI Niche PDF + Chatbot access after payment!<br>
-        📩 Trusted by 3,000+ learners—check your email post-payment!
-    </div>
-    """, unsafe_allow_html=True)
+        # Upsell opportunities
+        st.markdown(
+            """
+            <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; margin: 10px 0;">
+                <h3 style="color: #1E90FF;">💎 Upgrade Your AI Career</h3>
+                <p>Take your AI career to the next level with our premium offerings:</p>
+                <ul>
+                    <li><strong>Advanced AI Certification:</strong> Master cutting-edge AI tools and techniques.</li>
+                    <li><strong>1:1 Mentorship:</strong> Get personalized guidance from industry experts.</li>
+                    <li><strong>Freelance Bootcamp:</strong> Learn how to land high-paying AI gigs.</li>
+                </ul>
+                <p><a href="https://rzp.io/rzp/ViDMMYS">👉 Explore Premium Plans</a></p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # Thank-you page
+        st.markdown(
+            """
+            <div style="text-align: center; padding: 20px;">
+                <h2 style="color: #1E90FF;">🎉 Thank You!</h2>
+                <p>Your AI career plan is ready. Take the next step now:</p>
+                <p><a href="https://rzp.io/rzp/ViDMMYS">👉 Buy AI Career Starter Kit</a></p>
+                <p><a href="https://rzp.io/rzp/VnUcj8FR">👉 Book Personalized Counseling</a></p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # Handle payment success
+        if "order_id" in st.session_state:
+            st.write("Payment successful! Thank you for purchasing the AI Career Kit.")
+            st.markdown(
+                f"""
+                <div style="text-align: center; padding: 20px;">
+                    <h2 style="color: #1E90FF;">🎉 Get Your AI Career Kit!</h2>
+                    <p>Click the button below to message us on WhatsApp and receive your download link:</p>
+                    <a href="{WHATSAPP_LINK}" target="_blank">
+                        <button style="background-color: #25D366; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                            📲 Get Download Link on WhatsApp
+                        </button>
+                    </a>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+    except Exception as e:
+        st.error(f"❌ Error calling OpenAI: {e}")
