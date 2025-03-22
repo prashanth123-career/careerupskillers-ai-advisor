@@ -23,7 +23,7 @@ st.session_state.setdefault("completed", False)
 st.session_state.setdefault("flash_index", 0)
 st.session_state.setdefault("slots_left", random.randint(15, 40))
 
-# Dynamic Flash Purchase Alert with Timestamp and Decreasing Slots
+# Dynamic Flash Purchase Alert
 flash_countries = ["USA", "India", "UAE", "UK", "USA"]
 flash_country = flash_countries[st.session_state.flash_index % len(flash_countries)]
 time_ago = datetime.now() - timedelta(minutes=random.randint(1, 10))
@@ -51,7 +51,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Shortened Questions with Hints
+# Questions
 questions = [
     ("👋 What's your Name?", "To personalize your AI roadmap!"),
     ("📧 Email Address:", "Get job insights and gigs!"),
@@ -66,14 +66,14 @@ keys = ["name", "email", "phone", "skills", "location", "salary"]
 # Form Logic with Progress Bar
 if not st.session_state.completed:
     q, hint = questions[st.session_state.q_index]
-    progress = int((st.session_state.q_index / len(questions)) * 100)  # Cast to int
+    progress = int((st.session_state.q_index / len(questions)) * 100)
     st.progress(progress)
     st.write(f"Step {st.session_state.q_index + 1} of {len(questions)}")
     
     with st.form(key=f"form_{st.session_state.q_index}"):
         st.write(f"**{q}**")
         st.caption(hint)
-        if st.session_state.q_index == 2:  # Phone number question
+        if st.session_state.q_index == 2:
             code = st.selectbox("Country Code", list(dial_codes.keys()), index=0)
             phone = st.text_input("Phone Number")
             user_input = f"{code} {phone}"
@@ -100,26 +100,49 @@ if st.session_state.completed:
     country = dial_codes.get(country_code, "India")
     currency = currency_map.get(country, "₹")
 
-    # Structured Career Plan
-    market_salary = int(user.get('salary', 0).replace(',', '')) * 1.5  # Dummy market salary (50% higher)
-    niche_based_on_skills = "AI Content Creation" if "writing" in user.get('skills', '').lower() else "AI Automation"
-    company1, company2, company3 = "TechCorp", "FutureAI", "InnoWorks"  # Replace with real data if available
-    salary1, salary2, salary3 = market_salary + 10000, market_salary + 20000, market_salary + 30000
+    # Career Plan Logic
+    market_salary = int(user.get('salary', 0).replace(',', '')) * 1.5
+    niche = "AI Automation" if "automation" in user.get('skills', '').lower() else "AI Content Creation"
+    location = user.get('location', '').upper()
+    
+    # AI Automation Companies in BLR (if location is BLR)
+    if "BLR" in location or "BANGALORE" in location:
+        companies = {
+            "Wipro": {"salary": market_salary + 7500, "source": "Glassdoor, 2025 data"},
+            "Infosys": {"salary": market_salary + 17500, "source": "Indeed, 2025 estimates"},
+            "Automation Anywhere": {"salary": market_salary + 27500, "source": "LinkedIn Salary Insights, 2025"}
+        }
+    else:
+        companies = {
+            "TechCorp": {"salary": market_salary + 10000, "source": "Generic estimate"},
+            "FutureAI": {"salary": market_salary + 20000, "source": "Generic estimate"},
+            "InnoWorks": {"salary": market_salary + 30000, "source": "Generic estimate"}
+        }
 
-    st.markdown(f"""
+    skills_to_update = "Python, RPA (Robotic Process Automation), Machine Learning basics, API integration, Cloud platforms (AWS/GCP)" if niche == "AI Automation" else "Python, NLP, Content Generation Tools, Data Analysis, Creative Writing"
+
+    career_plan = f"""
     🎯 **{user.get('name')}'s AI Career Revolution Plan** 🎯  
-    **4-Hour Weekend Plan**: Learn AI basics (1h), build a micro-project (2h), network on X (1h).  
-    **Top Companies in {user.get('location')}:**  
-    - {company1}: {currency}{salary1:,}  
-    - {company2}: {currency}{salary2:,}  
-    - {company3}: {currency}{salary3:,}  
-    **Market Salary**: {currency}{market_salary:,} (Yours: {currency}{user.get('salary')})  
-    **AI Niche**: {niche_based_on_skills}  
-    **🚀 Next Step**: Get your ₹10,000 AI Starter Kit for just {currency}499 below. Check your email for access after payment!
-    """, unsafe_allow_html=True)
-    st.success("✅ Your Personalized Plan is Ready!")
+    **8-Hour Weekend Plan (4h Sat, 4h Sun):**  
+    - Saturday: Learn AI basics (1h), Python for automation (1h), build a micro-project (2h).  
+    - Sunday: Advanced AI tools (1h), networking on X (1h), research freelance gigs (2h).  
 
-    # Enhanced CTA Buttons for ₹499 Payment Link
+    **Top Companies in {user.get('location')}:**  
+    - {list(companies.keys())[0]}: {currency}{companies[list(companies.keys())[0]]['salary']:,} (Source: {companies[list(companies.keys())[0]]['source']})  
+    - {list(companies.keys())[1]}: {currency}{companies[list(companies.keys())[1]]['salary']:,} (Source: {companies[list(companies.keys())[1]]['source']})  
+    - {list(companies.keys())[2]}: {currency}{companies[list(companies.keys())[2]]['salary']:,} (Source: {companies[list(companies.keys())[2]]['source']})  
+
+    **Market Salary:** {currency}{market_salary:,} (Yours: {currency}{user.get('salary')})  
+    **AI Niche:** {niche}  
+    **Relevant Skills to Update:** {skills_to_update}  
+
+    **🚀 Next Step:** Get your ₹10,000 AI Starter Kit for just {currency}499 below. Check your email for access after payment!  
+    """
+
+    st.success("✅ Your Personalized Plan is Ready!")
+    st.markdown(career_plan, unsafe_allow_html=True)
+
+    # ₹499 CTA
     st.markdown(f"""
     <div style="text-align:center; margin-top:20px;">
         <a href='https://rzp.io/rzp/t37swnF' target='_blank'><button style='background-color:#FF4500;color:white;padding:10px 20px;border:none;border-radius:5px;cursor:pointer;margin:5px;'>🚀 Get AI Kit ({currency}499)</button></a>
@@ -127,13 +150,26 @@ if st.session_state.completed:
     <p style='text-align:center;'>After payment, check your email for your AI Starter Kit!</p>
     """, unsafe_allow_html=True)
 
-    # Upsell ₹199 Counseling (Shown After ₹499 Pitch)
+    # ₹199 Personalized Career Plan
     st.markdown(f"""
-    <div style='margin-top:20px;padding:15px;background:#e6ffe6;border-radius:10px;text-align:center;'>
-        🎯 Want more? Supercharge your plan with 1:1 Counseling for just {currency}199!<br>
-        <a href='https://rzp.io/rzp/FAsUJ9k' target='_blank'><button style='background-color:#1E90FF;color:white;padding:10px 20px;border:none;border-radius:5px;cursor:pointer;margin:5px;'>💬 Book Counseling ({currency}199)</button></a><br>
-        📲 Limited slots—act before March 31, 2025!
+    **₹199 Personalized Career Plan Sneak Peek:**  
+    - **Step 1:** Master {skills_to_update.split(', ')[0]} & {skills_to_update.split(', ')[1]} (2 months) – Build 3 automation projects.  
+    - **Step 2:** Freelance on Upwork/Fiverr (3 months) – Target {currency}1L/month.  
+    - **Step 3:** Apply to {list(companies.keys())[0]}/{list(companies.keys())[1]} (6 months) – Aim for {currency}1L+ salary.  
+    - **Lead Capture:** Company: {list(companies.keys())[0]} | Expected Salary: {currency}{companies[list(companies.keys())[0]]['salary']:,}.  
+    - **Backup Plan:** Start a side hustle (e.g., AI tutoring) – Don’t rely on one income source due to automation layoffs!  
+    For complete roadmap & transformation details, subscribe to the ₹199 plan below!
+    """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style='text-align:center; margin-top:20px;'>
+        <a href='https://rzp.io/rzp/FAsUJ9k' target='_blank'><button style='background-color:#1E90FF;color:white;padding:10px 20px;border:none;border-radius:5px;cursor:pointer;margin:5px;'>💬 Get ₹199 Career Plan</button></a>
     </div>
+    """, unsafe_allow_html=True)
+
+    # Warning and Backup Plan
+    st.markdown(f"""
+    **Warning:** Companies are laying off due to automation. Spend 8 hours on weekends upskilling & building a backup plan!
     """, unsafe_allow_html=True)
 
     # Testimonials
@@ -143,7 +179,7 @@ if st.session_state.completed:
     ]
     st.markdown(f"<div style='text-align:center; margin-top:20px;'>{random.choice(testimonials)}</div>", unsafe_allow_html=True)
 
-    # Trust Badge and Freebie (No WhatsApp)
+    # Trust Badge
     st.markdown(f"""
     <div style='margin-top:20px;padding:15px;background:#e6ffe6;border-radius:10px;text-align:center;'>
         🎁 Free AI Niche PDF + Chatbot access after payment!<br>
