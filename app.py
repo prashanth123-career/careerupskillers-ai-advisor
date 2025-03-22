@@ -46,6 +46,8 @@ st.markdown(f"""
     <h1 style="color: #1E90FF;">🚀 Unlock Your AI Career Revolution!</h1>
     <p>Automation is reshaping jobs. Earn ₹90K–₹3L/month with AI freelancing—even from scratch.</p>
     <p>Over 3,000+ learners from the USA, UK, UAE, Israel & India trust us!</p>
+    <p>Over 🚀 Get Free AI Career Counseling – Discover if You're Paid Fairly, Unlock Better Opportunities & Explore Top Companies Hiring for Your Skills!!</p>
+    <p>Over 💼 Know Your Worth. Explore Better-Paying Roles. Get Expert AI Career Counseling – Free!</p>
     <p style="color: #FF4500; font-weight: bold;">Is your skillset future-proof?</p>
     <p style="color: #228B22;">⏳ Only {days_left} days left to grab this deal!</p>
 </div>
