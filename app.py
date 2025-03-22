@@ -8,48 +8,84 @@ import os
 # Set Streamlit page config
 st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🚀")
 
-# Add viewport meta tag for mobile responsiveness
+# Add viewport meta tag and mobile-friendly CSS
 st.markdown("""
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
     body {
         font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
     }
     .container {
-        width: 90%;
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    .flash-alert, .header, .career-plan, .cta, .warning, .testimonials, .trust-badge {
         width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
         padding: 10px;
         box-sizing: border-box;
     }
-    button {
+    .flash-alert, .header, .career-plan, .cta, .warning, .testimonials, .trust-badge {
         width: 100%;
-        max-width: 300px;
-        padding: 12px;
-        font-size: 16px;
-        margin: 5px auto;
-        display: block;
+        padding: 8px;
+        box-sizing: border-box;
+        border-radius: 8px;
+        margin-bottom: 10px;
     }
-    p, li {
+    .flash-alert {
+        background-color: #fff3cd;
+        color: #856404;
         font-size: 14px;
-        line-height: 1.5;
+    }
+    .header {
+        background-color: #f0f2f6;
+        text-align: center;
     }
     h1 {
-        font-size: 24px;
+        font-size: 22px;
+        margin: 10px 0;
+    }
+    p, li, .caption {
+        font-size: 14px;
+        line-height: 1.4;
+        margin: 5px 0;
+    }
+    button {
+        width: 100%;
+        max-width: 200px;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        margin: 10px auto;
+        display: block;
+    }
+    input, select {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        margin: 5px 0;
+    }
+    .progress-text {
+        font-size: 14px;
+        text-align: center;
+        margin: 5px 0;
     }
     @media (max-width: 600px) {
         h1 {
-            font-size: 20px;
+            font-size: 18px;
         }
-        p, li {
+        p, li, .caption {
             font-size: 12px;
         }
         button {
             font-size: 14px;
             padding: 10px;
+        }
+        .flash-alert {
+            font-size: 12px;
         }
     }
 </style>
@@ -76,7 +112,7 @@ flash_country = flash_countries[st.session_state.flash_index % len(flash_countri
 time_ago = datetime.now() - timedelta(minutes=random.randint(1, 10))
 
 st.markdown(f"""
-<div class="flash-alert" style="background-color:#fff3cd; color:#856404; border-radius:5px;">
+<div class="flash-alert container">
   ⚡ <strong>Flash Purchase:</strong> Someone just bought from <strong>{flash_country}</strong> {time_ago.strftime('%M mins ago')} | Only <strong>{st.session_state.slots_left}</strong> kits left!
 </div>
 """, unsafe_allow_html=True)
@@ -89,7 +125,7 @@ time_left = end_date - datetime.now()
 days_left = time_left.days
 
 st.markdown(f"""
-<div class="header container" style="background-color: #f0f2f6; border-radius: 10px; text-align: center;">
+<div class="header container">
     <h1 style="color: #1E90FF;">🚀 Unlock Your AI Career Revolution!</h1>
     <p>Automation is reshaping jobs. Earn ₹90K–₹3L/month with AI freelancing—even from scratch.</p>
     <p>Over 3,000+ learners from the USA, UK, UAE, Israel & India trust us!</p>
@@ -114,26 +150,29 @@ keys = ["name", "email", "phone", "skills", "location", "salary"]
 if not st.session_state.completed:
     q, hint = questions[st.session_state.q_index]
     progress = int((st.session_state.q_index / len(questions)) * 100)
+    st.markdown(f"<div class='progress-text container'>Step {st.session_state.q_index + 1} of {len(questions)}</div>", unsafe_allow_html=True)
     st.progress(progress)
-    st.write(f"Step {st.session_state.q_index + 1} of {len(questions)}")
     
     with st.form(key=f"form_{st.session_state.q_index}"):
-        st.write(f"**{q}**")
-        st.caption(hint)
+        st.markdown(f"<div class='container'><strong>{q}</strong></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='container caption'>{hint}</div>", unsafe_allow_html=True)
         if st.session_state.q_index == 2:
             code = st.selectbox("Country Code", list(dial_codes.keys()), index=0)
-            phone = st.text_input("Phone Number")
+            phone = st.text_input("Phone Number", key="phone_input")
             user_input = f"{code} {phone}"
             if code not in dial_codes:
                 st.warning("Sorry, not available in this country. Email us at careerupskillers@gmail.com.")
         else:
-            user_input = st.text_input("Your answer")
+            user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
 
-        if st.form_submit_button("Next") and user_input:
-            st.session_state.answers[keys[st.session_state.q_index]] = user_input
-            st.session_state.q_index += 1
-            if st.session_state.q_index >= len(questions):
-                st.session_state.completed = True
+        if st.form_submit_button("Next"):
+            if user_input:
+                st.session_state.answers[keys[st.session_state.q_index]] = user_input
+                st.session_state.q_index += 1
+                if st.session_state.q_index >= len(questions):
+                    st.session_state.completed = True
+            else:
+                st.warning("Please provide an answer to proceed.")
 
 # After Submission
 if st.session_state.completed:
@@ -192,8 +231,8 @@ if st.session_state.completed:
 
     # ₹499 CTA
     st.markdown(f"""
-    <div class="cta container" style="text-align:center; margin-top:20px;">
-        <a href='https://rzp.io/rzp/t37swnF' target='_blank'><button style='background-color:#FF4500;color:white;border:none;border-radius:5px;cursor:pointer;'>🚀 Get AI Kit ({currency}499)</button></a>
+    <div class="cta container">
+        <a href='https://rzp.io/rzp/t37swnF' target='_blank'><button style='background-color:#FF4500;color:white;'>🚀 Get AI Kit ({currency}499)</button></a>
         <p>After payment, check your email for your AI Starter Kit!</p>
     </div>
     """, unsafe_allow_html=True)
@@ -212,14 +251,14 @@ if st.session_state.completed:
     """, unsafe_allow_html=True)
 
     st.markdown(f"""
-    <div class="cta container" style="text-align:center; margin-top:20px;">
-        <a href='https://rzp.io/rzp/FAsUJ9k' target='_blank'><button style='background-color:#1E90FF;color:white;border:none;border-radius:5px;cursor:pointer;'>💬 Get ₹199 Career Plan</button></a>
+    <div class="cta container">
+        <a href='https://rzp.io/rzp/FAsUJ9k' target='_blank'><button style='background-color:#1E90FF;color:white;'>💬 Get ₹199 Career Plan</button></a>
     </div>
     """, unsafe_allow_html=True)
 
     # Warning
     st.markdown(f"""
-    <div class="warning container" style="color: #FF4500; margin-top:20px;">
+    <div class="warning container" style="color: #FF4500;">
     <strong>Warning:</strong> Companies are laying off due to automation. Spend 8 hours on weekends upskilling & building a backup plan!
     </div>
     """, unsafe_allow_html=True)
@@ -230,14 +269,14 @@ if st.session_state.completed:
         "“From zero to ₹1L/month in 6 weeks!” – Neha, India",
     ]
     st.markdown(f"""
-    <div class="testimonials container" style="text-align:center; margin-top:20px;">
+    <div class="testimonials container" style="text-align:center;">
     {random.choice(testimonials)}
     </div>
     """, unsafe_allow_html=True)
 
     # Trust Badge
     st.markdown(f"""
-    <div class="trust-badge container" style="background:#e6ffe6;border-radius:10px;text-align:center;margin-top:20px;">
+    <div class="trust-badge container" style="background:#e6ffe6;text-align:center;">
         🎁 Free AI Niche PDF + Chatbot access after payment!<br>
         📩 Trusted by 3,000+ learners—check your email post-payment!
     </div>
