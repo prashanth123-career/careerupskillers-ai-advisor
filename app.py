@@ -16,60 +16,71 @@ st.markdown("""
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
+        background-color: #f5f5f5;
     }
     .container {
         width: 100%;
-        max-width: 400px;
+        max-width: 360px;
         margin: 0 auto;
-        padding: 10px;
-        box-sizing: border-box;
-    }
-    .flash-alert, .header, .career-plan, .cta, .warning, .testimonials, .trust-badge {
-        width: 100%;
         padding: 8px;
         box-sizing: border-box;
+    }
+    .flash-alert, .header, .counseling-promo, .career-plan, .cta, .warning, .testimonials, .trust-badge {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
         border-radius: 8px;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
     }
     .flash-alert {
         background-color: #fff3cd;
         color: #856404;
-        font-size: 14px;
+        font-size: 13px;
+        line-height: 1.3;
     }
     .header {
         background-color: #f0f2f6;
         text-align: center;
     }
+    .counseling-promo {
+        background-color: #e6f0ff;
+        text-align: center;
+        border: 1px solid #1E90FF;
+    }
     h1 {
-        font-size: 22px;
-        margin: 10px 0;
+        font-size: 20px;
+        margin: 8px 0;
     }
     p, li, .caption {
-        font-size: 14px;
+        font-size: 13px;
         line-height: 1.4;
-        margin: 5px 0;
+        margin: 4px 0;
     }
     button {
         width: 100%;
-        max-width: 200px;
+        max-width: 220px;
         padding: 12px;
-        font-size: 16px;
+        font-size: 15px;
         border-radius: 5px;
         border: none;
         cursor: pointer;
-        margin: 10px auto;
+        margin: 8px auto;
         display: block;
+        min-height: 44px;
     }
     input, select {
         width: 100%;
         padding: 10px;
-        font-size: 16px;
+        font-size: 15px;
         border-radius: 5px;
         border: 1px solid #ccc;
         margin: 5px 0;
+        box-sizing: border-box;
     }
     .progress-text {
-        font-size: 14px;
+        font-size: 13px;
         text-align: center;
         margin: 5px 0;
     }
@@ -131,6 +142,13 @@ st.markdown(f"""
     <p>Over 3,000+ learners from the USA, UK, UAE, Israel & India trust us!</p>
     <p style="color: #FF4500; font-weight: bold;">Is your skillset future-proof?</p>
     <p style="color: #228B22;">⏳ Only {days_left} days left to grab this deal!</p>
+</div>
+""", unsafe_allow_html=True)
+
+# New Section: Free AI Career Counseling
+st.markdown(f"""
+<div class="counseling-promo container">
+    <p style="color: #1E90FF; font-weight: bold;">🚀 Get Free AI Career Counseling – Discover if You're Paid Fairly, Unlock Better Opportunities & Explore Top Companies Hiring for Your Skills!</p>
 </div>
 """, unsafe_allow_html=True)
 
