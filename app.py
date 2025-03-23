@@ -47,6 +47,9 @@ st.markdown("""
         background-color: #f0f2f6;
         text-align: center;
     }
+    .header p {
+        color: #333;
+    }
     .counseling-promo {
         background-color: #e6f0ff;
         text-align: center;
@@ -89,16 +92,44 @@ st.markdown("""
     }
     .instruction {
         font-size: 12px;
-        color: #555;
+        color: #333;
         text-align: center;
         margin-top: -5px;
+    }
+    .time-age-message {
+        font-size: 13px;
+        color: #333;
+        text-align: center;
+        margin: 8px 0;
+    }
+    .testimonials {
+        text-align: center;
+        background-color: #e6ffe6;
+        color: #333;
+    }
+    .trust-badge {
+        background: #e6ffe6;
+        text-align: center;
+    }
+    .trust-badge p {
+        color: #333;
+    }
+    .flash {
+        animation: flash 1.5s infinite;
+    }
+    @keyframes flash {
+        0% { opacity: 1; }
+        50% { opacity: 0.3; }
+        100% { opacity: 1; }
     }
     @media (max-width: 600px) {
         h1 {
             font-size: 18px;
         }
         p, li, .caption {
-            font-size: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 6px 0;
         }
         button {
             font-size: 14px;
@@ -106,6 +137,9 @@ st.markdown("""
         }
         .flash-alert {
             font-size: 12px;
+        }
+        .header, .trust-badge {
+            padding: 12px;
         }
     }
 </style>
@@ -164,8 +198,8 @@ days_left = time_left.days
 st.markdown(f"""
 <div class="header container">
     <h1 style="color: #1E90FF;">🚀 Unlock Your AI Career Revolution!</h1>
-    <p>Automation is reshaping jobs. Earn ₹90K–₹3L/month with AI freelancing—even from scratch.</p>
-    <p>Over 3,000+ learners from the USA, UK, UAE, Israel & India trust us!</p>
+    <p><strong>Automation is reshaping jobs. Earn ₹90K–₹3L/month with AI freelancing—even from scratch.</strong></p>
+    <p><strong>Over 3,000+ learners from the USA, UK, UAE, Israel & India trust us!</strong></p>
     <p style="color: #FF4500; font-weight: bold;">Is your skillset future-proof?</p>
     <p style="color: #228B22;">⏳ Only {days_left} days left to grab this deal!</p>
 </div>
@@ -178,24 +212,33 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Questions (including "Current Company" from previous update)
+# Questions (including new ones from previous update)
 questions = [
     ("👋 What's your Name?", "To personalize your AI roadmap!"),
     ("📧 Email Address:", "Get job insights and gigs!"),
-    ("📱 Phone Number:", "Select your country code and enter a 10-digit number."),
+    ("📱 Phone Number:", "Select your country code and enter your phone number (e.g., 9876543210)."),
     ("🏢 Current Company:", "Where do you currently work?"),
+    ("🏢 Can you share more about your current company?", "E.g., industry, size, culture."),
+    ("📅 When was your last promotion, and was it with a salary hike or only a position upgrade?", "E.g., 'Jan 2023, with salary hike' or 'June 2022, position upgrade only'."),
+    ("⏰ How many hours do you typically spend working for your company each week?", "This helps us understand your work-life balance."),
     ("🛠️ Your Primary Skills:", "We’ll match AI niches."),
     ("💼 Your Domain:", "Select your professional domain."),
     ("📍 Current Location:", "Find roles near you."),
     ("💰 Monthly Salary (in your currency):", "Compare with market rates. Enter numbers only (e.g., 50000)."),
+    ("🌍 Are there any other countries where you’d be interested in working?", "List countries you’d like to explore for future opportunities (e.g., 'USA, Canada, Germany')."),
+    ("✨ What changes in your career or workplace would excite you the most?", "E.g., 'More remote work options, better mentorship, or higher salary'."),
 ]
 
-keys = ["name", "email", "phone", "company", "skills", "domain", "location", "salary"]
+keys = [
+    "name", "email", "phone", "company", "company_details", "last_promotion", 
+    "hours_per_week", "skills", "domain", "location", "salary", 
+    "other_countries", "exciting_changes"
+]
 
 # Form Logic with Progress Bar and Validation
 if not st.session_state.completed:
     q, hint = questions[st.session_state.q_index]
-    # Progress bar (fixed in previous update)
+    # Progress bar
     progress = int((st.session_state.q_index / len(questions)) * 100)
     st.markdown(f"<div class='progress-text container'>Step {st.session_state.q_index + 1} of {len(questions)}</div>", unsafe_allow_html=True)
     st.progress(progress)
@@ -206,14 +249,19 @@ if not st.session_state.completed:
         
         # Handle different input types based on the question
         if st.session_state.q_index == 2:  # Phone number with country code
-            code = st.selectbox("Country Code", list(dial_codes.keys()), index=0)
-            phone = st.text_input("Phone Number", key="phone_input")
-            user_input = f"{code} {phone}"
+            code = st.selectbox("Country Code", list(dial_codes.keys()), index=0, key="country_code_input")
+            country = dial_codes.get(code, "Unknown")
+            st.markdown(f"<div class='container caption'>Country: {country}</div>", unsafe_allow_html=True)
+            phone = st.text_input("Phone Number (e.g., 9876543210)", key="phone_input")
+            user_input = f"{code} {phone}" if phone else None
             if code not in dial_codes:
                 st.warning("Sorry, not available in this country. Email us at careerupskillers@gmail.com.")
-        elif st.session_state.q_index == 5:  # Domain selection
+        elif st.session_state.q_index == 8:  # Domain selection with "Others" option
             user_input = st.selectbox("Select your domain", domains, key="domain_input")
-        elif st.session_state.q_index == 7:  # Salary (numeric input with validation)
+            if user_input == "Other":
+                other_domain = st.text_input("Please specify your domain:", key="other_domain_input")
+                user_input = f"Other: {other_domain}" if other_domain else "Other"
+        elif st.session_state.q_index == 10:  # Salary (numeric input with validation)
             user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
             # Validate that the input contains only numbers (and optionally commas)
             if user_input:
@@ -224,10 +272,14 @@ if not st.session_state.completed:
         else:
             user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
 
+        # Display the time and age message after the hours question
+        if st.session_state.q_index == 6:  # After "How many hours do you typically spend working?"
+            st.markdown("<div class='time-age-message'><strong>Time and age are critical factors in your career journey. Investing them wisely can lead to significant growth and opportunities!</strong></div>", unsafe_allow_html=True)
+
         # Form submission with validation
         if st.form_submit_button("Next"):
             if user_input:
-                # Updated validation for phone number (index 2)
+                # Validation for phone number (index 2)
                 if st.session_state.q_index == 2:
                     phone_part = user_input.split(" ")[1] if len(user_input.split(" ")) > 1 else ""
                     if not phone_part.isdigit() or len(phone_part) != 10:
@@ -247,7 +299,7 @@ if not st.session_state.completed:
                     st.session_state.completed = True
             else:
                 st.warning("Please provide a valid answer to proceed.")
-        st.markdown("<div class='instruction'>Double click after submitting data</div>", unsafe_allow_html=True)
+        st.markdown("<div class='instruction'><strong>Double click after submitting data</strong></div>", unsafe_allow_html=True)
 
 # After Submission
 if st.session_state.completed:
@@ -282,11 +334,16 @@ if st.session_state.completed:
         - Name: {user.get('name')}
         - Current Role: {current_role}
         - Current Company: {current_company}
+        - Company Details: {user.get('company_details', 'Not provided')}
+        - Last Promotion: {user.get('last_promotion', 'Not provided')}
+        - Hours per Week: {user.get('hours_per_week', 'Not provided')}
         - Years of Experience: {years_of_experience}
         - Primary Skills: {user.get('skills')}
         - Domain: {user.get('domain')}
         - Location: {user.get('location')}
         - Current Salary: {currency}{current_salary:,}
+        - Other Countries of Interest: {user.get('other_countries', 'Not provided')}
+        - Exciting Changes Desired: {user.get('exciting_changes', 'Not provided')}
 
         Provide the following:
         1. A profile validation statement comparing the user's salary to the market rate for their role and domain in their location.
@@ -303,7 +360,7 @@ if st.session_state.completed:
            - BPO: AI Chatbots, Process Automation, Customer Sentiment Analysis
            Ensure the skills are varied and not repetitive across users.
         3. A list of 3 top companies hiring in the user's location for their role or domain, with estimated salaries and sources (e.g., Glassdoor, Indeed). Avoid recommending the following companies as they were recently suggested to other users: {', '.join(recent_companies) if recent_companies else 'None'}. Ensure the companies are diverse and relevant to the user's domain.
-        4. A brief next step recommendation to achieve a higher salary.
+        4. A brief next step recommendation to achieve a higher salary, considering their hours per week and desired changes.
 
         To ensure variability, use a randomization seed: {session_seed}. Suggest a diverse set of companies and skills to avoid repetition across users.
 
@@ -397,21 +454,22 @@ if st.session_state.completed:
     </div>
     """, unsafe_allow_html=True)
 
-    # Testimonials
+    # Testimonials with bold and flashing effect
     testimonials = [
         "“Landed a $2K gig with the AI Kit!” – Alex, USA",
         "“From zero to ₹1L/month in 6 weeks!” – Neha, India",
     ]
+    selected_testimonial = random.choice(testimonials)
     st.markdown(f"""
-    <div class="testimonials container" style="text-align:center;">
-    {random.choice(testimonials)}
+    <div class="testimonials container">
+        <span class="flash"><strong>{selected_testimonial}</strong></span>
     </div>
     """, unsafe_allow_html=True)
 
     # Trust Badge
     st.markdown(f"""
-    <div class="trust-badge container" style="background:#e6ffe6;text-align:center;">
-        🎁 Free AI Niche PDF + Chatbot access after payment!<br>
-        📩 Trusted by 3,000+ learners—check your email post-payment!
+    <div class="trust-badge container">
+        <p><strong>🎁 Free AI Niche PDF + Chatbot access after payment!</strong></p>
+        <p><strong>📩 Trusted by 3,000+ learners—check your email post-payment!</strong></p>
     </div>
     """, unsafe_allow_html=True)
