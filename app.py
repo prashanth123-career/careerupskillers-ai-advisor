@@ -47,6 +47,9 @@ st.markdown("""
         background-color: #f0f2f6;
         text-align: center;
     }
+    .header p {
+        color: #333;  /* Dark gray for better contrast */
+    }
     .counseling-promo {
         background-color: #e6f0ff;
         text-align: center;
@@ -98,6 +101,13 @@ st.markdown("""
         background-color: #e6ffe6;
         color: #333;
     }
+    .trust-badge {
+        background: #e6ffe6;
+        text-align: center;
+    }
+    .trust-badge p {
+        color: #333;  /* Dark gray for better contrast */
+    }
     .flash {
         animation: flash 1.5s infinite;
     }
@@ -111,9 +121,9 @@ st.markdown("""
             font-size: 18px;
         }
         p, li, .caption {
-            font-size: 13px;  /* Increased from 12px to 13px for better readability */
-            line-height: 1.5;  /* Increased line-height for better spacing */
-            margin: 6px 0;  /* Increased margin for better spacing */
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 6px 0;
         }
         button {
             font-size: 14px;
@@ -123,7 +133,7 @@ st.markdown("""
             font-size: 12px;
         }
         .header, .trust-badge {
-            padding: 12px;  /* Increased padding to ensure text fits */
+            padding: 12px;
         }
     }
 </style>
@@ -182,8 +192,8 @@ days_left = time_left.days
 st.markdown(f"""
 <div class="header container">
     <h1 style="color: #1E90FF;">🚀 Unlock Your AI Career Revolution!</h1>
-    <p>Automation is reshaping jobs. Earn ₹90K–₹3L/month with AI freelancing—even from scratch.</p>
-    <p>Over 3,000+ learners from the USA, UK, UAE, Israel & India trust us!</p>
+    <p><strong>Automation is reshaping jobs. Earn ₹90K–₹3L/month with AI freelancing—even from scratch.</strong></p>
+    <p><strong>Over 3,000+ learners from the USA, UK, UAE, Israel & India trust us!</strong></p>
     <p style="color: #FF4500; font-weight: bold;">Is your skillset future-proof?</p>
     <p style="color: #228B22;">⏳ Only {days_left} days left to grab this deal!</p>
 </div>
@@ -429,8 +439,8 @@ if st.session_state.completed:
 
     # Trust Badge
     st.markdown(f"""
-    <div class="trust-badge container" style="background:#e6ffe6;text-align:center;">
-        <p>🎁 Free AI Niche PDF + Chatbot access after payment!</p>
-        <p>📩 Trusted by 3,000+ learners—check your email post-payment!</p>
+    <div class="trust-badge container">
+        <p><strong>🎁 Free AI Niche PDF + Chatbot access after payment!</strong></p>
+        <p><strong>📩 Trusted by 3,000+ learners—check your email post-payment!</strong></p>
     </div>
     """, unsafe_allow_html=True)
