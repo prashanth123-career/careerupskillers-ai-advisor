@@ -194,6 +194,7 @@ keys = ["name", "email", "phone", "skills", "domain", "location", "salary"]
 # Form Logic with Progress Bar
 if not st.session_state.completed:
     q, hint = questions[st.session_state.q_index]
+    # Fix: Ensure progress is an integer between 0 and 100
     progress = int((st.session_state.q_index / len(questions)) * 100)
     st.markdown(f"<div class='progress-text container'>Step {st.session_state.q_index + 1} of {len(questions)}</div>", unsafe_allow_html=True)
     st.progress(progress)
@@ -212,10 +213,7 @@ if not st.session_state.completed:
         else:
             user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
 
-        # Add instruction next to the "Next" button
-        st.form_submit_button("Next")
-        st.markdown("<div class='instruction'>Double click after submitting data</div>", unsafe_allow_html=True)
-
+        # Fix: Remove redundant st.form_submit_button and add instruction
         if st.form_submit_button("Next"):
             if user_input:
                 st.session_state.answers[keys[st.session_state.q_index]] = user_input
@@ -224,6 +222,7 @@ if not st.session_state.completed:
                     st.session_state.completed = True
             else:
                 st.warning("Please provide an answer to proceed.")
+        st.markdown("<div class='instruction'>Double click after submitting data</div>", unsafe_allow_html=True)
 
 # After Submission
 if st.session_state.completed:
@@ -241,7 +240,11 @@ if st.session_state.completed:
     years_of_experience = 8
     current_company = "Accenture"
     current_role = user.get('domain', 'Data Science')  # Use domain as the role
-    current_salary = int(user.get('salary', 0).replace(',', ''))
+    
+    # Fix: Sanitize salary input to handle non-numeric characters
+    salary_input = user.get('salary', '0').replace(',', '')
+    salary_cleaned = re.sub(r'[^0-9]', '', salary_input)  # Remove all non-numeric characters
+    current_salary = int(salary_cleaned) if salary_cleaned else 0  # Convert to int, default to 0 if empty
 
     # Use ChatGPT 3.5 Turbo to generate a personalized career plan
     try:
