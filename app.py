@@ -4,6 +4,9 @@ import openai
 from datetime import datetime, timedelta
 import random
 import os
+import uuid
+import time
+import re
 
 # Set Streamlit page config
 st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🚀")
@@ -84,6 +87,12 @@ st.markdown("""
         text-align: center;
         margin: 5px 0;
     }
+    .instruction {
+        font-size: 12px;
+        color: #555;
+        text-align: center;
+        margin-top: -5px;
+    }
     @media (max-width: 600px) {
         h1 {
             font-size: 18px;
@@ -110,12 +119,29 @@ google_sheets_url = st.secrets.get("GOOGLE_SHEETS_URL")
 dial_codes = {"+91": "India", "+1": "USA", "+44": "UK", "+971": "UAE", "+972": "Israel"}
 currency_map = {"India": "₹", "USA": "$", "UK": "£", "UAE": "AED", "Israel": "₪"}
 
-# Initialize session state
-st.session_state.setdefault("answers", {})
-st.session_state.setdefault("q_index", 0)
-st.session_state.setdefault("completed", False)
-st.session_state.setdefault("flash_index", 0)
-st.session_state.setdefault("slots_left", random.randint(15, 40))
+# List of domains for the dropdown
+domains = [
+    "Data Science", "Sales", "Marketing", "Accounting", "Developer", "Web Designer",
+    "Software Testing", "Hardware Testing", "Cybersecurity", "BPO", "Other"
+]
+
+# Initialize global cache for recent company recommendations (to avoid duplicates)
+if 'recent_companies' not in st.session_state:
+    st.session_state.recent_companies = []
+
+# Initialize session state for each user
+if 'session_id' not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())  # Unique session ID for each user
+if 'answers' not in st.session_state:
+    st.session_state.answers = {}
+if 'q_index' not in st.session_state:
+    st.session_state.q_index = 0
+if 'completed' not in st.session_state:
+    st.session_state.completed = False
+if 'flash_index' not in st.session_state:
+    st.session_state.flash_index = 0
+if 'slots_left' not in st.session_state:
+    st.session_state.slots_left = random.randint(15, 40)
 
 # Dynamic Flash Purchase Alert
 flash_countries = ["USA", "India", "UAE", "UK", "USA"]
@@ -158,11 +184,12 @@ questions = [
     ("📧 Email Address:", "Get job insights and gigs!"),
     ("📱 Phone Number:", "Select your country code."),
     ("🛠️ Your Primary Skills:", "We’ll match AI niches."),
+    ("💼 Your Domain:", "Select your professional domain."),
     ("📍 Current Location:", "Find roles near you."),
     ("💰 Monthly Salary (in your currency):", "Compare with market rates."),
 ]
 
-keys = ["name", "email", "phone", "skills", "location", "salary"]
+keys = ["name", "email", "phone", "skills", "domain", "location", "salary"]
 
 # Form Logic with Progress Bar
 if not st.session_state.completed:
@@ -174,14 +201,20 @@ if not st.session_state.completed:
     with st.form(key=f"form_{st.session_state.q_index}"):
         st.markdown(f"<div class='container'><strong>{q}</strong></div>", unsafe_allow_html=True)
         st.markdown(f"<div class='container caption'>{hint}</div>", unsafe_allow_html=True)
-        if st.session_state.q_index == 2:
+        if st.session_state.q_index == 2:  # Phone number with country code
             code = st.selectbox("Country Code", list(dial_codes.keys()), index=0)
             phone = st.text_input("Phone Number", key="phone_input")
             user_input = f"{code} {phone}"
             if code not in dial_codes:
                 st.warning("Sorry, not available in this country. Email us at careerupskillers@gmail.com.")
+        elif st.session_state.q_index == 4:  # Domain selection
+            user_input = st.selectbox("Select your domain", domains, key="domain_input")
         else:
             user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
+
+        # Add instruction next to the "Next" button
+        st.form_submit_button("Next")
+        st.markdown("<div class='instruction'>Double click after submitting data</div>", unsafe_allow_html=True)
 
         if st.form_submit_button("Next"):
             if user_input:
@@ -204,73 +237,128 @@ if st.session_state.completed:
     country = dial_codes.get(country_code, "India")
     currency = currency_map.get(country, "₹")
 
-    # Career Plan Logic
-    market_salary = int(user.get('salary', 0).replace(',', '')) * 1.5
-    niche = "AI Automation" if "automation" in user.get('skills', '').lower() else "AI Content Creation"
-    location = user.get('location', '').upper()
-    
-    if "BLR" in location or "BANGALORE" in location:
-        companies = {
-            "Wipro": {"salary": market_salary + 7500, "source": "Glassdoor, 2025 data"},
-            "Infosys": {"salary": market_salary + 17500, "source": "Indeed, 2025 estimates"},
-            "Automation Anywhere": {"salary": market_salary + 27500, "source": "LinkedIn Salary Insights, 2025"}
-        }
-    else:
-        companies = {
-            "TechCorp": {"salary": market_salary + 10000, "source": "Generic estimate"},
-            "FutureAI": {"salary": market_salary + 20000, "source": "Generic estimate"},
-            "InnoWorks": {"salary": market_salary + 30000, "source": "Generic estimate"}
-        }
+    # Hardcoding user profile for demonstration
+    years_of_experience = 8
+    current_company = "Accenture"
+    current_role = user.get('domain', 'Data Science')  # Use domain as the role
+    current_salary = int(user.get('salary', 0).replace(',', ''))
 
-    skills_to_update = "Python, RPA (Robotic Process Automation), Machine Learning basics, API integration, Cloud platforms (AWS/GCP)" if niche == "AI Automation" else "Python, NLP, Content Generation Tools, Data Analysis, Creative Writing"
+    # Use ChatGPT 3.5 Turbo to generate a personalized career plan
+    try:
+        # Construct a prompt for ChatGPT 3.5 Turbo with randomization to avoid repetition
+        session_seed = hash(st.session_state.session_id + user.get('name', '')) % 1000  # Unique seed per user
+        recent_companies = st.session_state.recent_companies[-10:]  # Last 10 companies recommended
 
+        prompt = f"""
+        You are a career counselor specializing in AI and tech roles across various domains. Based on the following user profile, provide a detailed career plan:
+        - Name: {user.get('name')}
+        - Current Role: {current_role}
+        - Current Company: {current_company}
+        - Years of Experience: {years_of_experience}
+        - Primary Skills: {user.get('skills')}
+        - Domain: {user.get('domain')}
+        - Location: {user.get('location')}
+        - Current Salary: {currency}{current_salary:,}
+
+        Provide the following:
+        1. A profile validation statement comparing the user's salary to the market rate for their role and domain in their location.
+        2. Recommended skills to upskill in, relevant to their domain and the AI industry. For example:
+           - Data Science: Automation, Machine Learning, Gen AI, Agentic AI
+           - Sales: AI-driven CRM tools, Predictive Analytics, Sales Automation
+           - Marketing: AI Content Creation, Digital Marketing Analytics, Chatbot Marketing
+           - Accounting: AI for Financial Forecasting, Automation Tools, Data Analysis
+           - Developer: AI Integration, API Development, Cloud Computing
+           - Web Designer: AI-driven UX Design, Generative Design Tools, Web Automation
+           - Software Testing: AI-based Test Automation, Performance Testing, Bug Detection
+           - Hardware Testing: IoT Testing, AI Hardware Validation, Embedded Systems
+           - Cybersecurity: AI Threat Detection, Machine Learning for Security, Ethical Hacking
+           - BPO: AI Chatbots, Process Automation, Customer Sentiment Analysis
+           Ensure the skills are varied and not repetitive across users.
+        3. A list of 3 top companies hiring in the user's location for their role or domain, with estimated salaries and sources (e.g., Glassdoor, Indeed). Avoid recommending the following companies as they were recently suggested to other users: {', '.join(recent_companies) if recent_companies else 'None'}. Ensure the companies are diverse and relevant to the user's domain.
+        4. A brief next step recommendation to achieve a higher salary.
+
+        To ensure variability, use a randomization seed: {session_seed}. Suggest a diverse set of companies and skills to avoid repetition across users.
+
+        Format the response as plain text, with sections separated by newlines and bolded headers (e.g., **Profile Validation:**).
+        """
+
+        # Call ChatGPT 3.5 Turbo API
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a career counselor specializing in AI and tech roles across various domains."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=500,
+            temperature=0.9  # Higher temperature for more variability
+        )
+
+        # Extract the career plan from the response
+        career_plan_text = response.choices[0].message.content.strip()
+
+        # Extract companies from the response to update the recent_companies list
+        companies = re.findall(r"- (.*?):", career_plan_text)
+        st.session_state.recent_companies.extend(companies)
+        st.session_state.recent_companies = st.session_state.recent_companies[-10:]  # Keep only the last 10
+
+    except Exception as e:
+        # Fallback to a default career plan if the API call fails
+        market_salary = current_salary * 1.5
+        career_plan_text = f"""
+        **Profile Validation:** Based on your profile, we see you have {years_of_experience} years of experience at {current_company} in a {current_role} role. Your current salary of {currency}{current_salary:,} is comparatively underpaid compared to the market salary of {currency}{market_salary:,}.  
+
+        **Upskilling Recommendation:** To boost your career and aim for higher-paying roles, we recommend upskilling in skills relevant to your domain. These skills will help you stay ahead in the AI-driven job market.  
+
+        **Top Companies to Apply to After Upskilling:**  
+        - Company A: {currency}{market_salary + 7500:,} (Source: Glassdoor, 2023 data)  
+        - Company B: {currency}{market_salary + 17500:,} (Source: Indeed, 2023 estimates)  
+        - Company C: {currency}{market_salary + 27500:,} (Source: LinkedIn Salary Insights, 2023)  
+
+        **Next Step:** To get a detailed plan and career roadmap to achieve a higher salary with your skills, apply for our ₹199 Personalized Career Plan. This roadmap will also help you find free resources to upskill and take your career to the next level!
+        """
+
+    # Display the career plan
     career_plan = f"""
     <div class="career-plan container">
     🎯 **{user.get('name')}'s AI Career Revolution Plan** 🎯  
-    <strong>8-Hour Weekend Plan (4h Sat, 4h Sun):</strong>  
-    - Saturday: Learn AI basics (1h), Python for automation (1h), build a micro-project (2h).  
-    - Sunday: Advanced AI tools (1h), networking on X (1h), research freelance gigs (2h).  
-
-    <strong>Top Companies in {user.get('location')}:</strong>  
-    - {list(companies.keys())[0]}: {currency}{companies[list(companies.keys())[0]]['salary']:,} (Source: {companies[list(companies.keys())[0]]['source']})  
-    - {list(companies.keys())[1]}: {currency}{companies[list(companies.keys())[1]]['salary']:,} (Source: {companies[list(companies.keys())[1]]['source']})  
-    - {list(companies.keys())[2]}: {currency}{companies[list(companies.keys())[2]]['salary']:,} (Source: {companies[list(companies.keys())[2]]['source']})  
-
-    <strong>Market Salary:</strong> {currency}{market_salary:,} (Yours: {currency}{user.get('salary')})  
-    <strong>AI Niche:</strong> {niche}  
-    <strong>Relevant Skills to Update:</strong> {skills_to_update}  
-
-    <strong>🚀 Next Step:</strong> Get your ₹10,000 AI Starter Kit for just {currency}499 below. Check your email for access after payment!  
+    {career_plan_text.replace('**', '<strong>').replace('**', '</strong>')}
     </div>
     """
 
     st.success("✅ Your Personalized Plan is Ready!")
     st.markdown(career_plan, unsafe_allow_html=True)
 
-    # ₹499 CTA
-    st.markdown(f"""
-    <div class="cta container">
-        <a href='https://rzp.io/rzp/t37swnF' target='_blank'><button style='background-color:#FF4500;color:white;'>🚀 Get AI Kit ({currency}499)</button></a>
-        <p>After payment, check your email for your AI Starter Kit!</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # ₹199 Personalized Career Plan
-    st.markdown(f"""
-    <div class="career-plan container">
-    <strong>₹199 Personalized Career Plan Sneak Peek:</strong>  
-    - <strong>Step 1:</strong> Master {skills_to_update.split(', ')[0]} & {skills_to_update.split(', ')[1]} (2 months) – Build 3 automation projects.  
-    - <strong>Step 2:</strong> Freelance on Upwork/Fiverr (3 months) – Target {currency}1L/month.  
-    - <strong>Step 3:</strong> Apply to {list(companies.keys())[0]}/{list(companies.keys())[1]} (6 months) – Aim for {currency}1L+ salary.  
-    - <strong>Lead Capture:</strong> Company: {list(companies.keys())[0]} | Expected Salary: {currency}{companies[list(companies.keys())[0]]['salary']:,}.  
-    - <strong>Backup Plan:</strong> Start a side hustle (e.g., AI tutoring) – Don’t rely on one income source due to automation layoffs!  
-    For complete roadmap & transformation details, subscribe to the ₹199 plan below!
-    </div>
-    """, unsafe_allow_html=True)
-
+    # ₹199 Personalized Career Plan CTA
     st.markdown(f"""
     <div class="cta container">
         <a href='https://rzp.io/rzp/FAsUJ9k' target='_blank'><button style='background-color:#1E90FF;color:white;'>💬 Get ₹199 Career Plan</button></a>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ₹499 AI Freelance Kit as Backup Plan
+    st.markdown(f"""
+    <div class="career-plan container">
+    <strong>Looking for an Alternative Plan?</strong> As AI is driving automation, always have a backup plan! Take our AI Freelance Kit (worth ₹10,000) for just {currency}499 – a limited period offer!  
+
+    <strong>What You Get:</strong>  
+    - Spend just 8 hours on weekends (4h Sat, 4h Sun) over 4 weeks to earn ₹90K–₹3L/month.  
+    - Includes YouTube links for learning, bonus AI tools like a chat script and fake news detector (copy-paste and sell to earn ₹15K–₹20K from a basic app).  
+    - Step-by-step guide to set up your freelance account on Upwork and Fiverr, find your niche, and use templates to target customers.  
+    - A 360-degree solution kit: from building your freelance profile to selling to customers.  
+
+    <strong>How It Works:</strong>  
+    - In the first 2 months, spend 8 hours per weekend to build your niche.  
+    - Once your niche is set, use ready-made content (alter it to customer needs) and sell it in just 3 hours per weekend to earn ₹50K.  
+
+    <strong>Join Our Community:</strong> Join our 3,000+ success community from the USA, UK, Dubai, Israel, and India. Don’t just rely on a job – it might go at any moment! We have success stories of people who quit their jobs after 8 months and started their own AI business agencies. Be among them and escape the matrix – work for yourself, not for other companies!  
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ₹499 AI Freelance Kit CTA
+    st.markdown(f"""
+    <div class="cta container">
+        <a href='https://rzp.io/rzp/t37swnF' target='_blank'><button style='background-color:#FF4500;color:white;'>🚀 Get AI Freelance Kit ({currency}499)</button></a>
+        <p>After payment, check your email for your AI Freelance Kit!</p>
     </div>
     """, unsafe_allow_html=True)
 
