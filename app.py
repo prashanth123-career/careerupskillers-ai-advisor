@@ -48,7 +48,7 @@ st.markdown("""
         text-align: center;
     }
     .header p {
-        color: #333;  /* Dark gray for better contrast */
+        color: #333;
     }
     .counseling-promo {
         background-color: #e6f0ff;
@@ -92,7 +92,7 @@ st.markdown("""
     }
     .instruction {
         font-size: 12px;
-        color: #555;
+        color: #333;  /* Changed from #555 to #333 for better visibility */
         text-align: center;
         margin-top: -5px;
     }
@@ -106,7 +106,7 @@ st.markdown("""
         text-align: center;
     }
     .trust-badge p {
-        color: #333;  /* Dark gray for better contrast */
+        color: #333;
     }
     .flash {
         animation: flash 1.5s infinite;
@@ -275,7 +275,7 @@ if not st.session_state.completed:
                     st.session_state.completed = True
             else:
                 st.warning("Please provide a valid answer to proceed.")
-        st.markdown("<div class='instruction'>Double click after submitting data</div>", unsafe_allow_html=True)
+        st.markdown("<div class='instruction'><strong>Double click after submitting data</strong></div>", unsafe_allow_html=True)
 
 # After Submission
 if st.session_state.completed:
