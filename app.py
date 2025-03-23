@@ -178,23 +178,24 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Questions
+# Updated Questions (Added "Current Company")
 questions = [
     ("👋 What's your Name?", "To personalize your AI roadmap!"),
     ("📧 Email Address:", "Get job insights and gigs!"),
     ("📱 Phone Number:", "Select your country code."),
+    ("🏢 Current Company:", "Where do you currently work?"),
     ("🛠️ Your Primary Skills:", "We’ll match AI niches."),
     ("💼 Your Domain:", "Select your professional domain."),
     ("📍 Current Location:", "Find roles near you."),
-    ("💰 Monthly Salary (in your currency):", "Compare with market rates."),
+    ("💰 Monthly Salary (in your currency):", "Compare with market rates. Enter numbers only (e.g., 50000)."),
 ]
 
-keys = ["name", "email", "phone", "skills", "domain", "location", "salary"]
+keys = ["name", "email", "phone", "company", "skills", "domain", "location", "salary"]
 
-# Form Logic with Progress Bar
+# Form Logic with Progress Bar and Validation
 if not st.session_state.completed:
     q, hint = questions[st.session_state.q_index]
-    # Fix: Ensure progress is an integer between 0 and 100
+    # Progress bar (fixed in previous update)
     progress = int((st.session_state.q_index / len(questions)) * 100)
     st.markdown(f"<div class='progress-text container'>Step {st.session_state.q_index + 1} of {len(questions)}</div>", unsafe_allow_html=True)
     st.progress(progress)
@@ -202,26 +203,50 @@ if not st.session_state.completed:
     with st.form(key=f"form_{st.session_state.q_index}"):
         st.markdown(f"<div class='container'><strong>{q}</strong></div>", unsafe_allow_html=True)
         st.markdown(f"<div class='container caption'>{hint}</div>", unsafe_allow_html=True)
+        
+        # Handle different input types based on the question
         if st.session_state.q_index == 2:  # Phone number with country code
             code = st.selectbox("Country Code", list(dial_codes.keys()), index=0)
             phone = st.text_input("Phone Number", key="phone_input")
             user_input = f"{code} {phone}"
             if code not in dial_codes:
                 st.warning("Sorry, not available in this country. Email us at careerupskillers@gmail.com.")
-        elif st.session_state.q_index == 4:  # Domain selection
+        elif st.session_state.q_index == 5:  # Domain selection
             user_input = st.selectbox("Select your domain", domains, key="domain_input")
+        elif st.session_state.q_index == 7:  # Salary (numeric input with validation)
+            user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
+            # Validate that the input contains only numbers (and optionally commas)
+            if user_input:
+                cleaned_input = user_input.replace(',', '')
+                if not cleaned_input.isdigit():
+                    st.error("Please enter a valid salary (numbers only, e.g., 50000).")
+                    user_input = None  # Prevent form submission with invalid input
         else:
             user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
 
-        # Fix: Remove redundant st.form_submit_button and add instruction
+        # Form submission with validation
         if st.form_submit_button("Next"):
             if user_input:
+                # Additional validation for phone number (index 2)
+                if st.session_state.q_index == 2:
+                    phone_part = user_input.split(" ")[1] if len(user_input.split(" ")) > 1 else ""
+                    if not phone_part.isdigit() or len(phone_part) < 7:
+                        st.error("Please enter a valid phone number (digits only, at least 7 digits).")
+                        st.stop()
+                
+                # Additional validation for email (index 1)
+                if st.session_state.q_index == 1:
+                    if "@" not in user_input or "." not in user_input:
+                        st.error("Please enter a valid email address (e.g., example@domain.com).")
+                        st.stop()
+
+                # Store the answer and proceed
                 st.session_state.answers[keys[st.session_state.q_index]] = user_input
                 st.session_state.q_index += 1
                 if st.session_state.q_index >= len(questions):
                     st.session_state.completed = True
             else:
-                st.warning("Please provide an answer to proceed.")
+                st.warning("Please provide a valid answer to proceed.")
         st.markdown("<div class='instruction'>Double click after submitting data</div>", unsafe_allow_html=True)
 
 # After Submission
@@ -236,12 +261,12 @@ if st.session_state.completed:
     country = dial_codes.get(country_code, "India")
     currency = currency_map.get(country, "₹")
 
-    # Hardcoding user profile for demonstration
-    years_of_experience = 8
-    current_company = "Accenture"
+    # Use the current company provided by the user
+    current_company = user.get('company', 'Not Provided')
+    years_of_experience = 8  # Hardcoded for now, can be added to the form if needed
     current_role = user.get('domain', 'Data Science')  # Use domain as the role
     
-    # Fix: Sanitize salary input to handle non-numeric characters
+    # Sanitize salary input (already validated in the form)
     salary_input = user.get('salary', '0').replace(',', '')
     salary_cleaned = re.sub(r'[^0-9]', '', salary_input)  # Remove all non-numeric characters
     current_salary = int(salary_cleaned) if salary_cleaned else 0  # Convert to int, default to 0 if empty
