@@ -542,7 +542,7 @@ if not st.session_state.completed:
                     st.session_state.completed = True
             else:
                 st.warning("Please provide a valid answer to proceed.")
-        st.markdown("<div class='instruction'><strong>Double-click to submit your answer</strong></div>", unsafe_allow_html=True)
+        # Removed the double-click instruction
         st.markdown("</div>", unsafe_allow_html=True)
 
 # After Submission
