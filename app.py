@@ -19,7 +19,9 @@ hide_streamlit_style = """
     header {visibility: hidden;}
     body {
         font-family: 'Inter', 'Roboto', sans-serif;
-        background-color: #F5F7FA;
+        background: url('YOUR_BACKGROUND_IMAGE_URL') no-repeat center center fixed;
+        background-size: cover;
+        color: #333333;
     }
     .container {
         width: 100%;
@@ -28,7 +30,7 @@ hide_streamlit_style = """
         padding: 16px;
         box-sizing: border-box;
     }
-    .flash-alert, .header, .counseling-promo, .career-plan, .cta, .warning, .testimonials, .trust-badge, .share-section, .footer, .feedback, .ad-section {
+    .info-section, .flash-alert, .header, .counseling-promo, .career-plan, .cta, .warning, .testimonials, .trust-badge, .share-section, .footer, .feedback, .ad-section {
         width: 100%;
         padding: 16px;
         box-sizing: border-box;
@@ -37,6 +39,30 @@ hide_streamlit_style = """
         overflow-wrap: break-word;
         word-wrap: break-word;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    .info-section {
+        position: fixed;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(26, 53, 80, 0.9);
+        color: #FFD700;
+        text-align: center;
+        z-index: 1000;
+        max-width: 400px;
+    }
+    .info-section p {
+        color: #FFD700;
+        font-size: 12px;
+        margin: 4px 0;
+    }
+    .info-section a {
+        color: #2AB7CA;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .info-section a:hover {
+        text-decoration: underline;
     }
     .flash-alert {
         background-color: #FFF9E6;
@@ -57,7 +83,7 @@ hide_streamlit_style = """
         color: #E0E7FF;
     }
     .counseling-promo {
-        background-color: #E6F4FA;
+        background-color: rgba(230, 244, 250, 0.9);
         text-align: center;
         border: 1px solid #2AB7CA;
     }
@@ -66,7 +92,7 @@ hide_streamlit_style = """
         font-weight: 600;
     }
     .share-section {
-        background-color: #E6F4FA;
+        background-color: rgba(230, 244, 250, 0.9);
         text-align: center;
         border: 1px solid #2AB7CA;
     }
@@ -117,7 +143,7 @@ hide_streamlit_style = """
     }
     .feedback {
         text-align: center;
-        background-color: #FFFFFF;
+        background-color: rgba(255, 255, 255, 0.9);
     }
     .feedback a {
         color: #2AB7CA;
@@ -127,7 +153,7 @@ hide_streamlit_style = """
         text-decoration: underline;
     }
     .ad-section {
-        background-color: #FFF5F4;
+        background-color: rgba(255, 245, 244, 0.9);
         text-align: center;
         border: 1px solid #FF6F61;
     }
@@ -185,7 +211,7 @@ hide_streamlit_style = """
         border: 1px solid #2AB7CA;
         margin: 8px 0;
         box-sizing: border-box;
-        background-color: #FFFFFF;
+        background-color: rgba(255, 255, 255, 0.9);
     }
     .progress-text {
         font-size: 14px;
@@ -207,11 +233,11 @@ hide_streamlit_style = """
     }
     .testimonials {
         text-align: center;
-        background-color: #E6FFEC;
+        background-color: rgba(230, 255, 236, 0.9);
         color: #333333;
     }
     .trust-badge {
-        background: #E6FFEC;
+        background: rgba(230, 255, 236, 0.9);
         text-align: center;
     }
     .trust-badge p {
@@ -254,6 +280,12 @@ hide_streamlit_style = """
     @keyframes fadeIn {
         0% { opacity: 0; }
         100% { opacity: 1; }
+    }
+    .form-container {
+        background: rgba(255, 255, 255, 0.85);
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 80px; /* Adjust for fixed info section */
     }
     </style>
 """
@@ -370,9 +402,9 @@ if 'user_data_sent' not in st.session_state:
 if 'referral_data_sent' not in st.session_state:
     st.session_state.referral_data_sent = False
 
-# Footer with Privacy Policy, Terms of Service, and Social Media Links
+# Fixed Info Section (Privacy Policy, Terms, Contact Info)
 st.markdown("""
-<div class="footer container fade-in">
+<div class="info-section container fade-in">
     <p>© 2025 CareerUpskillers | <a href="https://www.careerupskillers.com/about-1" target="_blank">Privacy Policy</a> | <a href="https://www.careerupskillers.com/terms-of-service" target="_blank">Terms of Service</a></p>
     <p>Contact us: <a href="mailto:careerupskillers@gmail.com">careerupskillers@gmail.com</a> | Call/WhatsApp: <a href="tel:+917892116728">+91 78921 16728</a></p>
     <p>Follow us: 
@@ -458,7 +490,7 @@ if not st.session_state.completed:
     st.progress(progress)
     
     with st.form(key=f"form_{st.session_state.q_index}"):
-        st.markdown(f"<div class='container fade-in'><strong>{q}</strong></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='form-container container fade-in'><strong>{q}</strong>", unsafe_allow_html=True)
         st.markdown(f"<div class='container caption'>{hint}</div>", unsafe_allow_html=True)
         
         if st.session_state.q_index == 2:
@@ -511,6 +543,7 @@ if not st.session_state.completed:
             else:
                 st.warning("Please provide a valid answer to proceed.")
         st.markdown("<div class='instruction'><strong>Double-click to submit your answer</strong></div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # After Submission
 if st.session_state.completed:
