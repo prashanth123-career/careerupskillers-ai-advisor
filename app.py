@@ -93,6 +93,19 @@ st.markdown("""
         text-align: center;
         margin-top: -5px;
     }
+    .testimonials {
+        text-align: center;
+        background-color: #e6ffe6;  /* Light green background */
+        color: #333;  /* Dark text color for better contrast */
+    }
+    .flash {
+        animation: flash 1.5s infinite;
+    }
+    @keyframes flash {
+        0% { opacity: 1; }
+        50% { opacity: 0.3; }
+        100% { opacity: 1; }
+    }
     @media (max-width: 600px) {
         h1 {
             font-size: 18px;
@@ -178,11 +191,11 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Updated Questions (Added "Current Company")
+# Questions (including "Current Company")
 questions = [
     ("👋 What's your Name?", "To personalize your AI roadmap!"),
     ("📧 Email Address:", "Get job insights and gigs!"),
-    ("📱 Phone Number:", "Select your country code."),
+    ("📱 Phone Number:", "Select your country code and enter a 10-digit number."),
     ("🏢 Current Company:", "Where do you currently work?"),
     ("🛠️ Your Primary Skills:", "We’ll match AI niches."),
     ("💼 Your Domain:", "Select your professional domain."),
@@ -195,7 +208,7 @@ keys = ["name", "email", "phone", "company", "skills", "domain", "location", "sa
 # Form Logic with Progress Bar and Validation
 if not st.session_state.completed:
     q, hint = questions[st.session_state.q_index]
-    # Progress bar (fixed in previous update)
+    # Progress bar
     progress = int((st.session_state.q_index / len(questions)) * 100)
     st.markdown(f"<div class='progress-text container'>Step {st.session_state.q_index + 1} of {len(questions)}</div>", unsafe_allow_html=True)
     st.progress(progress)
@@ -227,14 +240,14 @@ if not st.session_state.completed:
         # Form submission with validation
         if st.form_submit_button("Next"):
             if user_input:
-                # Additional validation for phone number (index 2)
+                # Validation for phone number (index 2)
                 if st.session_state.q_index == 2:
                     phone_part = user_input.split(" ")[1] if len(user_input.split(" ")) > 1 else ""
-                    if not phone_part.isdigit() or len(phone_part) < 7:
-                        st.error("Please enter a valid phone number (digits only, at least 7 digits).")
+                    if not phone_part.isdigit() or len(phone_part) != 10:
+                        st.error("Please enter a valid phone number (exactly 10 digits, e.g., 9876543210).")
                         st.stop()
                 
-                # Additional validation for email (index 1)
+                # Validation for email (index 1)
                 if st.session_state.q_index == 1:
                     if "@" not in user_input or "." not in user_input:
                         st.error("Please enter a valid email address (e.g., example@domain.com).")
@@ -397,14 +410,15 @@ if st.session_state.completed:
     </div>
     """, unsafe_allow_html=True)
 
-    # Testimonials
+    # Testimonials with bold and flashing effect
     testimonials = [
         "“Landed a $2K gig with the AI Kit!” – Alex, USA",
         "“From zero to ₹1L/month in 6 weeks!” – Neha, India",
     ]
+    selected_testimonial = random.choice(testimonials)
     st.markdown(f"""
-    <div class="testimonials container" style="text-align:center;">
-    {random.choice(testimonials)}
+    <div class="testimonials container">
+        <span class="flash"><strong>{selected_testimonial}</strong></span>
     </div>
     """, unsafe_allow_html=True)
 
