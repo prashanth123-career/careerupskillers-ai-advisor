@@ -24,7 +24,7 @@ hide_streamlit_style = """
         padding: 8px;
         box-sizing: border-box;
     }
-    .flash-alert, .header, .counseling-promo, .career-plan, .cta, .warning, .testimonials, .trust-badge, .share-section, .footer, .feedback {
+    .flash-alert, .header, .counseling-promo, .career-plan, .cta, .warning, .testimonials, .trust-badge, .share-section, .footer, .feedback, .ad-section {
         width: 100%;
         padding: 10px;
         box-sizing: border-box;
@@ -52,12 +52,12 @@ hide_streamlit_style = """
         border: 1px solid #1E90FF;
     }
     .share-section {
-        background-color: #d6eaff; /* Even brighter blue for more visibility */
+        background-color: #d6eaff;
         text-align: center;
         border: 1px solid #1E90FF;
     }
     .share-section p {
-        font-weight: bold; /* Make text bolder */
+        font-weight: bold;
     }
     .share-section button {
         background-color: #1E90FF;
@@ -79,19 +79,19 @@ hide_streamlit_style = """
         margin: 5px 0;
     }
     .footer {
-        background-color: #d6eaff; /* Even brighter blue for more visibility */
+        background-color: #d6eaff;
         text-align: center;
         padding: 10px;
         margin-top: 20px;
     }
     .footer p {
         color: #333;
-        font-weight: bold; /* Make text bolder */
+        font-weight: bold;
     }
     .footer a {
         color: #1E90FF;
         text-decoration: none;
-        font-weight: bold; /* Make links bolder */
+        font-weight: bold;
     }
     .footer a:hover {
         text-decoration: underline;
@@ -106,6 +106,24 @@ hide_streamlit_style = """
     }
     .feedback a:hover {
         text-decoration: underline;
+    }
+    .ad-section {
+        background-color: #ffe6e6;
+        text-align: center;
+        border: 1px solid #FF4500;
+    }
+    .ad-section p {
+        color: #FF4500;
+        font-weight: bold;
+    }
+    .ad-section button {
+        background-color: #FF4500;
+        color: white;
+        padding: 10px 20px;
+        font-size: 14px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
     }
     h1 {
         font-size: 20px;
@@ -304,6 +322,10 @@ if 'flash_index' not in st.session_state:
     st.session_state.flash_index = 0
 if 'slots_left' not in st.session_state:
     st.session_state.slots_left = random.randint(15, 40)
+if 'user_data_sent' not in st.session_state:
+    st.session_state.user_data_sent = False
+if 'referral_data_sent' not in st.session_state:
+    st.session_state.referral_data_sent = False
 
 # Footer with Privacy Policy, Terms of Service, and Social Media Links (Moved to the Beginning)
 st.markdown("""
@@ -342,6 +364,15 @@ st.markdown(f"""
     <p><strong>We’ve helped over 3,000 professionals in the USA, UK, UAE, Israel, and India unlock their career potential with AI.</strong></p>
     <p style="color: #FF4500; font-weight: bold;">Are you ready to future-proof your career?</p>
     <p style="color: #228B22;">⏳ Only {days_left} days left to grab this deal!</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Ad Section (Before Form)
+st.markdown(f"""
+<div class="ad-section container">
+    <p>🔥 Limited Time Offer: Get Your Personalized AI Career Plan for Just ₹199!</p>
+    <p>Discover your market value, top opportunities, and a step-by-step roadmap to boost your career!</p>
+    <a href="https://rzp.io/rzp/FAsUJ9k" target="_blank"><button>Get It Now!</button></a>
 </div>
 """, unsafe_allow_html=True)
 
@@ -450,34 +481,36 @@ if not st.session_state.completed:
 # After Submission
 if st.session_state.completed:
     user = st.session_state.answers
-    try:
-        requests.post(google_sheets_url, json=user)
-    except:
-        pass
+    user["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    if not st.session_state.user_data_sent:
+        try:
+            response = requests.post(google_sheets_url, json=user)
+            response.raise_for_status()
+            st.session_state.user_data_sent = True
+        except Exception as e:
+            st.error(f"Failed to send user data: {str(e)}")
 
     country_code = user['phone'].split()[0]
     country = dial_codes.get(country_code, "Unknown")
-    currency = currency_map.get(country, "USD")  # Default to USD if country not found
+    currency = currency_map.get(country, "USD")
 
-    # Use the current company provided by the user
     current_company = user.get('company', 'Not Provided')
-    years_of_experience = user.get('years_of_experience', '0')  # Use the collected years of experience
+    years_of_experience = user.get('years_of_experience', '0')
     try:
         years_of_experience = int(years_of_experience)
     except ValueError:
-        years_of_experience = 0  # Default to 0 if invalid
-    current_role = user.get('domain', 'Data Science')  # Use domain as the role
+        years_of_experience = 0
+    current_role = user.get('domain', 'Data Science')
     
-    # Sanitize salary input (already validated in the form)
     salary_input = user.get('salary', '0').replace(',', '')
-    salary_cleaned = re.sub(r'[^0-9]', '', salary_input)  # Remove all non-numeric characters
-    current_salary = int(salary_cleaned) if salary_cleaned else 0  # Convert to int, default to 0 if empty
+    salary_cleaned = re.sub(r'[^0-9]', '', salary_input)
+    current_salary = int(salary_cleaned) if salary_cleaned else 0
 
     # Use ChatGPT 3.5 Turbo to generate a personalized career plan
     try:
-        # Construct a prompt for ChatGPT 3.5 Turbo with randomization to avoid repetition
-        session_seed = hash(st.session_state.session_id + user.get('name', '')) % 1000  # Unique seed per user
-        recent_companies = st.session_state.recent_companies[-10:]  # Last 10 companies recommended
+        session_seed = hash(st.session_state.session_id + user.get('name', '')) % 1000
+        recent_companies = st.session_state.recent_companies[-10:]
 
         prompt = f"""
         You are a career counselor specializing in AI and tech roles across various domains. Based on the following user profile, provide a detailed career plan:
@@ -497,27 +530,15 @@ if st.session_state.completed:
 
         Provide the following:
         1. A profile validation statement comparing the user's salary to the market rate for their role and domain in their current location ({user.get('location')}). If the user has specified other countries of interest ({user.get('other_countries')}), also compare their salary to the market rate in those countries. Include specific sources for salary data (e.g., Glassdoor, Indeed, Payscale) and mention the year of the data (e.g., 2024).
-        2. Recommended skills to upskill in, relevant to their domain and the AI industry. For example:
-           - Data Science: Automation, Machine Learning, Gen AI, Agentic AI
-           - Sales: AI-driven CRM tools, Predictive Analytics, Sales Automation
-           - Marketing: AI Content Creation, Digital Marketing Analytics, Chatbot Marketing
-           - Accounting: AI for Financial Forecasting, Automation Tools, Data Analysis
-           - Developer: AI Integration, API Development, Cloud Computing
-           - Web Designer: AI-driven UX Design, Generative Design Tools, Web Automation
-           - Software Testing: AI-based Test Automation, Performance Testing, Bug Detection
-           - Hardware Testing: IoT Testing, AI Hardware Validation, Embedded Systems
-           - Cybersecurity: AI Threat Detection, Machine Learning for Security, Ethical Hacking
-           - BPO: AI Chatbots, Process Automation, Customer Sentiment Analysis
-           Ensure the skills are varied and not repetitive across users.
-        3. A list of 3 top companies hiring in the user's location for their role or domain, with estimated salaries and sources (e.g., Glassdoor, Indeed, Payscale, 2024 data). Avoid recommending the following companies as they were recently suggested to other users: {', '.join(recent_companies) if recent_companies else 'None'}. Ensure the companies are diverse and relevant to the user's domain.
+        2. Recommended skills to upskill in, relevant to their domain and the AI industry.
+        3. A list of 3 top companies hiring in the user's location for their role or domain, with estimated salaries and sources (e.g., Glassdoor, Indeed, Payscale, 2024 data). Avoid recommending the following companies: {', '.join(recent_companies) if recent_companies else 'None'}.
         4. A brief next step recommendation to achieve a higher salary, considering their hours per week and desired changes.
 
-        To ensure variability, use a randomization seed: {session_seed}. Suggest a diverse set of companies and skills to avoid repetition across users.
+        To ensure variability, use a randomization seed: {session_seed}.
 
         Format the response as plain text, with sections separated by newlines and bolded headers (e.g., **Profile Validation:**).
         """
 
-        # Call ChatGPT 3.5 Turbo API
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -525,19 +546,15 @@ if st.session_state.completed:
                 {"role": "user", "content": prompt}
             ],
             max_tokens=500,
-            temperature=0.9  # Higher temperature for more variability
+            temperature=0.9
         )
 
-        # Extract the career plan from the response
         career_plan_text = response.choices[0].message.content.strip()
-
-        # Extract companies from the response to update the recent_companies list
         companies = re.findall(r"- (.*?):", career_plan_text)
         st.session_state.recent_companies.extend(companies)
-        st.session_state.recent_companies = st.session_state.recent_companies[-10:]  # Keep only the last 10
+        st.session_state.recent_companies = st.session_state.recent_companies[-10:]
 
     except Exception as e:
-        # Fallback to a default career plan if the API call fails
         market_salary = current_salary * 1.5
         other_countries = user.get('other_countries', 'Not provided')
         salary_comparison = f"In your current location ({user.get('location')}), the market salary for a {current_role} with {years_of_experience} years of experience is around {currency}{market_salary:,} (Source: Glassdoor, 2024 data)."
@@ -566,6 +583,15 @@ if st.session_state.completed:
 
     st.success("✅ Your Personalized Plan is Ready!")
     st.markdown(career_plan, unsafe_allow_html=True)
+
+    # Ad Section (After Career Plan)
+    st.markdown(f"""
+    <div class="ad-section container">
+        <p>🔥 Don’t Miss Out: Get Your ₹499 AI Freelance Kit Now!</p>
+        <p>Learn to earn ₹90K–₹3L/month with just 8 hours on weekends! Includes tools, templates, and a step-by-step guide.</p>
+        <a href="https://rzp.io/rzp/t37swnF" target="_blank"><button>Get It Now!</button></a>
+    </div>
+    """, unsafe_allow_html=True)
 
     # ₹199 Personalized Career Plan CTA
     st.markdown(f"""
@@ -630,7 +656,7 @@ if st.session_state.completed:
     """, unsafe_allow_html=True)
 
     # Share with Friends Section
-    base_url = "https://www.careerupskillers.com"  # Replace with your custom domain
+    base_url = "https://www.careerupskillers.com"
     referral_link = f"{base_url}?ref={st.session_state.session_id}"
 
     share_message = f"🚀 I just got my personalized AI Career Plan from CareerUpskillers AI Advisor! It helped me discover if I'm paid fairly and find top companies hiring for my skills. Check it out: {referral_link}"
@@ -658,17 +684,19 @@ if st.session_state.completed:
     </script>
     """, unsafe_allow_html=True)
 
-    # Send referral data to Google Sheets
-    referral_data = {
-        "session_id": st.session_state.session_id,
-        "referral_link": referral_link,
-        "user_email": user.get('email', 'N/A'),
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
-    try:
-        requests.post(google_sheets_url, json=referral_data)
-    except:
-        pass
+    if not st.session_state.referral_data_sent:
+        referral_data = {
+            "session_id": st.session_state.session_id,
+            "referral_link": referral_link,
+            "user_email": user.get('email', 'N/A'),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        try:
+            response = requests.post(google_sheets_url, json=referral_data)
+            response.raise_for_status()
+            st.session_state.referral_data_sent = True
+        except Exception as e:
+            st.error(f"Failed to send referral data: {str(e)}")
 
     # Feedback Link (Replace with your actual feedback form URL)
     st.markdown("""
