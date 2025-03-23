@@ -52,9 +52,12 @@ hide_streamlit_style = """
         border: 1px solid #1E90FF;
     }
     .share-section {
-        background-color: #e6f0ff; /* Brightened to match counseling-promo */
+        background-color: #d6eaff; /* Even brighter blue for more visibility */
         text-align: center;
         border: 1px solid #1E90FF;
+    }
+    .share-section p {
+        font-weight: bold; /* Make text bolder */
     }
     .share-section button {
         background-color: #1E90FF;
@@ -76,18 +79,19 @@ hide_streamlit_style = """
         margin: 5px 0;
     }
     .footer {
-        background-color: #e6f0ff; /* Brightened to match other sections */
+        background-color: #d6eaff; /* Even brighter blue for more visibility */
         text-align: center;
         padding: 10px;
         margin-top: 20px;
     }
     .footer p {
         color: #333;
-        font-weight: bold; /* Make text bolder for better visibility */
+        font-weight: bold; /* Make text bolder */
     }
     .footer a {
         color: #1E90FF;
         text-decoration: none;
+        font-weight: bold; /* Make links bolder */
     }
     .footer a:hover {
         text-decoration: underline;
@@ -300,6 +304,19 @@ if 'flash_index' not in st.session_state:
     st.session_state.flash_index = 0
 if 'slots_left' not in st.session_state:
     st.session_state.slots_left = random.randint(15, 40)
+
+# Footer with Privacy Policy, Terms of Service, and Social Media Links (Moved to the Beginning)
+st.markdown("""
+<div class="footer container">
+    <p>© 2025 CareerUpskillers | <a href="https://www.careerupskillers.com/about-1" target="_blank">Privacy Policy</a> | <a href="https://www.careerupskillers.com/terms-of-service" target="_blank">Terms of Service</a></p>
+    <p>Contact us: <a href="mailto:careerupskillers@gmail.com">careerupskillers@gmail.com</a> | Call/WhatsApp: <a href="tel:+917892116728">+91 78921 16728</a></p>
+    <p>Follow us: 
+        <a href="https://www.linkedin.com/company/careerupskillers/?viewAsMember=true" target="_blank">LinkedIn</a> | 
+        <a href="https://youtube.com/@careerupskillers?si=zQ9JVshWBkBQeGfv" target="_blank">YouTube</a> | 
+        <a href="https://www.instagram.com/careerupskillers?igsh=YWNmOGMwejBrb24z" target="_blank">Instagram</a>
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # Dynamic Flash Purchase Alert
 flash_countries = ["USA", "India", "UAE", "UK", "USA"]
@@ -653,17 +670,22 @@ if st.session_state.completed:
     except:
         pass
 
-    # Updated Footer with Correct Privacy Policy Link
-    st.markdown("""
-    <div class="footer container">
-        <p>© 2025 CareerUpskillers | <a href="https://www.careerupskillers.com/about-1" target="_blank">Privacy Policy</a> | <a href="https://www.careerupskillers.com/terms-of-service" target="_blank">Terms of Service</a></p>
-        <p>Contact us: support@careerupskillers.com</p>
-    </div>
-    """, unsafe_allow_html=True)
-
     # Feedback Link (Replace with your actual feedback form URL)
     st.markdown("""
     <div class="feedback container">
         <p><strong>We’d love to hear your feedback!</strong> <a href="https://forms.gle/your-feedback-form-link" target="_blank">Share your thoughts here</a>.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Footer (Repeated at the end for consistency)
+    st.markdown("""
+    <div class="footer container">
+        <p>© 2025 CareerUpskillers | <a href="https://www.careerupskillers.com/about-1" target="_blank">Privacy Policy</a> | <a href="https://www.careerupskillers.com/terms-of-service" target="_blank">Terms of Service</a></p>
+        <p>Contact us: <a href="mailto:careerupskillers@gmail.com">careerupskillers@gmail.com</a> | Call/WhatsApp: <a href="tel:+917892116728">+91 78921 16728</a></p>
+        <p>Follow us: 
+            <a href="https://www.linkedin.com/company/careerupskillers/?viewAsMember=true" target="_blank">LinkedIn</a> | 
+            <a href="https://youtube.com/@careerupskillers?si=zQ9JVshWBkBQeGfv" target="_blank">YouTube</a> | 
+            <a href="https://www.instagram.com/careerupskillers?igsh=YWNmOGMwejBrb24z" target="_blank">Instagram</a>
+        </p>
     </div>
     """, unsafe_allow_html=True)
