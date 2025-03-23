@@ -8,8 +8,8 @@ import uuid
 import time
 import re
 
-# Set Streamlit page config (remove Streamlit branding)
-st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🚀", layout="centered")
+# Set Streamlit page config
+st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🌟", layout="centered")
 
 # Hide Streamlit branding (footer and header)
 hide_streamlit_style = """
@@ -17,200 +17,243 @@ hide_streamlit_style = """
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
+    body {
+        font-family: 'Inter', 'Roboto', sans-serif;
+        background-color: #F5F7FA;
+    }
     .container {
         width: 100%;
-        max-width: 360px;
+        max-width: 400px;
         margin: 0 auto;
-        padding: 8px;
+        padding: 16px;
         box-sizing: border-box;
     }
     .flash-alert, .header, .counseling-promo, .career-plan, .cta, .warning, .testimonials, .trust-badge, .share-section, .footer, .feedback, .ad-section {
         width: 100%;
-        padding: 10px;
+        padding: 16px;
         box-sizing: border-box;
-        border-radius: 8px;
-        margin-bottom: 8px;
+        border-radius: 12px;
+        margin-bottom: 16px;
         overflow-wrap: break-word;
         word-wrap: break-word;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
     .flash-alert {
-        background-color: #fff3cd;
+        background-color: #FFF9E6;
         color: #856404;
-        font-size: 13px;
-        line-height: 1.3;
+        font-size: 14px;
+        line-height: 1.4;
+        border: 1px solid #FFD700;
     }
     .header {
-        background-color: #f0f2f6;
+        background-color: #1A3550;
+        color: #FFFFFF;
         text-align: center;
+    }
+    .header h1 {
+        color: #FFFFFF;
     }
     .header p {
-        color: #333;
+        color: #E0E7FF;
     }
     .counseling-promo {
-        background-color: #e6f0ff;
+        background-color: #E6F4FA;
         text-align: center;
-        border: 1px solid #1E90FF;
+        border: 1px solid #2AB7CA;
+    }
+    .counseling-promo p {
+        color: #2AB7CA;
+        font-weight: 600;
     }
     .share-section {
-        background-color: #d6eaff;
+        background-color: #E6F4FA;
         text-align: center;
-        border: 1px solid #1E90FF;
+        border: 1px solid #2AB7CA;
     }
     .share-section p {
-        font-weight: bold;
+        font-weight: 600;
+        color: #1A3550;
     }
     .share-section button {
-        background-color: #1E90FF;
-        color: white;
-        margin: 5px;
-        padding: 8px 16px;
+        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
+        color: #FFFFFF;
+        margin: 8px;
+        padding: 10px 20px;
         font-size: 14px;
-        border-radius: 5px;
+        border-radius: 8px;
         border: none;
         cursor: pointer;
-        min-height: 36px;
+        transition: transform 0.2s ease;
+    }
+    .share-section button:hover {
+        transform: scale(1.05);
     }
     .share-section input {
         width: 80%;
-        padding: 8px;
+        padding: 10px;
         font-size: 14px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        margin: 5px 0;
+        border-radius: 8px;
+        border: 1px solid #2AB7CA;
+        margin: 8px 0;
     }
     .footer {
-        background-color: #d6eaff;
+        background-color: #1A3550;
+        color: #FFFFFF;
         text-align: center;
-        padding: 10px;
+        padding: 20px;
         margin-top: 20px;
     }
     .footer p {
-        color: #333;
-        font-weight: bold;
+        color: #E0E7FF;
+        font-weight: 500;
     }
     .footer a {
-        color: #1E90FF;
+        color: #2AB7CA;
         text-decoration: none;
-        font-weight: bold;
+        font-weight: 500;
     }
     .footer a:hover {
         text-decoration: underline;
     }
     .feedback {
         text-align: center;
-        background-color: #f0f2f6;
+        background-color: #FFFFFF;
     }
     .feedback a {
-        color: #1E90FF;
+        color: #2AB7CA;
         text-decoration: none;
     }
     .feedback a:hover {
         text-decoration: underline;
     }
     .ad-section {
-        background-color: #ffe6e6;
+        background-color: #FFF5F4;
         text-align: center;
-        border: 1px solid #FF4500;
+        border: 1px solid #FF6F61;
     }
     .ad-section p {
-        color: #FF4500;
-        font-weight: bold;
+        color: #FF6F61;
+        font-weight: 600;
     }
     .ad-section button {
-        background-color: #FF4500;
-        color: white;
-        padding: 10px 20px;
+        background: linear-gradient(90deg, #FF6F61 0%, #FF3D00 100%);
+        color: #FFFFFF;
+        padding: 12px 24px;
         font-size: 14px;
-        border-radius: 5px;
+        border-radius: 8px;
         border: none;
         cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+    .ad-section button:hover {
+        transform: scale(1.05);
     }
     h1 {
-        font-size: 20px;
-        margin: 8px 0;
+        font-size: 24px;
+        margin: 12px 0;
+        color: #1A3550;
     }
     p, li, .caption {
-        font-size: 13px;
-        line-height: 1.4;
-        margin: 4px 0;
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 6px 0;
+        color: #333333;
     }
     button {
         width: 100%;
-        max-width: 220px;
-        padding: 12px;
-        font-size: 15px;
-        border-radius: 5px;
+        max-width: 240px;
+        padding: 14px;
+        font-size: 16px;
+        border-radius: 8px;
         border: none;
         cursor: pointer;
-        margin: 8px auto;
+        margin: 12px auto;
         display: block;
-        min-height: 44px;
+        min-height: 48px;
+        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
+        color: #FFFFFF;
+        transition: transform 0.2s ease;
+    }
+    button:hover {
+        transform: scale(1.05);
     }
     input, select {
         width: 100%;
-        padding: 10px;
+        padding: 12px;
         font-size: 15px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        margin: 5px 0;
+        border-radius: 8px;
+        border: 1px solid #2AB7CA;
+        margin: 8px 0;
         box-sizing: border-box;
+        background-color: #FFFFFF;
     }
     .progress-text {
-        font-size: 13px;
+        font-size: 14px;
         text-align: center;
-        margin: 5px 0;
+        margin: 8px 0;
+        color: #1A3550;
     }
     .instruction {
         font-size: 12px;
-        color: #333;
+        color: #333333;
         text-align: center;
-        margin-top: -5px;
+        margin-top: -4px;
     }
     .time-age-message {
-        font-size: 13px;
-        color: #333;
+        font-size: 14px;
+        color: #333333;
         text-align: center;
-        margin: 8px 0;
+        margin: 12px 0;
     }
     .testimonials {
         text-align: center;
-        background-color: #e6ffe6;
-        color: #333;
+        background-color: #E6FFEC;
+        color: #333333;
     }
     .trust-badge {
-        background: #e6ffe6;
+        background: #E6FFEC;
         text-align: center;
     }
     .trust-badge p {
-        color: #333;
+        color: #333333;
     }
     .flash {
         animation: flash 1.5s infinite;
     }
     @keyframes flash {
         0% { opacity: 1; }
-        50% { opacity: 0.3; }
+        50% { opacity: 0.5; }
         100% { opacity: 1; }
+    }
+    .stProgress > div > div > div {
+        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
     }
     @media (max-width: 600px) {
         h1 {
-            font-size: 18px;
+            font-size: 20px;
         }
         p, li, .caption {
             font-size: 13px;
-            line-height: 1.5;
-            margin: 6px 0;
+            line-height: 1.6;
+            margin: 8px 0;
         }
         button {
             font-size: 14px;
-            padding: 10px;
-        }
-        .flash-alert {
-            font-size: 12px;
-        }
-        .header, .trust-badge {
             padding: 12px;
         }
+        .flash-alert {
+            font-size: 13px;
+        }
+        .header, .trust-badge {
+            padding: 16px;
+        }
+    }
+    .fade-in {
+        animation: fadeIn 1s ease-in;
+    }
+    @keyframes fadeIn {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
     }
     </style>
 """
@@ -220,7 +263,7 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 openai.api_key = st.secrets["API_KEY"]
 google_sheets_url = st.secrets.get("GOOGLE_SHEETS_URL")
 
-# Country codes and currency map (expanded to include all countries)
+# Country codes and currency map
 dial_codes = {
     "+93": "Afghanistan", "+355": "Albania", "+213": "Algeria", "+376": "Andorra", "+244": "Angola",
     "+54": "Argentina", "+374": "Armenia", "+61": "Australia", "+43": "Austria", "+994": "Azerbaijan",
@@ -305,13 +348,13 @@ domains = [
     "Software Testing", "Hardware Testing", "Cybersecurity", "BPO", "Other"
 ]
 
-# Initialize global cache for recent company recommendations (to avoid duplicates)
+# Initialize global cache for recent company recommendations
 if 'recent_companies' not in st.session_state:
     st.session_state.recent_companies = []
 
 # Initialize session state for each user
 if 'session_id' not in st.session_state:
-    st.session_state.session_id = str(uuid.uuid4())  # Unique session ID for each user
+    st.session_state.session_id = str(uuid.uuid4())
 if 'answers' not in st.session_state:
     st.session_state.answers = {}
 if 'q_index' not in st.session_state:
@@ -327,9 +370,9 @@ if 'user_data_sent' not in st.session_state:
 if 'referral_data_sent' not in st.session_state:
     st.session_state.referral_data_sent = False
 
-# Footer with Privacy Policy, Terms of Service, and Social Media Links (Moved to the Beginning)
+# Footer with Privacy Policy, Terms of Service, and Social Media Links
 st.markdown("""
-<div class="footer container">
+<div class="footer container fade-in">
     <p>© 2025 CareerUpskillers | <a href="https://www.careerupskillers.com/about-1" target="_blank">Privacy Policy</a> | <a href="https://www.careerupskillers.com/terms-of-service" target="_blank">Terms of Service</a></p>
     <p>Contact us: <a href="mailto:careerupskillers@gmail.com">careerupskillers@gmail.com</a> | Call/WhatsApp: <a href="tel:+917892116728">+91 78921 16728</a></p>
     <p>Follow us: 
@@ -346,8 +389,8 @@ flash_country = flash_countries[st.session_state.flash_index % len(flash_countri
 time_ago = datetime.now() - timedelta(minutes=random.randint(1, 10))
 
 st.markdown(f"""
-<div class="flash-alert container">
-  ⚡ <strong>Flash Purchase:</strong> Someone just bought from <strong>{flash_country}</strong> {time_ago.strftime('%M mins ago')} | Only <strong>{st.session_state.slots_left}</strong> kits left!
+<div class="flash-alert container fade-in">
+  📢 <strong>Flash Alert:</strong> Someone just purchased from <strong>{flash_country}</strong> {time_ago.strftime('%M mins ago')} | Only <strong>{st.session_state.slots_left}</strong> kits remaining!
 </div>
 """, unsafe_allow_html=True)
 st.session_state.flash_index += 1
@@ -359,35 +402,35 @@ time_left = end_date - datetime.now()
 days_left = time_left.days
 
 st.markdown(f"""
-<div class="header container">
-    <h1 style="color: #1E90FF;">🚀 Welcome to CareerUpskillers AI Advisor!</h1>
-    <p><strong>We’ve helped over 3,000 professionals in the USA, UK, UAE, Israel, and India unlock their career potential with AI.</strong></p>
-    <p style="color: #FF4500; font-weight: bold;">Are you ready to future-proof your career?</p>
-    <p style="color: #228B22;">⏳ Only {days_left} days left to grab this deal!</p>
+<div class="header container fade-in">
+    <h1>🌟 Welcome to CareerUpskillers AI Advisor</h1>
+    <p><strong>We’ve empowered over 3,000 professionals in the USA, UK, UAE, Israel, and India to unlock their career potential with AI.</strong></p>
+    <p style="color: #FF6F61; font-weight: 600;">Are you ready to future-proof your career?</p>
+    <p style="color: #2AB7CA;">⏰ Only {days_left} days left to seize this opportunity!</p>
 </div>
 """, unsafe_allow_html=True)
 
 # Ad Section (Before Form)
 st.markdown(f"""
-<div class="ad-section container">
-    <p>🔥 Limited Time Offer: Get Your Personalized AI Career Plan for Just ₹199!</p>
-    <p>Discover your market value, top opportunities, and a step-by-step roadmap to boost your career!</p>
-    <a href="https://rzp.io/rzp/FAsUJ9k" target="_blank"><button>Get It Now!</button></a>
+<div class="ad-section container fade-in">
+    <p>✨ Limited Time Offer: Get Your Personalized AI Career Plan for Just ₹199!</p>
+    <p>Discover your market value, top opportunities, and a step-by-step roadmap to elevate your career!</p>
+    <a href="https://rzp.io/rzp/FAsUJ9k" target="_blank"><button>Claim Now!</button></a>
 </div>
 """, unsafe_allow_html=True)
 
 # Updated Call-to-Action
 st.markdown(f"""
-<div class="counseling-promo container">
-    <p style="color: #1E90FF; font-weight: bold;">🚀 Start Your Free AI Career Counseling Now – Discover Your Market Value & Top Opportunities!</p>
+<div class="counseling-promo container fade-in">
+    <p>🌟 Begin Your Free AI Career Counseling Today – Unlock Your Market Value & Top Opportunities!</p>
 </div>
 """, unsafe_allow_html=True)
 
-# Questions (including new ones from previous update, plus years of experience)
+# Questions
 questions = [
-    ("👋 What's your Name?", "To personalize your AI roadmap!"),
+    ("👤 What's your Name?", "To personalize your AI roadmap!"),
     ("📧 Email Address:", "Get job insights and gigs!"),
-    ("📱 Phone Number:", "Select your country code and enter your phone number (e.g., 9876543210)."),
+    ("📞 Phone Number:", "Select your country code and enter your phone number (e.g., 9876543210)."),
     ("🏢 Current Company:", "Where do you currently work?"),
     ("🏢 Can you share more about your current company?", "E.g., industry, size, culture."),
     ("📅 When was your last promotion, and was it with a salary hike or only a position upgrade?", "E.g., 'Jan 2023, with salary hike' or 'June 2022, position upgrade only'."),
@@ -410,73 +453,64 @@ keys = [
 # Form Logic with Progress Bar and Validation
 if not st.session_state.completed:
     q, hint = questions[st.session_state.q_index]
-    # Progress bar
     progress = int((st.session_state.q_index / len(questions)) * 100)
-    st.markdown(f"<div class='progress-text container'>Step {st.session_state.q_index + 1} of {len(questions)}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='progress-text container fade-in'>Step {st.session_state.q_index + 1} of {len(questions)}</div>", unsafe_allow_html=True)
     st.progress(progress)
     
     with st.form(key=f"form_{st.session_state.q_index}"):
-        st.markdown(f"<div class='container'><strong>{q}</strong></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='container fade-in'><strong>{q}</strong></div>", unsafe_allow_html=True)
         st.markdown(f"<div class='container caption'>{hint}</div>", unsafe_allow_html=True)
         
-        # Handle different input types based on the question
-        if st.session_state.q_index == 2:  # Phone number with country code
+        if st.session_state.q_index == 2:
             code = st.selectbox("Country Code", sorted(list(dial_codes.keys())), index=0, key="country_code_input")
             country = dial_codes.get(code, "Unknown")
             st.markdown(f"<div class='container caption'>Country: {country}</div>", unsafe_allow_html=True)
             phone = st.text_input("Phone Number (e.g., 9876543210)", key="phone_input")
             user_input = f"{code} {phone}" if phone else None
-        elif st.session_state.q_index == 9:  # Domain selection with "Others" option
+        elif st.session_state.q_index == 9:
             user_input = st.selectbox("Select your domain", domains, key="domain_input")
             if user_input == "Other":
                 other_domain = st.text_input("Please specify your domain:", key="other_domain_input")
                 user_input = f"Other: {other_domain}" if other_domain else "Other"
-        elif st.session_state.q_index == 7:  # Years of experience (numeric input with validation)
+        elif st.session_state.q_index == 7:
             user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
-            # Validate that the input contains only numbers
             if user_input:
                 if not user_input.isdigit():
                     st.error("Please enter a valid number for years of experience (e.g., 5).")
-                    user_input = None  # Prevent form submission with invalid input
-        elif st.session_state.q_index == 11:  # Salary (numeric input with validation)
+                    user_input = None
+        elif st.session_state.q_index == 11:
             user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
-            # Validate that the input contains only numbers (and optionally commas)
             if user_input:
                 cleaned_input = user_input.replace(',', '')
                 if not cleaned_input.isdigit():
                     st.error("Please enter a valid salary (numbers only, e.g., 50000).")
-                    user_input = None  # Prevent form submission with invalid input
+                    user_input = None
         else:
             user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
 
-        # Display the time and age message after the hours question
-        if st.session_state.q_index == 6:  # After "How many hours do you typically spend working?"
-            st.markdown("<div class='time-age-message'><strong>Time and age are critical factors in your career journey. Investing them wisely can lead to significant growth and opportunities!</strong></div>", unsafe_allow_html=True)
+        if st.session_state.q_index == 6:
+            st.markdown("<div class='time-age-message'><strong>Time and experience are key to your career growth. Invest them wisely to unlock new opportunities!</strong></div>", unsafe_allow_html=True)
 
-        # Form submission with validation
         if st.form_submit_button("Next"):
             if user_input:
-                # Validation for phone number (index 2)
                 if st.session_state.q_index == 2:
                     phone_part = user_input.split(" ")[1] if len(user_input.split(" ")) > 1 else ""
                     if not phone_part.isdigit() or len(phone_part) != 10:
                         st.error("Please enter a valid phone number (exactly 10 digits, e.g., 9876543210).")
                         st.stop()
                 
-                # Validation for email (index 1)
                 if st.session_state.q_index == 1:
                     if "@" not in user_input or "." not in user_input:
                         st.error("Please enter a valid email address (e.g., example@domain.com).")
                         st.stop()
 
-                # Store the answer and proceed
                 st.session_state.answers[keys[st.session_state.q_index]] = user_input
                 st.session_state.q_index += 1
                 if st.session_state.q_index >= len(questions):
                     st.session_state.completed = True
             else:
                 st.warning("Please provide a valid answer to proceed.")
-        st.markdown("<div class='instruction'><strong>Double click after submitting data</strong></div>", unsafe_allow_html=True)
+        st.markdown("<div class='instruction'><strong>Double-click to submit your answer</strong></div>", unsafe_allow_html=True)
 
 # After Submission
 if st.session_state.completed:
@@ -507,7 +541,6 @@ if st.session_state.completed:
     salary_cleaned = re.sub(r'[^0-9]', '', salary_input)
     current_salary = int(salary_cleaned) if salary_cleaned else 0
 
-    # Use ChatGPT 3.5 Turbo to generate a personalized career plan
     try:
         session_seed = hash(st.session_state.session_id + user.get('name', '')) % 1000
         recent_companies = st.session_state.recent_companies[-10:]
@@ -573,10 +606,9 @@ if st.session_state.completed:
         **Next Step:** To get a detailed plan and career roadmap to achieve a higher salary with your skills, apply for our ₹199 Personalized Career Plan. This roadmap will also help you find free resources to upskill and take your career to the next level!
         """
 
-    # Display the career plan
     career_plan = f"""
-    <div class="career-plan container">
-    🎯 **{user.get('name')}'s AI Career Revolution Plan** 🎯
+    <div class="career-plan container fade-in">
+    🎯 <strong>{user.get('name')}'s AI Career Revolution Plan</strong>
     {career_plan_text.replace('**', '<strong>').replace('**', '</strong>')}
     </div>
     """
@@ -586,23 +618,23 @@ if st.session_state.completed:
 
     # Ad Section (After Career Plan)
     st.markdown(f"""
-    <div class="ad-section container">
-        <p>🔥 Don’t Miss Out: Get Your ₹499 AI Freelance Kit Now!</p>
+    <div class="ad-section container fade-in">
+        <p>✨ Don’t Miss Out: Get Your ₹499 AI Freelance Kit Now!</p>
         <p>Learn to earn ₹90K–₹3L/month with just 8 hours on weekends! Includes tools, templates, and a step-by-step guide.</p>
-        <a href="https://rzp.io/rzp/t37swnF" target="_blank"><button>Get It Now!</button></a>
+        <a href="https://rzp.io/rzp/t37swnF" target="_blank"><button>Claim Now!</button></a>
     </div>
     """, unsafe_allow_html=True)
 
     # ₹199 Personalized Career Plan CTA
     st.markdown(f"""
-    <div class="cta container">
-        <a href='https://rzp.io/rzp/FAsUJ9k' target='_blank'><button style='background-color:#1E90FF;color:white;'>💬 Get ₹199 Career Plan</button></a>
+    <div class="cta container fade-in">
+        <a href='https://rzp.io/rzp/FAsUJ9k' target='_blank'><button style='background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);color:#FFFFFF;'>📋 Get ₹199 Career Plan</button></a>
     </div>
     """, unsafe_allow_html=True)
 
     # ₹499 AI Freelance Kit as Backup Plan
     st.markdown(f"""
-    <div class="career-plan container">
+    <div class="career-plan container fade-in">
     <strong>Looking for an Alternative Plan?</strong> As AI is driving automation, always have a backup plan! Take our AI Freelance Kit (worth ₹10,000) for just {currency}499 – a limited period offer!
 
     <strong>What You Get:</strong>
@@ -621,34 +653,34 @@ if st.session_state.completed:
 
     # ₹499 AI Freelance Kit CTA
     st.markdown(f"""
-    <div class="cta container">
-        <a href='https://rzp.io/rzp/t37swnF' target='_blank'><button style='background-color:#FF4500;color:white;'>🚀 Get AI Freelance Kit ({currency}499)</button></a>
+    <div class="cta container fade-in">
+        <a href='https://rzp.io/rzp/t37swnF' target='_blank'><button style='background: linear-gradient(90deg, #FF6F61 0%, #FF3D00 100%);color:#FFFFFF;'>🌟 Get AI Freelance Kit ({currency}499)</button></a>
         <p>After payment, check your email for your AI Freelance Kit!</p>
     </div>
     """, unsafe_allow_html=True)
 
     # Warning
     st.markdown(f"""
-    <div class="warning container" style="color: #FF4500;">
-    <strong>Warning:</strong> Companies are laying off due to automation. Spend 8 hours on weekends upskilling & building a backup plan!
+    <div class="warning container fade-in" style="color: #FF6F61;">
+    <strong>⚠️ Warning:</strong> Companies are laying off due to automation. Spend 8 hours on weekends upskilling & building a backup plan!
     </div>
     """, unsafe_allow_html=True)
 
-    # Updated Testimonials with More Details
+    # Updated Testimonials
     testimonials = [
         "“Landed a $2K gig with the AI Kit! This app helped me pivot my career in just 6 weeks.” – Alex, Data Scientist, USA",
         "“From zero to ₹1L/month in 6 weeks! The career plan was a game-changer.” – Neha, Marketing Professional, India",
     ]
     selected_testimonial = random.choice(testimonials)
     st.markdown(f"""
-    <div class="testimonials container">
+    <div class="testimonials container fade-in">
         <span class="flash"><strong>{selected_testimonial}</strong></span>
     </div>
     """, unsafe_allow_html=True)
 
-    # Updated Trust Badge with Security Note
+    # Updated Trust Badge
     st.markdown(f"""
-    <div class="trust-badge container">
+    <div class="trust-badge container fade-in">
         <p><strong>📈 Trusted by 3,000+ learners worldwide!</strong></p>
         <p><strong>🎁 Free AI Niche PDF + Chatbot access after payment!</strong></p>
         <p><strong>🔒 Your data is secure with us. We use HTTPS and comply with privacy regulations.</strong></p>
@@ -659,12 +691,12 @@ if st.session_state.completed:
     base_url = "https://www.careerupskillers.com"
     referral_link = f"{base_url}?ref={st.session_state.session_id}"
 
-    share_message = f"🚀 I just got my personalized AI Career Plan from CareerUpskillers AI Advisor! It helped me discover if I'm paid fairly and find top companies hiring for my skills. Check it out: {referral_link}"
+    share_message = f"🌟 I just got my personalized AI Career Plan from CareerUpskillers AI Advisor! It helped me discover if I'm paid fairly and find top companies hiring for my skills. Check it out: {referral_link}"
     encoded_message = requests.utils.quote(share_message)
 
     st.markdown(f"""
-    <div class="share-section container">
-        <p style="color: #1E90FF; font-weight: bold;">🌟 Share with Friends & Earn Rewards!</p>
+    <div class="share-section container fade-in">
+        <p>📢 Share with Friends & Earn Rewards!</p>
         <p>Invite your friends to try CareerUpskillers AI Advisor! If they sign up using your link, you'll get a <strong>10% discount</strong> on the ₹199 Career Plan or a <strong>free AI Niche PDF</strong>!</p>
         <input type="text" id="referralLink" value="{referral_link}" readonly>
         <button onclick="copyLink()">Copy Link</button>
@@ -698,16 +730,16 @@ if st.session_state.completed:
         except Exception as e:
             st.error(f"Failed to send referral data: {str(e)}")
 
-    # Feedback Link (Replace with your actual feedback form URL)
+    # Feedback Link
     st.markdown("""
-    <div class="feedback container">
+    <div class="feedback container fade-in">
         <p><strong>We’d love to hear your feedback!</strong> <a href="https://forms.gle/your-feedback-form-link" target="_blank">Share your thoughts here</a>.</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Footer (Repeated at the end for consistency)
+    # Footer (Repeated at the end)
     st.markdown("""
-    <div class="footer container">
+    <div class="footer container fade-in">
         <p>© 2025 CareerUpskillers | <a href="https://www.careerupskillers.com/about-1" target="_blank">Privacy Policy</a> | <a href="https://www.careerupskillers.com/terms-of-service" target="_blank">Terms of Service</a></p>
         <p>Contact us: <a href="mailto:careerupskillers@gmail.com">careerupskillers@gmail.com</a> | Call/WhatsApp: <a href="tel:+917892116728">+91 78921 16728</a></p>
         <p>Follow us: 
