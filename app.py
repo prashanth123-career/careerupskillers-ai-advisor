@@ -11,7 +11,7 @@ import re
 # Set Streamlit page config
 st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🌟", layout="centered")
 
-# Hide Streamlit branding (footer and header)
+# Hide Streamlit branding (footer and header) and enhance styling
 hide_streamlit_style = """
     <style>
     #MainMenu {visibility: hidden;}
@@ -227,10 +227,12 @@ hide_streamlit_style = """
         color: #1A3550;
     }
     .instruction {
-        font-size: 12px;
-        color: #333333;
+        font-size: 14px;
+        color: #FFD700;
         text-align: center;
         margin-top: -4px;
+        font-weight: 600;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
     }
     .time-age-message {
         font-size: 14px;
@@ -293,6 +295,26 @@ hide_streamlit_style = """
         border-radius: 12px;
         padding: 16px;
         margin-top: 80px; /* Adjust for fixed info section */
+    }
+    /* Hide the "Manage App" icon and add a decorative element */
+    div[data-testid="stStatusWidget"] {
+        visibility: hidden;
+    }
+    .branding-overlay {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        z-index: 1000;
+        background: rgba(26, 53, 80, 0.9);
+        padding: 8px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    .branding-overlay p {
+        color: #FFD700;
+        font-size: 12px;
+        margin: 0;
+        font-weight: 500;
     }
     </style>
 """
@@ -817,3 +839,10 @@ if st.session_state.completed:
         </p>
     </div>
     """, unsafe_allow_html=True)
+
+# Add a decorative branding element to cover the "Manage App" icon
+st.markdown("""
+<div class="branding-overlay">
+    <p>🌟 CareerUpskillers</p>
+</div>
+""", unsafe_allow_html=True)
