@@ -28,15 +28,6 @@ st.markdown("""
         padding: 8px;
         box-sizing: border-box;
     }
-    .logo-container {
-        text-align: center;
-        margin-bottom: 10px;
-    }
-    .logo-container img {
-        max-width: 200px;  /* Adjust the size of the logo */
-        width: 100%;
-        height: auto;
-    }
     .flash-alert, .header, .counseling-promo, .career-plan, .cta, .warning, .testimonials, .trust-badge {
         width: 100%;
         padding: 10px;
@@ -150,9 +141,6 @@ st.markdown("""
         .header, .trust-badge {
             padding: 12px;
         }
-        .logo-container img {
-            max-width: 150px;  /* Smaller size for mobile */
-        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -264,14 +252,6 @@ if 'flash_index' not in st.session_state:
 if 'slots_left' not in st.session_state:
     st.session_state.slots_left = random.randint(15, 40)
 
-# Add the logo at the top of the app
-# Using the placeholder direct URL; replace with the actual direct URL if different
-st.markdown("""
-<div class="logo-container">
-    <img src="https://i.imgur.com/yo9uk1I.jpg" alt="Career Upskillers Logo">
-</div>
-""", unsafe_allow_html=True)
-
 # Dynamic Flash Purchase Alert
 flash_countries = ["USA", "India", "UAE", "UK", "USA"]
 flash_country = flash_countries[st.session_state.flash_index % len(flash_countries)]
@@ -307,7 +287,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Questions (including new ones from previous update)
+# Questions (including new ones from previous update, plus years of experience)
 questions = [
     ("👋 What's your Name?", "To personalize your AI roadmap!"),
     ("📧 Email Address:", "Get job insights and gigs!"),
@@ -316,6 +296,7 @@ questions = [
     ("🏢 Can you share more about your current company?", "E.g., industry, size, culture."),
     ("📅 When was your last promotion, and was it with a salary hike or only a position upgrade?", "E.g., 'Jan 2023, with salary hike' or 'June 2022, position upgrade only'."),
     ("⏰ How many hours do you typically spend working for your company each week?", "This helps us understand your work-life balance."),
+    ("💼 How many years of experience do you have in your field?", "Enter a number (e.g., 5). This helps us assess if you're paid fairly."),
     ("🛠️ Your Primary Skills:", "We’ll match AI niches."),
     ("💼 Your Domain:", "Select your professional domain."),
     ("📍 Current Location:", "Find roles near you."),
@@ -326,7 +307,7 @@ questions = [
 
 keys = [
     "name", "email", "phone", "company", "company_details", "last_promotion", 
-    "hours_per_week", "skills", "domain", "location", "salary", 
+    "hours_per_week", "years_of_experience", "skills", "domain", "location", "salary", 
     "other_countries", "exciting_changes"
 ]
 
@@ -349,13 +330,19 @@ if not st.session_state.completed:
             st.markdown(f"<div class='container caption'>Country: {country}</div>", unsafe_allow_html=True)
             phone = st.text_input("Phone Number (e.g., 9876543210)", key="phone_input")
             user_input = f"{code} {phone}" if phone else None
-            # Removed the restriction on specific countries
-        elif st.session_state.q_index == 8:  # Domain selection with "Others" option
+        elif st.session_state.q_index == 9:  # Domain selection with "Others" option
             user_input = st.selectbox("Select your domain", domains, key="domain_input")
             if user_input == "Other":
                 other_domain = st.text_input("Please specify your domain:", key="other_domain_input")
                 user_input = f"Other: {other_domain}" if other_domain else "Other"
-        elif st.session_state.q_index == 10:  # Salary (numeric input with validation)
+        elif st.session_state.q_index == 7:  # Years of experience (numeric input with validation)
+            user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
+            # Validate that the input contains only numbers
+            if user_input:
+                if not user_input.isdigit():
+                    st.error("Please enter a valid number for years of experience (e.g., 5).")
+                    user_input = None  # Prevent form submission with invalid input
+        elif st.session_state.q_index == 11:  # Salary (numeric input with validation)
             user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
             # Validate that the input contains only numbers (and optionally commas)
             if user_input:
@@ -409,7 +396,11 @@ if st.session_state.completed:
 
     # Use the current company provided by the user
     current_company = user.get('company', 'Not Provided')
-    years_of_experience = 8  # Hardcoded for now, can be added to the form if needed
+    years_of_experience = user.get('years_of_experience', '0')  # Use the collected years of experience
+    try:
+        years_of_experience = int(years_of_experience)
+    except ValueError:
+        years_of_experience = 0  # Default to 0 if invalid
     current_role = user.get('domain', 'Data Science')  # Use domain as the role
     
     # Sanitize salary input (already validated in the form)
@@ -440,7 +431,7 @@ if st.session_state.completed:
         - Exciting Changes Desired: {user.get('exciting_changes', 'Not provided')}
 
         Provide the following:
-        1. A profile validation statement comparing the user's salary to the market rate for their role and domain in their location.
+        1. A profile validation statement comparing the user's salary to the market rate for their role and domain in their current location ({user.get('location')}). If the user has specified other countries of interest ({user.get('other_countries')}), also compare their salary to the market rate in those countries. Include specific sources for salary data (e.g., Glassdoor, Indeed, Payscale) and mention the year of the data (e.g., 2024).
         2. Recommended skills to upskill in, relevant to their domain and the AI industry. For example:
            - Data Science: Automation, Machine Learning, Gen AI, Agentic AI
            - Sales: AI-driven CRM tools, Predictive Analytics, Sales Automation
@@ -453,7 +444,7 @@ if st.session_state.completed:
            - Cybersecurity: AI Threat Detection, Machine Learning for Security, Ethical Hacking
            - BPO: AI Chatbots, Process Automation, Customer Sentiment Analysis
            Ensure the skills are varied and not repetitive across users.
-        3. A list of 3 top companies hiring in the user's location for their role or domain, with estimated salaries and sources (e.g., Glassdoor, Indeed). Avoid recommending the following companies as they were recently suggested to other users: {', '.join(recent_companies) if recent_companies else 'None'}. Ensure the companies are diverse and relevant to the user's domain.
+        3. A list of 3 top companies hiring in the user's location for their role or domain, with estimated salaries and sources (e.g., Glassdoor, Indeed, Payscale, 2024 data). Avoid recommending the following companies as they were recently suggested to other users: {', '.join(recent_companies) if recent_companies else 'None'}. Ensure the companies are diverse and relevant to the user's domain.
         4. A brief next step recommendation to achieve a higher salary, considering their hours per week and desired changes.
 
         To ensure variability, use a randomization seed: {session_seed}. Suggest a diverse set of companies and skills to avoid repetition across users.
@@ -483,15 +474,19 @@ if st.session_state.completed:
     except Exception as e:
         # Fallback to a default career plan if the API call fails
         market_salary = current_salary * 1.5
+        other_countries = user.get('other_countries', 'Not provided')
+        salary_comparison = f"In your current location ({user.get('location')}), the market salary for a {current_role} with {years_of_experience} years of experience is around {currency}{market_salary:,} (Source: Glassdoor, 2024 data)."
+        if other_countries != 'Not provided':
+            salary_comparison += f"\nIn {other_countries}, the market salary for a similar role is approximately {currency}{market_salary * 1.2:,} (Source: Payscale, 2024 data)."
         career_plan_text = f"""
-        **Profile Validation:** Based on your profile, we see you have {years_of_experience} years of experience at {current_company} in a {current_role} role. Your current salary of {currency}{current_salary:,} is comparatively underpaid compared to the market salary of {currency}{market_salary:,}.  
+        **Profile Validation:** Based on your profile, we see you have {years_of_experience} years of experience at {current_company} in a {current_role} role. Your current salary of {currency}{current_salary:,} is comparatively underpaid. {salary_comparison}
 
-        **Upskilling Recommendation:** To boost your career and aim for higher-paying roles, we recommend upskilling in skills relevant to your domain. These skills will help you stay ahead in the AI-driven job market.  
+        **Upskilling Recommendation:** To boost your career and aim for higher-paying roles, we recommend upskilling in skills relevant to your domain. These skills will help you stay ahead in the AI-driven job market.
 
-        **Top Companies to Apply to After Upskilling:**  
-        - Company A: {currency}{market_salary + 7500:,} (Source: Glassdoor, 2023 data)  
-        - Company B: {currency}{market_salary + 17500:,} (Source: Indeed, 2023 estimates)  
-        - Company C: {currency}{market_salary + 27500:,} (Source: LinkedIn Salary Insights, 2023)  
+        **Top Companies to Apply to After Upskilling:**
+        - Company A: {currency}{market_salary + 7500:,} (Source: Glassdoor, 2024 data)
+        - Company B: {currency}{market_salary + 17500:,} (Source: Indeed, 2024 estimates)
+        - Company C: {currency}{market_salary + 27500:,} (Source: Payscale, 2024 data)
 
         **Next Step:** To get a detailed plan and career roadmap to achieve a higher salary with your skills, apply for our ₹199 Personalized Career Plan. This roadmap will also help you find free resources to upskill and take your career to the next level!
         """
@@ -499,7 +494,7 @@ if st.session_state.completed:
     # Display the career plan
     career_plan = f"""
     <div class="career-plan container">
-    🎯 **{user.get('name')}'s AI Career Revolution Plan** 🎯  
+    🎯 **{user.get('name')}'s AI Career Revolution Plan** 🎯
     {career_plan_text.replace('**', '<strong>').replace('**', '</strong>')}
     </div>
     """
@@ -517,19 +512,19 @@ if st.session_state.completed:
     # ₹499 AI Freelance Kit as Backup Plan
     st.markdown(f"""
     <div class="career-plan container">
-    <strong>Looking for an Alternative Plan?</strong> As AI is driving automation, always have a backup plan! Take our AI Freelance Kit (worth ₹10,000) for just {currency}499 – a limited period offer!  
+    <strong>Looking for an Alternative Plan?</strong> As AI is driving automation, always have a backup plan! Take our AI Freelance Kit (worth ₹10,000) for just {currency}499 – a limited period offer!
 
-    <strong>What You Get:</strong>  
-    - Spend just 8 hours on weekends (4h Sat, 4h Sun) over 4 weeks to earn ₹90K–₹3L/month.  
-    - Includes YouTube links for learning, bonus AI tools like a chat script and fake news detector (copy-paste and sell to earn ₹15K–₹20K from a basic app).  
-    - Step-by-step guide to set up your freelance account on Upwork and Fiverr, find your niche, and use templates to target customers.  
-    - A 360-degree solution kit: from building your freelance profile to selling to customers.  
+    <strong>What You Get:</strong>
+    - Spend just 8 hours on weekends (4h Sat, 4h Sun) over 4 weeks to earn ₹90K–₹3L/month.
+    - Includes YouTube links for learning, bonus AI tools like a chat script and fake news detector (copy-paste and sell to earn ₹15K–₹20K from a basic app).
+    - Step-by-step guide to set up your freelance account on Upwork and Fiverr, find your niche, and use templates to target customers.
+    - A 360-degree solution kit: from building your freelance profile to selling to customers.
 
-    <strong>How It Works:</strong>  
-    - In the first 2 months, spend 8 hours per weekend to build your niche.  
-    - Once your niche is set, use ready-made content (alter it to customer needs) and sell it in just 3 hours per weekend to earn ₹50K.  
+    <strong>How It Works:</strong>
+    - In the first 2 months, spend 8 hours per weekend to build your niche.
+    - Once your niche is set, use ready-made content (alter it to customer needs) and sell it in just 3 hours per weekend to earn ₹50K.
 
-    <strong>Join Our Community:</strong> Join our 3,000+ success community from the USA, UK, Dubai, Israel, and India. Don’t just rely on a job – it might go at any moment! We have success stories of people who quit their jobs after 8 months and started their own AI business agencies. Be among them and escape the matrix – work for yourself, not for other companies!  
+    <strong>Join Our Community:</strong> Join our 3,000+ success community from the USA, UK, Dubai, Israel, and India. Don’t just rely on a job – it might go at any moment! We have success stories of people who quit their jobs after 8 months and started their own AI business agencies. Be among them and escape the matrix – work for yourself, not for other companies!
     </div>
     """, unsafe_allow_html=True)
 
