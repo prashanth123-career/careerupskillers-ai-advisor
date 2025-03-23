@@ -30,7 +30,7 @@ hide_streamlit_style = """
         padding: 16px;
         box-sizing: border-box;
     }
-    .info-section, .flash-alert, .header, .counseling-promo, .career-plan, .cta, .warning, .testimonials, .trust-badge, .share-section, .footer, .feedback, .ad-section {
+    .info-section, .flash-alert, .header, .counseling-promo, .career-plan, .cta, .warning, .testimonials, .trust-badge, .share-section, .footer, .feedback, .ad-section, .motivational-message {
         width: 100%;
         padding: 16px;
         box-sizing: border-box;
@@ -173,6 +173,13 @@ hide_streamlit_style = """
     }
     .ad-section button:hover {
         transform: scale(1.05);
+    }
+    .motivational-message {
+        background-color: rgba(230, 244, 250, 0.9);
+        text-align: center;
+        border: 1px solid #2AB7CA;
+        color: #1A3550;
+        font-weight: 600;
     }
     h1 {
         font-size: 24px;
@@ -401,6 +408,8 @@ if 'user_data_sent' not in st.session_state:
     st.session_state.user_data_sent = False
 if 'referral_data_sent' not in st.session_state:
     st.session_state.referral_data_sent = False
+if 'show_motivational_message' not in st.session_state:
+    st.session_state.show_motivational_message = False
 
 # Fixed Info Section (Privacy Policy, Terms, Contact Info)
 st.markdown("""
@@ -484,6 +493,16 @@ keys = [
 
 # Form Logic with Progress Bar and Validation
 if not st.session_state.completed:
+    # Show motivational message if the user has just submitted a question
+    if st.session_state.show_motivational_message and st.session_state.q_index < len(questions):
+        st.markdown("""
+        <div class="motivational-message container fade-in">
+            Great! You have almost reached. A little more step to unlock your top opportunities and salary standard on: Are you paid correctly?
+        </div>
+        """, unsafe_allow_html=True)
+        # Reset the flag after displaying the message
+        st.session_state.show_motivational_message = False
+
     q, hint = questions[st.session_state.q_index]
     progress = int((st.session_state.q_index / len(questions)) * 100)
     st.markdown(f"<div class='progress-text container fade-in'>Step {st.session_state.q_index + 1} of {len(questions)}</div>", unsafe_allow_html=True)
@@ -523,7 +542,23 @@ if not st.session_state.completed:
         if st.session_state.q_index == 6:
             st.markdown("<div class='time-age-message'><strong>Time and experience are key to your career growth. Invest them wisely to unlock new opportunities!</strong></div>", unsafe_allow_html=True)
 
-        if st.form_submit_button("Next"):
+        # Add the "Next" button with a double-click requirement
+        submit_button = st.form_submit_button("Next", help="Double-click to submit your answer")
+        st.markdown("<div class='instruction'><strong>Double-click to submit your answer</strong></div>", unsafe_allow_html=True)
+
+        # Add JavaScript to enforce double-click behavior
+        st.markdown("""
+        <script>
+            document.querySelector('button[kind="formSubmit"]').addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent single-click submission
+            });
+            document.querySelector('button[kind="formSubmit"]').addEventListener('dblclick', function() {
+                this.click(); // Trigger the Streamlit form submission on double-click
+            });
+        </script>
+        """, unsafe_allow_html=True)
+
+        if submit_button:
             if user_input:
                 if st.session_state.q_index == 2:
                     phone_part = user_input.split(" ")[1] if len(user_input.split(" ")) > 1 else ""
@@ -538,11 +573,11 @@ if not st.session_state.completed:
 
                 st.session_state.answers[keys[st.session_state.q_index]] = user_input
                 st.session_state.q_index += 1
+                st.session_state.show_motivational_message = True  # Set flag to show motivational message
                 if st.session_state.q_index >= len(questions):
                     st.session_state.completed = True
             else:
                 st.warning("Please provide a valid answer to proceed.")
-        # Removed the double-click instruction
         st.markdown("</div>", unsafe_allow_html=True)
 
 # After Submission
