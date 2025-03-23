@@ -8,19 +8,15 @@ import uuid
 import time
 import re
 
-# Set Streamlit page config
-st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🚀")
+# Set Streamlit page config (remove Streamlit branding)
+st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🚀", layout="centered")
 
-# Add viewport meta tag and mobile-friendly CSS
-st.markdown("""
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f5f5f5;
-    }
+# Hide Streamlit branding (footer and header)
+hide_streamlit_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
     .container {
         width: 100%;
         max-width: 360px;
@@ -28,7 +24,7 @@ st.markdown("""
         padding: 8px;
         box-sizing: border-box;
     }
-    .flash-alert, .header, .counseling-promo, .career-plan, .cta, .warning, .testimonials, .trust-badge {
+    .flash-alert, .header, .counseling-promo, .career-plan, .cta, .warning, .testimonials, .trust-badge, .share-section {
         width: 100%;
         padding: 10px;
         box-sizing: border-box;
@@ -54,6 +50,30 @@ st.markdown("""
         background-color: #e6f0ff;
         text-align: center;
         border: 1px solid #1E90FF;
+    }
+    .share-section {
+        background-color: #f0f9ff;
+        text-align: center;
+        border: 1px solid #1E90FF;
+    }
+    .share-section button {
+        background-color: #1E90FF;
+        color: white;
+        margin: 5px;
+        padding: 8px 16px;
+        font-size: 14px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        min-height: 36px;
+    }
+    .share-section input {
+        width: 80%;
+        padding: 8px;
+        font-size: 14px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        margin: 5px 0;
     }
     h1 {
         font-size: 20px;
@@ -142,8 +162,9 @@ st.markdown("""
             padding: 12px;
         }
     }
-</style>
-""", unsafe_allow_html=True)
+    </style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 # Load API key and Google Sheets URL
 openai.api_key = st.secrets["API_KEY"]
@@ -265,25 +286,24 @@ st.markdown(f"""
 st.session_state.flash_index += 1
 st.session_state.slots_left = max(5, st.session_state.slots_left - random.randint(1, 2))
 
-# Header with Countdown Timer
+# Updated Header with Welcome Message
 end_date = datetime(2025, 3, 31)
 time_left = end_date - datetime.now()
 days_left = time_left.days
 
 st.markdown(f"""
 <div class="header container">
-    <h1 style="color: #1E90FF;">🚀 Unlock Your AI Career Revolution!</h1>
-    <p><strong>Automation is reshaping jobs. Earn ₹90K–₹3L/month with AI freelancing—even from scratch.</strong></p>
-    <p><strong>Over 3,000+ learners from the USA, UK, UAE, Israel & India trust us!</strong></p>
-    <p style="color: #FF4500; font-weight: bold;">Is your skillset future-proof?</p>
+    <h1 style="color: #1E90FF;">🚀 Welcome to CareerUpskillers AI Advisor!</h1>
+    <p><strong>We’ve helped over 3,000 professionals in the USA, UK, UAE, Israel, and India unlock their career potential with AI.</strong></p>
+    <p style="color: #FF4500; font-weight: bold;">Are you ready to future-proof your career?</p>
     <p style="color: #228B22;">⏳ Only {days_left} days left to grab this deal!</p>
 </div>
 """, unsafe_allow_html=True)
 
-# New Section: Free AI Career Counseling
+# Updated Call-to-Action
 st.markdown(f"""
 <div class="counseling-promo container">
-    <p style="color: #1E90FF; font-weight: bold;">🚀 Get Free AI Career Counseling – Discover if You're Paid Fairly, Unlock Better Opportunities & Explore Top Companies Hiring for Your Skills!</p>
+    <p style="color: #1E90FF; font-weight: bold;">🚀 Start Your Free AI Career Counseling Now – Discover Your Market Value & Top Opportunities!</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -543,10 +563,10 @@ if st.session_state.completed:
     </div>
     """, unsafe_allow_html=True)
 
-    # Testimonials with bold and flashing effect
+    # Updated Testimonials with More Details
     testimonials = [
-        "“Landed a $2K gig with the AI Kit!” – Alex, USA",
-        "“From zero to ₹1L/month in 6 weeks!” – Neha, India",
+        "“Landed a $2K gig with the AI Kit! This app helped me pivot my career in just 6 weeks.” – Alex, Data Scientist, USA",
+        "“From zero to ₹1L/month in 6 weeks! The career plan was a game-changer.” – Neha, Marketing Professional, India",
     ]
     selected_testimonial = random.choice(testimonials)
     st.markdown(f"""
@@ -555,10 +575,67 @@ if st.session_state.completed:
     </div>
     """, unsafe_allow_html=True)
 
-    # Trust Badge
+    # Updated Trust Badge with Security Note
     st.markdown(f"""
     <div class="trust-badge container">
+        <p><strong>📈 Trusted by 3,000+ learners worldwide!</strong></p>
         <p><strong>🎁 Free AI Niche PDF + Chatbot access after payment!</strong></p>
-        <p><strong>📩 Trusted by 3,000+ learners—check your email post-payment!</strong></p>
+        <p><strong>🔒 Your data is secure with us. We use HTTPS and comply with privacy regulations.</strong></p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Share with Friends Section
+    base_url = "https://www.careerupskillers.com"  # Replace with your custom domain
+    referral_link = f"{base_url}?ref={st.session_state.session_id}"
+
+    share_message = f"🚀 I just got my personalized AI Career Plan from CareerUpskillers AI Advisor! It helped me discover if I'm paid fairly and find top companies hiring for my skills. Check it out: {referral_link}"
+    encoded_message = requests.utils.quote(share_message)
+
+    st.markdown(f"""
+    <div class="share-section container">
+        <p style="color: #1E90FF; font-weight: bold;">🌟 Share with Friends & Earn Rewards!</p>
+        <p>Invite your friends to try CareerUpskillers AI Advisor! If they sign up using your link, you'll get a <strong>10% discount</strong> on the ₹199 Career Plan or a <strong>free AI Niche PDF</strong>!</p>
+        <input type="text" id="referralLink" value="{referral_link}" readonly>
+        <button onclick="copyLink()">Copy Link</button>
+        <br>
+        <a href="https://wa.me/?text={encoded_message}" target="_blank"><button>Share on WhatsApp</button></a>
+        <a href="mailto:?subject=Check out CareerUpskillers AI Advisor!&body={encoded_message}" target="_blank"><button>Share via Email</button></a>
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url={referral_link}" target="_blank"><button>Share on LinkedIn</button></a>
+        <a href="https://twitter.com/intent/tweet?text={encoded_message}" target="_blank"><button>Share on Twitter</button></a>
+    </div>
+    <script>
+        function copyLink() {{
+            var link = document.getElementById("referralLink");
+            link.select();
+            document.execCommand("copy");
+            alert("Referral link copied to clipboard!");
+        }}
+    </script>
+    """, unsafe_allow_html=True)
+
+    # Send referral data to Google Sheets
+    referral_data = {
+        "session_id": st.session_state.session_id,
+        "referral_link": referral_link,
+        "user_email": user.get('email', 'N/A'),
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    try:
+        requests.post(google_sheets_url, json=referral_data)
+    except:
+        pass
+
+    # Footer with Privacy Policy and Contact Info
+    st.markdown("""
+    <div class="footer container" style="text-align: center; padding: 10px; background-color: #f0f2f6; margin-top: 20px;">
+        <p>© 2025 CareerUpskillers | <a href="https://www.careerupskillers.com/privacy-policy" target="_blank">Privacy Policy</a> | <a href="https://www.careerupskillers.com/terms-of-service" target="_blank">Terms of Service</a></p>
+        <p>Contact us: support@careerupskillers.com</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Feedback Link
+    st.markdown("""
+    <div class="feedback container" style="text-align: center; margin-top: 20px;">
+        <p><strong>We’d love to hear your feedback!</strong> <a href="https://forms.gle/your-feedback-form-link" target="_blank">Share your thoughts here</a>.</p>
     </div>
     """, unsafe_allow_html=True)
