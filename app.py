@@ -24,7 +24,7 @@ hide_streamlit_style = """
         padding: 8px;
         box-sizing: border-box;
     }
-    .flash-alert, .header, .counseling-promo, .career-plan, .cta, .warning, .testimonials, .trust-badge, .share-section {
+    .flash-alert, .header, .counseling-promo, .career-plan, .cta, .warning, .testimonials, .trust-badge, .share-section, .footer, .feedback {
         width: 100%;
         padding: 10px;
         box-sizing: border-box;
@@ -52,7 +52,7 @@ hide_streamlit_style = """
         border: 1px solid #1E90FF;
     }
     .share-section {
-        background-color: #f0f9ff;
+        background-color: #e6f0ff; /* Brightened to match counseling-promo */
         text-align: center;
         border: 1px solid #1E90FF;
     }
@@ -74,6 +74,34 @@ hide_streamlit_style = """
         border-radius: 5px;
         border: 1px solid #ccc;
         margin: 5px 0;
+    }
+    .footer {
+        background-color: #e6f0ff; /* Brightened to match other sections */
+        text-align: center;
+        padding: 10px;
+        margin-top: 20px;
+    }
+    .footer p {
+        color: #333;
+        font-weight: bold; /* Make text bolder for better visibility */
+    }
+    .footer a {
+        color: #1E90FF;
+        text-decoration: none;
+    }
+    .footer a:hover {
+        text-decoration: underline;
+    }
+    .feedback {
+        text-align: center;
+        background-color: #f0f2f6;
+    }
+    .feedback a {
+        color: #1E90FF;
+        text-decoration: none;
+    }
+    .feedback a:hover {
+        text-decoration: underline;
     }
     h1 {
         font-size: 20px;
@@ -625,17 +653,17 @@ if st.session_state.completed:
     except:
         pass
 
-    # Footer with Privacy Policy and Contact Info
+    # Updated Footer with Correct Privacy Policy Link
     st.markdown("""
-    <div class="footer container" style="text-align: center; padding: 10px; background-color: #f0f2f6; margin-top: 20px;">
-        <p>© 2025 CareerUpskillers | <a href="https://www.careerupskillers.com/privacy-policy" target="_blank">Privacy Policy</a> | <a href="https://www.careerupskillers.com/terms-of-service" target="_blank">Terms of Service</a></p>
+    <div class="footer container">
+        <p>© 2025 CareerUpskillers | <a href="https://www.careerupskillers.com/about-1" target="_blank">Privacy Policy</a> | <a href="https://www.careerupskillers.com/terms-of-service" target="_blank">Terms of Service</a></p>
         <p>Contact us: support@careerupskillers.com</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Feedback Link
+    # Feedback Link (Replace with your actual feedback form URL)
     st.markdown("""
-    <div class="feedback container" style="text-align: center; margin-top: 20px;">
+    <div class="feedback container">
         <p><strong>We’d love to hear your feedback!</strong> <a href="https://forms.gle/your-feedback-form-link" target="_blank">Share your thoughts here</a>.</p>
     </div>
     """, unsafe_allow_html=True)
