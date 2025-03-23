@@ -95,8 +95,8 @@ st.markdown("""
     }
     .testimonials {
         text-align: center;
-        background-color: #e6ffe6;  /* Light green background */
-        color: #333;  /* Dark text color for better contrast */
+        background-color: #e6ffe6;
+        color: #333;
     }
     .flash {
         animation: flash 1.5s infinite;
@@ -111,7 +111,9 @@ st.markdown("""
             font-size: 18px;
         }
         p, li, .caption {
-            font-size: 12px;
+            font-size: 13px;  /* Increased from 12px to 13px for better readability */
+            line-height: 1.5;  /* Increased line-height for better spacing */
+            margin: 6px 0;  /* Increased margin for better spacing */
         }
         button {
             font-size: 14px;
@@ -119,6 +121,9 @@ st.markdown("""
         }
         .flash-alert {
             font-size: 12px;
+        }
+        .header, .trust-badge {
+            padding: 12px;  /* Increased padding to ensure text fits */
         }
     }
 </style>
@@ -425,7 +430,7 @@ if st.session_state.completed:
     # Trust Badge
     st.markdown(f"""
     <div class="trust-badge container" style="background:#e6ffe6;text-align:center;">
-        🎁 Free AI Niche PDF + Chatbot access after payment!<br>
-        📩 Trusted by 3,000+ learners—check your email post-payment!
+        <p>🎁 Free AI Niche PDF + Chatbot access after payment!</p>
+        <p>📩 Trusted by 3,000+ learners—check your email post-payment!</p>
     </div>
     """, unsafe_allow_html=True)
