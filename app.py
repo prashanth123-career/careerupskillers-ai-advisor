@@ -19,9 +19,8 @@ hide_streamlit_style = """
     header {visibility: hidden;}
     body {
         font-family: 'Inter', 'Roboto', sans-serif;
-        background: url('YOUR_BACKGROUND_IMAGE_URL') no-repeat center center fixed;
-        background-size: cover;
-        color: #333333;
+        background: linear-gradient(135deg, #1A3550 0%, #2AB7CA 100%); /* Classy gradient background */
+        color: #FFFFFF;
     }
     .container {
         width: 100%;
@@ -38,35 +37,38 @@ hide_streamlit_style = """
         margin-bottom: 16px;
         overflow-wrap: break-word;
         word-wrap: break-word;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     .info-section {
         position: fixed;
         top: 0;
         left: 50%;
         transform: translateX(-50%);
-        background: rgba(26, 53, 80, 0.9);
-        color: #FFD700;
+        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%); /* Brighter gradient */
+        color: #FFFFFF;
         text-align: center;
         z-index: 1000;
         max-width: 400px;
+        border-bottom: 2px solid #FFD700; /* Gold accent */
     }
     .info-section p {
-        color: #FFD700;
-        font-size: 12px;
+        color: #FFFFFF;
+        font-size: 13px;
         margin: 4px 0;
+        font-weight: 600;
     }
     .info-section a {
-        color: #2AB7CA;
+        color: #FFD700; /* Gold links */
         text-decoration: none;
-        font-weight: 500;
+        font-weight: 600;
     }
     .info-section a:hover {
         text-decoration: underline;
+        color: #FFFFFF;
     }
     .flash-alert {
         background-color: #FFF9E6;
-        color: #856404;
+        color: #1A3550;
         font-size: 14px;
         line-height: 1.4;
         border: 1px solid #FFD700;
@@ -184,13 +186,13 @@ hide_streamlit_style = """
     h1 {
         font-size: 24px;
         margin: 12px 0;
-        color: #1A3550;
+        color: #FFFFFF; /* Brighter text */
     }
     p, li, .caption {
         font-size: 14px;
         line-height: 1.5;
         margin: 6px 0;
-        color: #333333;
+        color: #E0E7FF; /* Softer white for readability */
     }
     button {
         width: 100%;
@@ -203,8 +205,9 @@ hide_streamlit_style = """
         margin: 12px auto;
         display: block;
         min-height: 48px;
-        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
-        color: #FFFFFF;
+        background: linear-gradient(90deg, #FFD700 0%, #FF6F61 100%); /* Bright gold to coral gradient */
+        color: #1A3550;
+        font-weight: 600;
         transition: transform 0.2s ease;
     }
     button:hover {
@@ -215,28 +218,30 @@ hide_streamlit_style = """
         padding: 12px;
         font-size: 15px;
         border-radius: 8px;
-        border: 1px solid #2AB7CA;
+        border: 2px solid #2AB7CA; /* Stronger border */
         margin: 8px 0;
         box-sizing: border-box;
-        background-color: rgba(255, 255, 255, 0.9);
-    }
-    .progress-text {
-        font-size: 14px;
-        text-align: center;
-        margin: 8px 0;
+        background-color: #FFFFFF; /* Solid white background */
         color: #1A3550;
     }
+    .progress-text {
+        font-size: 16px; /* Larger text */
+        text-align: center;
+        margin: 8px 0;
+        color: #FFD700; /* Bright gold */
+        font-weight: 600;
+    }
     .instruction {
-        font-size: 14px;
-        color: #FFD700;
+        font-size: 16px; /* Larger text */
+        color: #FF6F61; /* Bright coral */
         text-align: center;
         margin-top: -4px;
         font-weight: 600;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Stronger shadow */
     }
     .time-age-message {
         font-size: 14px;
-        color: #333333;
+        color: #FFFFFF;
         text-align: center;
         margin: 12px 0;
     }
@@ -261,7 +266,7 @@ hide_streamlit_style = """
         100% { opacity: 1; }
     }
     .stProgress > div > div > div {
-        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
+        background: linear-gradient(90deg, #FFD700 0%, #FF6F61 100%); /* Brighter gradient */
     }
     @media (max-width: 600px) {
         h1 {
@@ -291,10 +296,11 @@ hide_streamlit_style = """
         100% { opacity: 1; }
     }
     .form-container {
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.95); /* Slightly more opaque */
         border-radius: 12px;
         padding: 16px;
         margin-top: 80px; /* Adjust for fixed info section */
+        border: 1px solid #2AB7CA; /* Teal border */
     }
     /* Hide the "Manage App" icon and add a decorative element */
     div[data-testid="stStatusWidget"] {
@@ -305,20 +311,71 @@ hide_streamlit_style = """
         bottom: 10px;
         right: 10px;
         z-index: 1000;
-        background: rgba(26, 53, 80, 0.9);
+        background: linear-gradient(90deg, #FFD700 0%, #FF6F61 100%); /* Bright gradient */
         padding: 8px;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
     .branding-overlay p {
-        color: #FFD700;
+        color: #1A3550;
         font-size: 12px;
         margin: 0;
-        font-weight: 500;
+        font-weight: 600;
     }
     </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+# JavaScript to detect Mobile OS and Exact Location
+st.markdown("""
+<script>
+    // Detect Mobile OS
+    function detectMobileOS() {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        if (/android/i.test(userAgent)) {
+            return "Android";
+        }
+        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+            return "iOS";
+        }
+        if (/windows phone/i.test(userAgent)) {
+            return "Windows Phone";
+        }
+        return "Unknown";
+    }
+
+    // Get Exact Location
+    function getExactLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    document.getElementById("exactLocation").value = `${latitude}, ${longitude}`;
+                },
+                (error) => {
+                    console.log("Geolocation error:", error);
+                    document.getElementById("exactLocation").value = "Not provided";
+                }
+            );
+        } else {
+            document.getElementById("exactLocation").value = "Geolocation not supported";
+        }
+    }
+
+    // Set Mobile OS and trigger location detection on page load
+    window.onload = function() {
+        document.getElementById("mobileOS").value = detectMobileOS();
+        getExactLocation();
+    };
+</script>
+""", unsafe_allow_html=True)
+
+# Hidden inputs to store Mobile OS and Exact Location
+st.markdown("""
+<input type="hidden" id="mobileOS" name="mobileOS">
+<input type="hidden" id="exactLocation" name="exactLocation">
+""", unsafe_allow_html=True)
 
 # Load API key and Google Sheets URL
 openai.api_key = st.secrets["API_KEY"]
@@ -409,6 +466,18 @@ domains = [
     "Software Testing", "Hardware Testing", "Cybersecurity", "BPO", "Other"
 ]
 
+# Employment status options
+employment_statuses = ["Fresher", "Freelancer", "Own Business", "Student", "Experienced"]
+
+# Education background options for freshers/students
+education_backgrounds = [
+    "High School", "Diploma", "Bachelor’s Degree", "Master’s Degree", "PhD", "Other"
+]
+
+# Passout year options (last 10 years)
+current_year = datetime.now().year
+passout_years = [str(year) for year in range(current_year, current_year - 10, -1)]
+
 # Initialize global cache for recent company recommendations
 if 'recent_companies' not in st.session_state:
     st.session_state.recent_companies = []
@@ -432,6 +501,8 @@ if 'referral_data_sent' not in st.session_state:
     st.session_state.referral_data_sent = False
 if 'show_motivational_message' not in st.session_state:
     st.session_state.show_motivational_message = False
+if 'employment_status' not in st.session_state:
+    st.session_state.employment_status = None
 
 # Fixed Info Section (Privacy Policy, Terms, Contact Info)
 st.markdown("""
@@ -494,23 +565,24 @@ questions = [
     ("👤 What's your Name?", "To personalize your AI roadmap!"),
     ("📧 Email Address:", "Get job insights and gigs!"),
     ("📞 Phone Number:", "Select your country code and enter your phone number (e.g., 9876543210)."),
-    ("🏢 Current Company:", "Where do you currently work?"),
-    ("🏢 Can you share more about your current company?", "E.g., industry, size, culture."),
-    ("📅 When was your last promotion, and was it with a salary hike or only a position upgrade?", "E.g., 'Jan 2023, with salary hike' or 'June 2022, position upgrade only'."),
-    ("⏰ How many hours do you typically spend working for your company each week?", "This helps us understand your work-life balance."),
-    ("💼 How many years of experience do you have in your field?", "Enter a number (e.g., 5). This helps us assess if you're paid fairly."),
-    ("🛠️ Your Primary Skills:", "We’ll match AI niches."),
     ("💼 Your Domain:", "Select your professional domain."),
-    ("📍 Current Location:", "Find roles near you."),
-    ("💰 Monthly Salary (in your currency):", "Compare with market rates. Enter numbers only (e.g., 50000)."),
-    ("🌍 Are there any other countries where you’d be interested in working?", "List countries you’d like to explore for future opportunities (e.g., 'USA, Canada, Germany')."),
-    ("✨ What changes in your career or workplace would excite you the most?", "E.g., 'More remote work options, better mentorship, or higher salary'."),
+    ("💼 How many years of experience do you have in your field?", "Enter a number (e.g., 5). This helps us assess if you're paid fairly."),
+    ("📊 Employment Status:", "Select your current employment status."),
+    ("🎓 Education Background:", "Select your highest education level (for Freshers/Students)."),
+    ("📅 Passout Year:", "Select your passout year (for Freshers/Students)."),
+    ("🏢 Company Working In:", "Where do you currently work? (For Freelancers: Which platform do you use, e.g., Upwork, Fiverr?)"),
+    ("🛠️ Your Relevant Skill Set:", "We’ll match AI niches."),
+    ("🌍 Country:", "Select your country."),
+    ("📍 Location:", "Find roles near you (e.g., city or region)."),
+    ("💰 Current Salary (in your currency):", "Compare with market rates. Enter numbers only (e.g., 50000)."),
+    ("💰 Expected Salary (in your currency):", "What salary are you aiming for? Enter numbers only (e.g., 60000)."),
+    ("🔄 Looking for a Job Change?", "Are you looking to change jobs? (Yes/No)"),
 ]
 
 keys = [
-    "name", "email", "phone", "company", "company_details", "last_promotion", 
-    "hours_per_week", "years_of_experience", "skills", "domain", "location", "salary", 
-    "other_countries", "exciting_changes"
+    "name", "email", "phone", "domain", "years_of_experience", "employment_status", 
+    "education_background", "passout_year", "company", "skills", "country", "location", 
+    "current_salary", "expected_salary", "job_change", "job_change_reason"
 ]
 
 # Form Logic with Progress Bar and Validation
@@ -519,50 +591,91 @@ if not st.session_state.completed:
     if st.session_state.show_motivational_message and st.session_state.q_index < len(questions):
         st.markdown("""
         <div class="motivational-message container fade-in">
-            Great! You have almost reached. A little more step to unlock your top opportunities and salary standard on: Are you paid correctly?
+            Great! You’re almost there. Just a few more steps to unlock your top opportunities and salary insights!
         </div>
         """, unsafe_allow_html=True)
         # Reset the flag after displaying the message
         st.session_state.show_motivational_message = False
 
-    q, hint = questions[st.session_state.q_index]
-    progress = int((st.session_state.q_index / len(questions)) * 100)
-    st.markdown(f"<div class='progress-text container fade-in'>Step {st.session_state.q_index + 1} of {len(questions)}</div>", unsafe_allow_html=True)
+    # Adjust the total number of questions dynamically based on employment status and job change
+    total_questions = len(questions)
+    if st.session_state.q_index >= 5:
+        if st.session_state.employment_status not in ["Fresher", "Student"]:
+            if st.session_state.q_index in [6, 7]:  # Skip Education Background and Passout Year
+                st.session_state.q_index += 1
+                total_questions -= 2
+        if st.session_state.employment_status in ["Fresher", "Student", "Own Business"]:
+            if st.session_state.q_index == 8:  # Skip "Company Working In"
+                st.session_state.q_index += 1
+                total_questions -= 1
+            if st.session_state.employment_status in ["Fresher", "Student"] and st.session_state.q_index == 12:  # Skip "Current Salary"
+                st.session_state.q_index += 1
+                total_questions -= 1
+    if st.session_state.q_index == 14 and st.session_state.answers.get("job_change") == "No":
+        total_questions -= 1  # Skip the "Reason for Job Change" question
+
+    # Progress bar
+    progress = int((st.session_state.q_index / total_questions) * 100)
+    st.markdown(f"<div class='progress-text container fade-in'>Step {st.session_state.q_index + 1} of {total_questions}</div>", unsafe_allow_html=True)
     st.progress(progress)
-    
+
+    # Form for each question
     with st.form(key=f"form_{st.session_state.q_index}"):
+        q, hint = questions[st.session_state.q_index]
         st.markdown(f"<div class='form-container container fade-in'><strong>{q}</strong>", unsafe_allow_html=True)
         st.markdown(f"<div class='container caption'>{hint}</div>", unsafe_allow_html=True)
-        
-        if st.session_state.q_index == 2:
+
+        user_input = None
+        if st.session_state.q_index == 2:  # Phone Number
             code = st.selectbox("Country Code", sorted(list(dial_codes.keys())), index=0, key="country_code_input")
             country = dial_codes.get(code, "Unknown")
             st.markdown(f"<div class='container caption'>Country: {country}</div>", unsafe_allow_html=True)
             phone = st.text_input("Phone Number (e.g., 9876543210)", key="phone_input")
             user_input = f"{code} {phone}" if phone else None
-        elif st.session_state.q_index == 9:
+        elif st.session_state.q_index == 3:  # Domain
             user_input = st.selectbox("Select your domain", domains, key="domain_input")
             if user_input == "Other":
                 other_domain = st.text_input("Please specify your domain:", key="other_domain_input")
                 user_input = f"Other: {other_domain}" if other_domain else "Other"
-        elif st.session_state.q_index == 7:
-            user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
-            if user_input:
-                if not user_input.isdigit():
+        elif st.session_state.q_index == 4:  # Years of Experience
+            if st.session_state.employment_status in ["Fresher", "Student"]:
+                user_input = "0"
+                st.markdown(f"<div class='container caption'>Years of Experience set to 0 for {st.session_state.employment_status}.</div>", unsafe_allow_html=True)
+            else:
+                user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
+                if user_input and not user_input.isdigit():
                     st.error("Please enter a valid number for years of experience (e.g., 5).")
                     user_input = None
-        elif st.session_state.q_index == 11:
+        elif st.session_state.q_index == 5:  # Employment Status
+            user_input = st.selectbox("Select your employment status", employment_statuses, key="employment_status_input")
+            st.session_state.employment_status = user_input
+        elif st.session_state.q_index == 6:  # Education Background
+            user_input = st.selectbox("Select your education background", education_backgrounds, key="education_background_input")
+            if user_input == "Other":
+                other_education = st.text_input("Please specify your education background:", key="other_education_input")
+                user_input = f"Other: {other_education}" if other_education else "Other"
+        elif st.session_state.q_index == 7:  # Passout Year
+            user_input = st.selectbox("Select your passout year", passout_years, key="passout_year_input")
+        elif st.session_state.q_index == 8:  # Company Working In
+            if st.session_state.employment_status == "Freelancer":
+                user_input = st.text_input("Which platform do you freelance on? (e.g., Upwork, Fiverr)", key=f"input_{st.session_state.q_index}")
+            else:
+                user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
+        elif st.session_state.q_index in [12, 13]:  # Current Salary, Expected Salary
             user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
             if user_input:
                 cleaned_input = user_input.replace(',', '')
                 if not cleaned_input.isdigit():
                     st.error("Please enter a valid salary (numbers only, e.g., 50000).")
                     user_input = None
+        elif st.session_state.q_index == 10:  # Country
+            user_input = st.selectbox("Select your country", sorted(list(dial_codes.values())), key="country_input")
+        elif st.session_state.q_index == 14:  # Looking for a Job Change
+            user_input = st.selectbox("Select an option", ["Yes", "No"], key="job_change_input")
+        elif st.session_state.q_index == 15:  # Reason for Job Change
+            user_input = st.text_input("Please specify your reason for looking for a job change:", key="job_change_reason_input")
         else:
             user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
-
-        if st.session_state.q_index == 6:
-            st.markdown("<div class='time-age-message'><strong>Time and experience are key to your career growth. Invest them wisely to unlock new opportunities!</strong></div>", unsafe_allow_html=True)
 
         # Add the "Next" button with a double-click requirement
         submit_button = st.form_submit_button("Next", help="Double-click to submit your answer")
@@ -582,13 +695,13 @@ if not st.session_state.completed:
 
         if submit_button:
             if user_input:
-                if st.session_state.q_index == 2:
+                if st.session_state.q_index == 2:  # Phone Number Validation
                     phone_part = user_input.split(" ")[1] if len(user_input.split(" ")) > 1 else ""
                     if not phone_part.isdigit() or len(phone_part) != 10:
                         st.error("Please enter a valid phone number (exactly 10 digits, e.g., 9876543210).")
                         st.stop()
                 
-                if st.session_state.q_index == 1:
+                if st.session_state.q_index == 1:  # Email Validation
                     if "@" not in user_input or "." not in user_input:
                         st.error("Please enter a valid email address (e.g., example@domain.com).")
                         st.stop()
@@ -596,7 +709,18 @@ if not st.session_state.completed:
                 st.session_state.answers[keys[st.session_state.q_index]] = user_input
                 st.session_state.q_index += 1
                 st.session_state.show_motivational_message = True  # Set flag to show motivational message
-                if st.session_state.q_index >= len(questions):
+
+                # Skip questions based on employment status
+                if st.session_state.employment_status not in ["Fresher", "Student"]:
+                    if st.session_state.q_index == 6:  # Skip Education Background
+                        st.session_state.q_index += 1
+                    if st.session_state.q_index == 7:  # Skip Passout Year
+                        st.session_state.q_index += 1
+                if st.session_state.q_index == 8 and st.session_state.employment_status in ["Fresher", "Student", "Own Business"]:
+                    st.session_state.q_index += 1  # Skip "Company Working In"
+                if st.session_state.q_index == 12 and st.session_state.employment_status in ["Fresher", "Student"]:
+                    st.session_state.q_index += 1  # Skip "Current Salary"
+                if st.session_state.q_index == 15 or (st.session_state.q_index == 14 and st.session_state.answers.get("job_change") == "No"):
                     st.session_state.completed = True
             else:
                 st.warning("Please provide a valid answer to proceed.")
@@ -606,7 +730,15 @@ if not st.session_state.completed:
 if st.session_state.completed:
     user = st.session_state.answers
     user["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
+    user["is_fresher"] = "Yes" if st.session_state.employment_status in ["Fresher", "Student"] else "No"
+    user["session_id"] = st.session_state.session_id
+    user["referral_link"] = f"https://www.careerupskillers.com?ref={st.session_state.session_id}"
+
+    # Add Mobile OS and Exact Location (from JavaScript)
+    user["mobile_os"] = "Unknown"  # Default value
+    user["exact_location"] = "Not provided"  # Default value
+    # Note: These values will be updated by JavaScript in the browser
+
     if not st.session_state.user_data_sent:
         try:
             response = requests.post(google_sheets_url, json=user)
@@ -615,8 +747,7 @@ if st.session_state.completed:
         except Exception as e:
             st.error(f"Failed to send user data: {str(e)}")
 
-    country_code = user['phone'].split()[0]
-    country = dial_codes.get(country_code, "Unknown")
+    country = user.get('country', "Unknown")
     currency = currency_map.get(country, "USD")
 
     current_company = user.get('company', 'Not Provided')
@@ -627,9 +758,13 @@ if st.session_state.completed:
         years_of_experience = 0
     current_role = user.get('domain', 'Data Science')
     
-    salary_input = user.get('salary', '0').replace(',', '')
+    salary_input = user.get('current_salary', '0').replace(',', '')
     salary_cleaned = re.sub(r'[^0-9]', '', salary_input)
     current_salary = int(salary_cleaned) if salary_cleaned else 0
+
+    expected_salary_input = user.get('expected_salary', '0').replace(',', '')
+    expected_salary_cleaned = re.sub(r'[^0-9]', '', expected_salary_input)
+    expected_salary = int(expected_salary_cleaned) if expected_salary_cleaned else 0
 
     try:
         session_seed = hash(st.session_state.session_id + user.get('name', '')) % 1000
@@ -639,23 +774,26 @@ if st.session_state.completed:
         You are a career counselor specializing in AI and tech roles across various domains. Based on the following user profile, provide a detailed career plan:
         - Name: {user.get('name')}
         - Current Role: {current_role}
+        - Employment Status: {user.get('employment_status')}
+        - Education Background: {user.get('education_background', 'Not provided')}
+        - Passout Year: {user.get('passout_year', 'Not provided')}
         - Current Company: {current_company}
-        - Company Details: {user.get('company_details', 'Not provided')}
-        - Last Promotion: {user.get('last_promotion', 'Not provided')}
-        - Hours per Week: {user.get('hours_per_week', 'Not provided')}
         - Years of Experience: {years_of_experience}
         - Primary Skills: {user.get('skills')}
         - Domain: {user.get('domain')}
+        - Country: {user.get('country')}
         - Location: {user.get('location')}
         - Current Salary: {currency}{current_salary:,}
-        - Other Countries of Interest: {user.get('other_countries', 'Not provided')}
-        - Exciting Changes Desired: {user.get('exciting_changes', 'Not provided')}
+        - Expected Salary: {currency}{expected_salary:,}
+        - Looking for Job Change: {user.get('job_change', 'Not provided')}
+        - Reason for Job Change: {user.get('job_change_reason', 'Not provided')}
+        - Is Fresher: {user.get('is_fresher')}
 
         Provide the following:
-        1. A profile validation statement comparing the user's salary to the market rate for their role and domain in their current location ({user.get('location')}). If the user has specified other countries of interest ({user.get('other_countries')}), also compare their salary to the market rate in those countries. Include specific sources for salary data (e.g., Glassdoor, Indeed, Payscale) and mention the year of the data (e.g., 2024).
+        1. A profile validation statement comparing the user's salary to the market rate for their role and domain in their current location ({user.get('location')}). Include specific sources for salary data (e.g., Glassdoor, Indeed, Payscale) and mention the year of the data (e.g., 2024).
         2. Recommended skills to upskill in, relevant to their domain and the AI industry.
         3. A list of 3 top companies hiring in the user's location for their role or domain, with estimated salaries and sources (e.g., Glassdoor, Indeed, Payscale, 2024 data). Avoid recommending the following companies: {', '.join(recent_companies) if recent_companies else 'None'}.
-        4. A brief next step recommendation to achieve a higher salary, considering their hours per week and desired changes.
+        4. A brief next step recommendation to achieve their expected salary, considering their employment status and job change preference.
 
         To ensure variability, use a randomization seed: {session_seed}.
 
@@ -678,22 +816,19 @@ if st.session_state.completed:
         st.session_state.recent_companies = st.session_state.recent_companies[-10:]
 
     except Exception as e:
-        market_salary = current_salary * 1.5
-        other_countries = user.get('other_countries', 'Not provided')
+        market_salary = current_salary * 1.5 if current_salary > 0 else expected_salary * 0.8
         salary_comparison = f"In your current location ({user.get('location')}), the market salary for a {current_role} with {years_of_experience} years of experience is around {currency}{market_salary:,} (Source: Glassdoor, 2024 data)."
-        if other_countries != 'Not provided':
-            salary_comparison += f"\nIn {other_countries}, the market salary for a similar role is approximately {currency}{market_salary * 1.2:,} (Source: Payscale, 2024 data)."
         career_plan_text = f"""
-        **Profile Validation:** Based on your profile, we see you have {years_of_experience} years of experience at {current_company} in a {current_role} role. Your current salary of {currency}{current_salary:,} is comparatively underpaid. {salary_comparison}
+        **Profile Validation:** Based on your profile, we see you have {years_of_experience} years of experience in a {current_role} role. Your current salary of {currency}{current_salary:,} is {'comparatively underpaid' if current_salary > 0 else 'not applicable (fresher/student)'}. {salary_comparison}
 
-        **Upskilling Recommendation:** To boost your career and aim for higher-paying roles, we recommend upskilling in skills relevant to your domain. These skills will help you stay ahead in the AI-driven job market.
+        **Upskilling Recommendation:** To boost your career and aim for your expected salary of {currency}{expected_salary:,}, we recommend upskilling in skills relevant to your domain. These skills will help you stay ahead in the AI-driven job market.
 
         **Top Companies to Apply to After Upskilling:**
         - Company A: {currency}{market_salary + 7500:,} (Source: Glassdoor, 2024 data)
         - Company B: {currency}{market_salary + 17500:,} (Source: Indeed, 2024 estimates)
         - Company C: {currency}{market_salary + 27500:,} (Source: Payscale, 2024 data)
 
-        **Next Step:** To get a detailed plan and career roadmap to achieve a higher salary with your skills, apply for our ₹199 Personalized Career Plan. This roadmap will also help you find free resources to upskill and take your career to the next level!
+        **Next Step:** To get a detailed plan and career roadmap to achieve your expected salary, apply for our ₹199 Personalized Career Plan. This roadmap will also help you find free resources to upskill and take your career to the next level!
         """
 
     career_plan = f"""
@@ -820,10 +955,10 @@ if st.session_state.completed:
         except Exception as e:
             st.error(f"Failed to send referral data: {str(e)}")
 
-    # Feedback Link
+    # Feedback Link with Updated Google Form Link
     st.markdown("""
     <div class="feedback container fade-in">
-        <p><strong>We’d love to hear your feedback!</strong> <a href="https://forms.gle/your-feedback-form-link" target="_blank">Share your thoughts here</a>.</p>
+        <p><strong>We’d love to hear your feedback!</strong> <a href="https://forms.gle/vg6naVjRJtAcrynaA" target="_blank">Share your thoughts here</a>.</p>
     </div>
     """, unsafe_allow_html=True)
 
