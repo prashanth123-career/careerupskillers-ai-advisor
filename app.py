@@ -85,22 +85,22 @@ hide_streamlit_style = """
         color: #E0E7FF;
     }
     .counseling-promo {
-        background-color: rgba(230, 244, 250, 0.9);
+        background-color: #E6F4FA; /* Light blue background */
         text-align: center;
         border: 1px solid #2AB7CA;
     }
     .counseling-promo p {
-        color: #2AB7CA;
+        color: #1A3550; /* Dark blue text */
         font-weight: 600;
     }
     .share-section {
-        background-color: rgba(230, 244, 250, 0.9);
+        background-color: #E6F4FA; /* Light blue background */
         text-align: center;
         border: 1px solid #2AB7CA;
     }
     .share-section p {
         font-weight: 600;
-        color: #1A3550;
+        color: #1A3550; /* Dark blue text */
     }
     .share-section button {
         background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
@@ -145,43 +145,46 @@ hide_streamlit_style = """
     }
     .feedback {
         text-align: center;
-        background-color: rgba(255, 255, 255, 0.9);
+        background-color: #E6F4FA; /* Light blue background */
         display: block !important; /* Ensure feedback section is always visible */
     }
     .feedback a {
-        color: #2AB7CA;
+        color: #1A3550; /* Dark blue text */
         text-decoration: none;
+        font-weight: 600;
     }
     .feedback a:hover {
         text-decoration: underline;
     }
     .ad-section {
-        background-color: rgba(255, 245, 244, 0.9);
+        background-color: #FFF5F4; /* Light peach background */
         text-align: center;
-        border: 1px solid #FF6F61;
+        border: 1px solid #FFD700; /* Golden border */
     }
     .ad-section p {
-        color: #FF6F61;
+        color: #FFD700; /* Golden text */
         font-weight: 600;
+        animation: flash 1.5s infinite; /* Flashing effect */
     }
     .ad-section button {
-        background: linear-gradient(90deg, #FF6F61 0%, #FF3D00 100%);
-        color: #FFFFFF;
+        background: linear-gradient(90deg, #FFD700 0%, #DAA520 100%); /* Golden gradient */
+        color: #1A3550; /* Dark blue text */
         padding: 12px 24px;
         font-size: 14px;
         border-radius: 8px;
         border: none;
         cursor: pointer;
         transition: transform 0.2s ease;
+        animation: flash 1.5s infinite; /* Flashing effect */
     }
     .ad-section button:hover {
         transform: scale(1.05);
     }
     .motivational-message {
-        background-color: rgba(230, 244, 250, 0.9);
+        background-color: #E6F4FA; /* Light blue background */
         text-align: center;
         border: 1px solid #2AB7CA;
-        color: #1A3550;
+        color: #1A3550; /* Dark blue text */
         font-weight: 600;
     }
     h1 {
@@ -206,7 +209,7 @@ hide_streamlit_style = """
         margin: 12px auto;
         display: block;
         min-height: 48px;
-        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%); /* Changed to blue gradient */
+        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%); /* Blue gradient */
         color: #FFFFFF;
         font-weight: 600;
         transition: transform 0.2s ease;
@@ -249,15 +252,15 @@ hide_streamlit_style = """
     }
     .testimonials {
         text-align: center;
-        background-color: rgba(230, 255, 236, 0.9);
-        color: #333333;
+        background-color: #E6F4FA; /* Light blue background */
+        color: #1A3550; /* Dark blue text */
     }
     .trust-badge {
-        background: rgba(230, 255, 236, 0.9);
+        background: #E6F4FA; /* Light blue background */
         text-align: center;
     }
     .trust-badge p {
-        color: #333333;
+        color: #1A3550; /* Dark blue text */
     }
     .flash {
         animation: flash 1.5s infinite;
@@ -303,6 +306,12 @@ hide_streamlit_style = """
         padding: 16px;
         margin-top: 80px;
         border: 1px solid #2AB7CA;
+    }
+    .form-container strong {
+        display: block;
+        padding: 8px 0; /* Add padding to ensure full visibility */
+        overflow-wrap: break-word;
+        word-wrap: break-word;
     }
     div[data-testid="stStatusWidget"] {
         visibility: hidden;
@@ -939,7 +948,7 @@ if st.session_state.completed:
     # ₹499 AI Freelance Kit CTA
     st.markdown(f"""
     <div class="cta container fade-in">
-        <a href='https://rzp.io/rzp/t37swnF' target='_blank'><button style='background: linear-gradient(90deg, #FF6F61 0%, #FF3D00 100%);color:#FFFFFF;'>🌟 Get AI Freelance Kit ({currency}499)</button></a>
+        <a href='https://rzp.io/rzp/t37swnF' target='_blank'><button style='background: linear-gradient(90deg, #FFD700 0%, #DAA520 100%);color:#1A3550;'>🌟 Get AI Freelance Kit ({currency}499)</button></a>
         <p>After payment, check your email for your AI Freelance Kit!</p>
     </div>
     """, unsafe_allow_html=True)
