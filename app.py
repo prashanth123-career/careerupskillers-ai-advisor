@@ -19,7 +19,7 @@ hide_streamlit_style = """
     header {visibility: hidden;}
     body {
         font-family: 'Inter', 'Roboto', sans-serif;
-        background: linear-gradient(135deg, #1A3550 0%, #2AB7CA 100%); /* Classy gradient background */
+        background: linear-gradient(135deg, #1A3550 0%, #2AB7CA 100%);
         color: #FFFFFF;
     }
     .container {
@@ -44,12 +44,12 @@ hide_streamlit_style = """
         top: 0;
         left: 50%;
         transform: translateX(-50%);
-        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%); /* Brighter gradient */
+        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
         color: #FFFFFF;
         text-align: center;
         z-index: 1000;
         max-width: 400px;
-        border-bottom: 2px solid #FFD700; /* Gold accent */
+        border-bottom: 2px solid #FFD700;
     }
     .info-section p {
         color: #FFFFFF;
@@ -58,7 +58,7 @@ hide_streamlit_style = """
         font-weight: 600;
     }
     .info-section a {
-        color: #FFD700; /* Gold links */
+        color: #FFD700;
         text-decoration: none;
         font-weight: 600;
     }
@@ -146,6 +146,7 @@ hide_streamlit_style = """
     .feedback {
         text-align: center;
         background-color: rgba(255, 255, 255, 0.9);
+        display: block !important; /* Ensure feedback section is always visible */
     }
     .feedback a {
         color: #2AB7CA;
@@ -186,13 +187,13 @@ hide_streamlit_style = """
     h1 {
         font-size: 24px;
         margin: 12px 0;
-        color: #FFFFFF; /* Brighter text */
+        color: #FFFFFF;
     }
     p, li, .caption {
         font-size: 14px;
         line-height: 1.5;
         margin: 6px 0;
-        color: #E0E7FF; /* Softer white for readability */
+        color: #E0E7FF;
     }
     button {
         width: 100%;
@@ -205,8 +206,8 @@ hide_streamlit_style = """
         margin: 12px auto;
         display: block;
         min-height: 48px;
-        background: linear-gradient(90deg, #FFD700 0%, #FF6F61 100%); /* Bright gold to coral gradient */
-        color: #1A3550;
+        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%); /* Changed to blue gradient */
+        color: #FFFFFF;
         font-weight: 600;
         transition: transform 0.2s ease;
     }
@@ -218,26 +219,27 @@ hide_streamlit_style = """
         padding: 12px;
         font-size: 15px;
         border-radius: 8px;
-        border: 2px solid #2AB7CA; /* Stronger border */
+        border: 2px solid #2AB7CA;
         margin: 8px 0;
         box-sizing: border-box;
-        background-color: #FFFFFF; /* Solid white background */
+        background-color: #FFFFFF;
         color: #1A3550;
+        display: block !important; /* Ensure inputs are visible */
     }
     .progress-text {
-        font-size: 16px; /* Larger text */
+        font-size: 16px;
         text-align: center;
         margin: 8px 0;
-        color: #FFD700; /* Bright gold */
+        color: #FFD700;
         font-weight: 600;
     }
     .instruction {
-        font-size: 16px; /* Larger text */
-        color: #FF6F61; /* Bright coral */
+        font-size: 16px;
+        color: #FF6F61;
         text-align: center;
         margin-top: -4px;
         font-weight: 600;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Stronger shadow */
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
     }
     .time-age-message {
         font-size: 14px;
@@ -266,7 +268,7 @@ hide_streamlit_style = """
         100% { opacity: 1; }
     }
     .stProgress > div > div > div {
-        background: linear-gradient(90deg, #FFD700 0%, #FF6F61 100%); /* Brighter gradient */
+        background: linear-gradient(90deg, #FFD700 0%, #FF6F61 100%);
     }
     @media (max-width: 600px) {
         h1 {
@@ -296,13 +298,12 @@ hide_streamlit_style = """
         100% { opacity: 1; }
     }
     .form-container {
-        background: rgba(255, 255, 255, 0.95); /* Slightly more opaque */
+        background: rgba(255, 255, 255, 0.95);
         border-radius: 12px;
         padding: 16px;
-        margin-top: 80px; /* Adjust for fixed info section */
-        border: 1px solid #2AB7CA; /* Teal border */
+        margin-top: 80px;
+        border: 1px solid #2AB7CA;
     }
-    /* Hide the "Manage App" icon and add a decorative element */
     div[data-testid="stStatusWidget"] {
         visibility: hidden;
     }
@@ -311,7 +312,7 @@ hide_streamlit_style = """
         bottom: 10px;
         right: 10px;
         z-index: 1000;
-        background: linear-gradient(90deg, #FFD700 0%, #FF6F61 100%); /* Bright gradient */
+        background: linear-gradient(90deg, #FFD700 0%, #FF6F61 100%);
         padding: 8px;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -329,7 +330,6 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 # JavaScript to detect Mobile OS and Exact Location
 st.markdown("""
 <script>
-    // Detect Mobile OS
     function detectMobileOS() {
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;
         if (/android/i.test(userAgent)) {
@@ -344,7 +344,6 @@ st.markdown("""
         return "Unknown";
     }
 
-    // Get Exact Location
     function getExactLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -363,7 +362,6 @@ st.markdown("""
         }
     }
 
-    // Set Mobile OS and trigger location detection on page load
     window.onload = function() {
         document.getElementById("mobileOS").value = detectMobileOS();
         getExactLocation();
@@ -577,6 +575,7 @@ questions = [
     ("💰 Current Salary (in your currency):", "Compare with market rates. Enter numbers only (e.g., 50000)."),
     ("💰 Expected Salary (in your currency):", "What salary are you aiming for? Enter numbers only (e.g., 60000)."),
     ("🔄 Looking for a Job Change?", "Are you looking to change jobs? (Yes/No)"),
+    ("🔄 Reason for Job Change:", "Please specify your reason for looking for a job change (if applicable)."),
 ]
 
 keys = [
@@ -594,7 +593,6 @@ if not st.session_state.completed:
             Great! You’re almost there. Just a few more steps to unlock your top opportunities and salary insights!
         </div>
         """, unsafe_allow_html=True)
-        # Reset the flag after displaying the message
         st.session_state.show_motivational_message = False
 
     # Adjust the total number of questions dynamically based on employment status and job change
@@ -608,11 +606,13 @@ if not st.session_state.completed:
             if st.session_state.q_index == 8:  # Skip "Company Working In"
                 st.session_state.q_index += 1
                 total_questions -= 1
-            if st.session_state.employment_status in ["Fresher", "Student"] and st.session_state.q_index == 12:  # Skip "Current Salary"
+            if st.session_state.q_index in [12, 13]:  # Skip "Current Salary" and "Expected Salary"
                 st.session_state.q_index += 1
-                total_questions -= 1
-    if st.session_state.q_index == 14 and st.session_state.answers.get("job_change") == "No":
-        total_questions -= 1  # Skip the "Reason for Job Change" question
+                total_questions -= 2
+        if st.session_state.q_index == 14 and st.session_state.answers.get("job_change") == "No":
+            if st.session_state.q_index == 15:  # Skip "Reason for Job Change"
+                st.session_state.q_index += 1
+            total_questions -= 1
 
     # Progress bar
     progress = int((st.session_state.q_index / total_questions) * 100)
@@ -626,7 +626,11 @@ if not st.session_state.completed:
         st.markdown(f"<div class='container caption'>{hint}</div>", unsafe_allow_html=True)
 
         user_input = None
-        if st.session_state.q_index == 2:  # Phone Number
+        if st.session_state.q_index == 0:  # Name
+            user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
+        elif st.session_state.q_index == 1:  # Email Address
+            user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
+        elif st.session_state.q_index == 2:  # Phone Number
             code = st.selectbox("Country Code", sorted(list(dial_codes.keys())), index=0, key="country_code_input")
             country = dial_codes.get(code, "Unknown")
             st.markdown(f"<div class='container caption'>Country: {country}</div>", unsafe_allow_html=True)
@@ -685,10 +689,10 @@ if not st.session_state.completed:
         st.markdown("""
         <script>
             document.querySelector('button[kind="formSubmit"]').addEventListener('click', function(event) {
-                event.preventDefault(); // Prevent single-click submission
+                event.preventDefault();
             });
             document.querySelector('button[kind="formSubmit"]').addEventListener('dblclick', function() {
-                this.click(); // Trigger the Streamlit form submission on double-click
+                this.click();
             });
         </script>
         """, unsafe_allow_html=True)
@@ -708,7 +712,7 @@ if not st.session_state.completed:
 
                 st.session_state.answers[keys[st.session_state.q_index]] = user_input
                 st.session_state.q_index += 1
-                st.session_state.show_motivational_message = True  # Set flag to show motivational message
+                st.session_state.show_motivational_message = True
 
                 # Skip questions based on employment status
                 if st.session_state.employment_status not in ["Fresher", "Student"]:
@@ -718,8 +722,8 @@ if not st.session_state.completed:
                         st.session_state.q_index += 1
                 if st.session_state.q_index == 8 and st.session_state.employment_status in ["Fresher", "Student", "Own Business"]:
                     st.session_state.q_index += 1  # Skip "Company Working In"
-                if st.session_state.q_index == 12 and st.session_state.employment_status in ["Fresher", "Student"]:
-                    st.session_state.q_index += 1  # Skip "Current Salary"
+                if st.session_state.q_index in [12, 13] and st.session_state.employment_status in ["Fresher", "Student", "Own Business"]:
+                    st.session_state.q_index += 1  # Skip "Current Salary" and "Expected Salary"
                 if st.session_state.q_index == 15 or (st.session_state.q_index == 14 and st.session_state.answers.get("job_change") == "No"):
                     st.session_state.completed = True
             else:
@@ -737,7 +741,6 @@ if st.session_state.completed:
     # Add Mobile OS and Exact Location (from JavaScript)
     user["mobile_os"] = "Unknown"  # Default value
     user["exact_location"] = "Not provided"  # Default value
-    # Note: These values will be updated by JavaScript in the browser
 
     if not st.session_state.user_data_sent:
         try:
@@ -770,66 +773,116 @@ if st.session_state.completed:
         session_seed = hash(st.session_state.session_id + user.get('name', '')) % 1000
         recent_companies = st.session_state.recent_companies[-10:]
 
-        prompt = f"""
-        You are a career counselor specializing in AI and tech roles across various domains. Based on the following user profile, provide a detailed career plan:
-        - Name: {user.get('name')}
-        - Current Role: {current_role}
-        - Employment Status: {user.get('employment_status')}
-        - Education Background: {user.get('education_background', 'Not provided')}
-        - Passout Year: {user.get('passout_year', 'Not provided')}
-        - Current Company: {current_company}
-        - Years of Experience: {years_of_experience}
-        - Primary Skills: {user.get('skills')}
-        - Domain: {user.get('domain')}
-        - Country: {user.get('country')}
-        - Location: {user.get('location')}
-        - Current Salary: {currency}{current_salary:,}
-        - Expected Salary: {currency}{expected_salary:,}
-        - Looking for Job Change: {user.get('job_change', 'Not provided')}
-        - Reason for Job Change: {user.get('job_change_reason', 'Not provided')}
-        - Is Fresher: {user.get('is_fresher')}
+        if st.session_state.employment_status == "Own Business":
+            career_plan_text = f"""
+            **Business Growth Strategy:** As a business owner, you can leverage AI to automate and grow your business. Many businesses are automating customer interactions using live chatbots. For example, you can use tools like **ChatBot.com** or **Tidio** to set up a live chatbot on your website. This can handle customer inquiries 24/7, qualify leads, and even upsell products, saving you time and increasing sales.
 
-        Provide the following:
-        1. A profile validation statement comparing the user's salary to the market rate for their role and domain in their current location ({user.get('location')}). Include specific sources for salary data (e.g., Glassdoor, Indeed, Payscale) and mention the year of the data (e.g., 2024).
-        2. Recommended skills to upskill in, relevant to their domain and the AI industry.
-        3. A list of 3 top companies hiring in the user's location for their role or domain, with estimated salaries and sources (e.g., Glassdoor, Indeed, Payscale, 2024 data). Avoid recommending the following companies: {', '.join(recent_companies) if recent_companies else 'None'}.
-        4. A brief next step recommendation to achieve their expected salary, considering their employment status and job change preference.
+            **Automation Recommendations:**
+            - Use AI tools like **Zapier** to automate repetitive tasks (e.g., sending follow-up emails, updating CRM).
+            - Implement a chatbot to engage with customers in real-time, reducing response time and improving customer satisfaction.
+            - Use social media automation tools like **Buffer** or **Hootsuite** to schedule posts and engage with your audience consistently.
 
-        To ensure variability, use a randomization seed: {session_seed}.
+            **Next Step:** To take your business to the next level, consider purchasing our ₹499 AI Freelance Kit. This kit includes tools and templates to automate your business processes, attract more clients, and even start a new AI-driven business. You can earn ₹90K–₹3L/month by spending just 8 hours on weekends!
+            """
+        elif st.session_state.employment_status in ["Fresher", "Student"]:
+            career_plan_text = f"""
+            **Career Start Strategy:** As a fresher, you have two great paths to kickstart your career:
+            - **Apply for Jobs:** Start by building a strong resume and applying to entry-level roles in your domain ({current_role}). Use platforms like LinkedIn, Indeed, and Naukri.com to find opportunities in {user.get('location', 'your area')}.
+            - **Start Your Own Venture:** You can also explore entrepreneurial opportunities by leveraging AI tools to start a side hustle.
 
-        Format the response as plain text, with sections separated by newlines and bolded headers (e.g., **Profile Validation:**).
-        """
+            **Recommended Skills to Learn:**
+            1. Data Analysis and Interpretation
+            2. Basic Machine Learning (using Python)
+            3. Business Intelligence Tools (e.g., Power BI, Tableau)
 
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a career counselor specializing in AI and tech roles across various domains."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=500,
-            temperature=0.9
-        )
+            **Next Step:** To jumpstart your career and start earning, consider purchasing our ₹499 AI Freelance Kit. This kit will guide you to earn ₹90K–₹3L/month by spending just 8 hours on weekends. It includes step-by-step instructions to set up a freelance profile on platforms like Upwork and Fiverr, find your niche, and attract clients!
+            """
+        else:
+            prompt = f"""
+            You are a career counselor specializing in AI and tech roles across various domains. Based on the following user profile, provide a detailed career plan:
+            - Name: {user.get('name')}
+            - Current Role: {current_role}
+            - Employment Status: {user.get('employment_status')}
+            - Education Background: {user.get('education_background', 'Not provided')}
+            - Passout Year: {user.get('passout_year', 'Not provided')}
+            - Current Company: {current_company}
+            - Years of Experience: {years_of_experience}
+            - Primary Skills: {user.get('skills')}
+            - Domain: {user.get('domain')}
+            - Country: {user.get('country')}
+            - Location: {user.get('location')}
+            - Current Salary: {currency}{current_salary:,}
+            - Expected Salary: {currency}{expected_salary:,}
+            - Looking for Job Change: {user.get('job_change', 'Not provided')}
+            - Reason for Job Change: {user.get('job_change_reason', 'Not provided')}
+            - Is Fresher: {user.get('is_fresher')}
 
-        career_plan_text = response.choices[0].message.content.strip()
-        companies = re.findall(r"- (.*?):", career_plan_text)
-        st.session_state.recent_companies.extend(companies)
-        st.session_state.recent_companies = st.session_state.recent_companies[-10:]
+            Provide the following:
+            1. A profile validation statement comparing the user's salary to the market rate for their role and domain in their current location ({user.get('location')}). Include specific sources for salary data (e.g., Glassdoor, Indeed, Payscale) and mention the year of the data (e.g., 2024).
+            2. Recommended skills to upskill in, relevant to their domain and the AI industry.
+            3. A list of 3 top companies hiring in the user's location for their role or domain, with estimated salaries and sources (e.g., Glassdoor, Indeed, Payscale, 2024 data). Avoid recommending the following companies: {', '.join(recent_companies) if recent_companies else 'None'}.
+            4. A brief next step recommendation to achieve their expected salary, considering their employment status and job change preference.
+
+            To ensure variability, use a randomization seed: {session_seed}.
+
+            Format the response as plain text, with sections separated by newlines and bolded headers (e.g., **Profile Validation:**).
+            """
+
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a career counselor specializing in AI and tech roles across various domains."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=500,
+                temperature=0.9
+            )
+
+            career_plan_text = response.choices[0].message.content.strip()
+            companies = re.findall(r"- (.*?):", career_plan_text)
+            st.session_state.recent_companies.extend(companies)
+            st.session_state.recent_companies = st.session_state.recent_companies[-10:]
 
     except Exception as e:
-        market_salary = current_salary * 1.5 if current_salary > 0 else expected_salary * 0.8
-        salary_comparison = f"In your current location ({user.get('location')}), the market salary for a {current_role} with {years_of_experience} years of experience is around {currency}{market_salary:,} (Source: Glassdoor, 2024 data)."
-        career_plan_text = f"""
-        **Profile Validation:** Based on your profile, we see you have {years_of_experience} years of experience in a {current_role} role. Your current salary of {currency}{current_salary:,} is {'comparatively underpaid' if current_salary > 0 else 'not applicable (fresher/student)'}. {salary_comparison}
+        if st.session_state.employment_status == "Own Business":
+            career_plan_text = f"""
+            **Business Growth Strategy:** As a business owner, you can leverage AI to automate and grow your business. Many businesses are automating customer interactions using live chatbots. For example, you can use tools like **ChatBot.com** or **Tidio** to set up a live chatbot on your website. This can handle customer inquiries 24/7, qualify leads, and even upsell products, saving you time and increasing sales.
 
-        **Upskilling Recommendation:** To boost your career and aim for your expected salary of {currency}{expected_salary:,}, we recommend upskilling in skills relevant to your domain. These skills will help you stay ahead in the AI-driven job market.
+            **Automation Recommendations:**
+            - Use AI tools like **Zapier** to automate repetitive tasks (e.g., sending follow-up emails, updating CRM).
+            - Implement a chatbot to engage with customers in real-time, reducing response time and improving customer satisfaction.
+            - Use social media automation tools like **Buffer** or **Hootsuite** to schedule posts and engage with your audience consistently.
 
-        **Top Companies to Apply to After Upskilling:**
-        - Company A: {currency}{market_salary + 7500:,} (Source: Glassdoor, 2024 data)
-        - Company B: {currency}{market_salary + 17500:,} (Source: Indeed, 2024 estimates)
-        - Company C: {currency}{market_salary + 27500:,} (Source: Payscale, 2024 data)
+            **Next Step:** To take your business to the next level, consider purchasing our ₹499 AI Freelance Kit. This kit includes tools and templates to automate your business processes, attract more clients, and even start a new AI-driven business. You can earn ₹90K–₹3L/month by spending just 8 hours on weekends!
+            """
+        elif st.session_state.employment_status in ["Fresher", "Student"]:
+            career_plan_text = f"""
+            **Career Start Strategy:** As a fresher, you have two great paths to kickstart your career:
+            - **Apply for Jobs:** Start by building a strong resume and applying to entry-level roles in your domain ({current_role}). Use platforms like LinkedIn, Indeed, and Naukri.com to find opportunities in {user.get('location', 'your area')}.
+            - **Start Your Own Venture:** You can also explore entrepreneurial opportunities by leveraging AI tools to start a side hustle.
 
-        **Next Step:** To get a detailed plan and career roadmap to achieve your expected salary, apply for our ₹199 Personalized Career Plan. This roadmap will also help you find free resources to upskill and take your career to the next level!
-        """
+            **Recommended Skills to Learn:**
+            1. Data Analysis and Interpretation
+            2. Basic Machine Learning (using Python)
+            3. Business Intelligence Tools (e.g., Power BI, Tableau)
+
+            **Next Step:** To jumpstart your career and start earning, consider purchasing our ₹499 AI Freelance Kit. This kit will guide you to earn ₹90K–₹3L/month by spending just 8 hours on weekends. It includes step-by-step instructions to set up a freelance profile on platforms like Upwork and Fiverr, find your niche, and attract clients!
+            """
+        else:
+            market_salary = current_salary * 1.5 if current_salary > 0 else expected_salary * 0.8
+            salary_comparison = f"In your current location ({user.get('location')}), the market salary for a {current_role} with {years_of_experience} years of experience is around {currency}{market_salary:,} (Source: Glassdoor, 2024 data)."
+            career_plan_text = f"""
+            **Profile Validation:** Based on your profile, we see you have {years_of_experience} years of experience in a {current_role} role. Your current salary of {currency}{current_salary:,} is {'comparatively underpaid' if current_salary > 0 else 'not applicable (fresher/student)'}. {salary_comparison}
+
+            **Upskilling Recommendation:** To boost your career and aim for your expected salary of {currency}{expected_salary:,}, we recommend upskilling in skills relevant to your domain. These skills will help you stay ahead in the AI-driven job market.
+
+            **Top Companies to Apply to After Upskilling:**
+            - Company A: {currency}{market_salary + 7500:,} (Source: Glassdoor, 2024 data)
+            - Company B: {currency}{market_salary + 17500:,} (Source: Indeed, 2024 estimates)
+            - Company C: {currency}{market_salary + 27500:,} (Source: Payscale, 2024 data)
+
+            **Next Step:** To get a detailed plan and career roadmap to achieve your expected salary, apply for our ₹199 Personalized Career Plan. This roadmap will also help you find free resources to upskill and take your career to the next level!
+            """
 
     career_plan = f"""
     <div class="career-plan container fade-in">
@@ -840,6 +893,13 @@ if st.session_state.completed:
 
     st.success("✅ Your Personalized Plan is Ready!")
     st.markdown(career_plan, unsafe_allow_html=True)
+
+    # Feedback Form Link
+    st.markdown("""
+    <div class="feedback container fade-in">
+        <p>We’d love to hear your feedback! <a href="https://forms.gle/your-feedback-form-link" target="_blank">Click here to share your thoughts.</a></p>
+    </div>
+    """, unsafe_allow_html=True)
 
     # Ad Section (After Career Plan)
     st.markdown(f"""
@@ -894,76 +954,37 @@ if st.session_state.completed:
     # Updated Testimonials
     testimonials = [
         "“Landed a $2K gig with the AI Kit! This app helped me pivot my career in just 6 weeks.” – Alex, Data Scientist, USA",
-        "“From zero to ₹1L/month in 6 weeks! The career plan was a game-changer.” – Neha, Marketing Professional, India",
+        "“From zero to ₹50K/month in 3 months! The freelance kit is a game-changer.” – Priya, Web Designer, India",
+        "“Upskilled in AI and got a 30% salary hike! Highly recommend this app.” – Mohammed, Developer, UAE"
     ]
-    selected_testimonial = random.choice(testimonials)
     st.markdown(f"""
     <div class="testimonials container fade-in">
-        <span class="flash"><strong>{selected_testimonial}</strong></span>
+        <strong>💬 What Our Users Say:</strong>
+        <p>{testimonials[0]}</p>
+        <p>{testimonials[1]}</p>
+        <p>{testimonials[2]}</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Updated Trust Badge
+    # Trust Badge
     st.markdown(f"""
     <div class="trust-badge container fade-in">
-        <p><strong>📈 Trusted by 3,000+ learners worldwide!</strong></p>
-        <p><strong>🎁 Free AI Niche PDF + Chatbot access after payment!</strong></p>
-        <p><strong>🔒 Your data is secure with us. We use HTTPS and comply with privacy regulations.</strong></p>
+        <p>✅ Trusted by 3,000+ professionals across the USA, UK, UAE, Israel, and India</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Share with Friends Section
-    base_url = "https://www.careerupskillers.com"
-    referral_link = f"{base_url}?ref={st.session_state.session_id}"
-
-    share_message = f"🌟 I just got my personalized AI Career Plan from CareerUpskillers AI Advisor! It helped me discover if I'm paid fairly and find top companies hiring for my skills. Check it out: {referral_link}"
-    encoded_message = requests.utils.quote(share_message)
-
+    # Share Section
     st.markdown(f"""
     <div class="share-section container fade-in">
-        <p>📢 Share with Friends & Earn Rewards!</p>
-        <p>Invite your friends to try CareerUpskillers AI Advisor! If they sign up using your link, you'll get a <strong>10% discount</strong> on the ₹199 Career Plan or a <strong>free AI Niche PDF</strong>!</p>
-        <input type="text" id="referralLink" value="{referral_link}" readonly>
-        <button onclick="copyLink()">Copy Link</button>
-        <br>
-        <a href="https://wa.me/?text={encoded_message}" target="_blank"><button>Share on WhatsApp</button></a>
-        <a href="mailto:?subject=Check out CareerUpskillers AI Advisor!&body={encoded_message}" target="_blank"><button>Share via Email</button></a>
-        <a href="https://www.linkedin.com/sharing/share-offsite/?url={referral_link}" target="_blank"><button>Share on LinkedIn</button></a>
-        <a href="https://twitter.com/intent/tweet?text={encoded_message}" target="_blank"><button>Share on Twitter</button></a>
-    </div>
-    <script>
-        function copyLink() {{
-            var link = document.getElementById("referralLink");
-            link.select();
-            document.execCommand("copy");
-            alert("Referral link copied to clipboard!");
-        }}
-    </script>
-    """, unsafe_allow_html=True)
-
-    if not st.session_state.referral_data_sent:
-        referral_data = {
-            "session_id": st.session_state.session_id,
-            "referral_link": referral_link,
-            "user_email": user.get('email', 'N/A'),
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-        try:
-            response = requests.post(google_sheets_url, json=referral_data)
-            response.raise_for_status()
-            st.session_state.referral_data_sent = True
-        except Exception as e:
-            st.error(f"Failed to send referral data: {str(e)}")
-
-    # Feedback Link with Updated Google Form Link
-    st.markdown("""
-    <div class="feedback container fade-in">
-        <p><strong>We’d love to hear your feedback!</strong> <a href="https://forms.gle/vg6naVjRJtAcrynaA" target="_blank">Share your thoughts here</a>.</p>
+        <p>Share this app with your friends and help them grow their careers!</p>
+        <input type="text" value="{user['referral_link']}" readonly>
+        <button onclick="navigator.clipboard.writeText('{user['referral_link']}')">Copy Link</button>
+        <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20amazing%20AI%20Career%20Advisor%20app!%20It%20helped%20me%20plan%20my%20career%20and%20upskill%20with%20AI.%20Try%20it%20now:%20{user['referral_link']}" target="_blank"><button>Share on WhatsApp</button></a>
     </div>
     """, unsafe_allow_html=True)
 
-    # Footer (Repeated at the end)
-    st.markdown("""
+    # Footer
+    st.markdown(f"""
     <div class="footer container fade-in">
         <p>© 2025 CareerUpskillers | <a href="https://www.careerupskillers.com/about-1" target="_blank">Privacy Policy</a> | <a href="https://www.careerupskillers.com/terms-of-service" target="_blank">Terms of Service</a></p>
         <p>Contact us: <a href="mailto:careerupskillers@gmail.com">careerupskillers@gmail.com</a> | Call/WhatsApp: <a href="tel:+917892116728">+91 78921 16728</a></p>
@@ -975,9 +996,23 @@ if st.session_state.completed:
     </div>
     """, unsafe_allow_html=True)
 
-# Add a decorative branding element to cover the "Manage App" icon
-st.markdown("""
-<div class="branding-overlay">
-    <p>🌟 CareerUpskillers</p>
-</div>
-""", unsafe_allow_html=True)
+    # Branding Overlay
+    st.markdown(f"""
+    <div class="branding-overlay">
+        <p>Powered by CareerUpskillers</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Send referral data to Google Sheets
+    if not st.session_state.referral_data_sent:
+        referral_data = {
+            "session_id": st.session_state.session_id,
+            "referral_link": user["referral_link"],
+            "timestamp": user["timestamp"]
+        }
+        try:
+            response = requests.post(google_sheets_url, json=referral_data)
+            response.raise_for_status()
+            st.session_state.referral_data_sent = True
+        except Exception as e:
+            st.error(f"Failed to send referral data: {str(e)}")
