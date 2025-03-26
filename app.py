@@ -1,23 +1,17 @@
 import streamlit as st
 import requests
+import openai
 from datetime import datetime, timedelta
 import random
+import os
 import uuid
 import time
-import openai
+import re
 
 # Set Streamlit page config
 st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🌟", layout="centered")
 
-# Access secrets from Streamlit secrets.toml
-try:
-    openai.api_key = st.secrets["OPENAI_API_KEY"]
-    google_sheets_url = st.secrets["GOOGLE_SHEETS_URL"]
-except KeyError as e:
-    st.error(f"Missing secret: {str(e)}. Please ensure OPENAI_API_KEY and GOOGLE_SHEETS_URL are defined in secrets.toml.")
-    st.stop()
-
-# CSS for a conversational, interactive interface
+# Hide Streamlit branding (footer and header) and enhance styling
 hide_streamlit_style = """
     <style>
     #MainMenu {visibility: hidden;}
@@ -26,39 +20,16 @@ hide_streamlit_style = """
     body {
         font-family: 'Inter', 'Roboto', sans-serif;
         background: linear-gradient(135deg, #1A3550 0%, #2AB7CA 100%);
-        color: #FFFFFF;
+        color: #333333;
     }
     .container {
         width: 100%;
-        max-width: 500px;
+        max-width: 400px;
         margin: 0 auto;
         padding: 16px;
         box-sizing: border-box;
     }
-    .chat-bubble {
-        background-color: #E6F4FA;
-        color: #1A3550;
-        padding: 16px;
-        border-radius: 12px;
-        margin-bottom: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        animation: slideIn 0.5s ease-in;
-    }
-    .chat-bubble p {
-        margin: 0;
-        font-size: 16px;
-        line-height: 1.5;
-    }
-    .user-response {
-        background-color: #2AB7CA;
-        color: #FFFFFF;
-        padding: 12px;
-        border-radius: 12px;
-        margin-bottom: 16px;
-        text-align: right;
-        animation: slideIn 0.5s ease-in;
-    }
-    .info-section, .flash-alert, .header, .post-submission, .brief-counseling, .cta, .product-card {
+    .info-section, .flash-alert, .header, .counseling-promo, .career-plan, .cta, .warning, .testimonials, .trust-badge, .share-section, .footer, .feedback, .ad-section, .motivational-message {
         width: 100%;
         padding: 16px;
         box-sizing: border-box;
@@ -66,38 +37,35 @@ hide_streamlit_style = """
         margin-bottom: 16px;
         overflow-wrap: break-word;
         word-wrap: break-word;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
     .info-section {
         position: fixed;
         top: 0;
         left: 50%;
         transform: translateX(-50%);
-        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
-        color: #FFFFFF;
+        background: rgba(26, 53, 80, 0.9);
+        color: #FFD700;
         text-align: center;
         z-index: 1000;
-        max-width: 500px;
-        border-bottom: 2px solid #FFD700;
+        max-width: 400px;
     }
     .info-section p {
-        color: #FFFFFF;
-        font-size: 13px;
+        color: #FFD700;
+        font-size: 12px;
         margin: 4px 0;
-        font-weight: 600;
     }
     .info-section a {
-        color: #FFD700;
+        color: #2AB7CA;
         text-decoration: none;
-        font-weight: 600;
+        font-weight: 500;
     }
     .info-section a:hover {
         text-decoration: underline;
-        color: #FFFFFF;
     }
     .flash-alert {
         background-color: #FFF9E6;
-        color: #1A3550;
+        color: #856404;
         font-size: 14px;
         line-height: 1.4;
         border: 1px solid #FFD700;
@@ -109,45 +77,123 @@ hide_streamlit_style = """
     }
     .header h1 {
         color: #FFFFFF;
-        font-size: 24px;
     }
     .header p {
         color: #E0E7FF;
-        font-size: 14px;
     }
-    .post-submission {
-        background-color: #E6F4FA;
+    .counseling-promo {
+        background-color: rgba(230, 244, 250, 0.9);
+        text-align: center;
+        border: 1px solid #2AB7CA;
+    }
+    .counseling-promo p {
+        color: #2AB7CA;
+        font-weight: 600;
+    }
+    .share-section {
+        background-color: rgba(230, 244, 250, 0.9);
+        text-align: center;
+        border: 1px solid #2AB7CA;
+    }
+    .share-section p {
+        font-weight: 600;
+        color: #1A3550;
+    }
+    .share-section button {
+        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
+        color: #FFFFFF;
+        margin: 8px;
+        padding: 10px 20px;
+        font-size: 14px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+    .share-section button:hover {
+        transform: scale(1.05);
+    }
+    .share-section input {
+        width: 80%;
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 8px;
+        border: 1px solid #2AB7CA;
+        margin: 8px 0;
+    }
+    .footer {
+        background-color: #1A3550;
+        color: #FFFFFF;
+        text-align: center;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .footer p {
+        color: #E0E7FF;
+        font-weight: 500;
+    }
+    .footer a {
+        color: #2AB7CA;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .footer a:hover {
+        text-decoration: underline;
+    }
+    .feedback {
+        text-align: center;
+        background-color: rgba(255, 255, 255, 0.9);
+    }
+    .feedback a {
+        color: #2AB7CA;
+        text-decoration: none;
+    }
+    .feedback a:hover {
+        text-decoration: underline;
+    }
+    .ad-section {
+        background-color: rgba(255, 245, 244, 0.9);
+        text-align: center;
+        border: 1px solid #FF6F61;
+    }
+    .ad-section p {
+        color: #FF6F61;
+        font-weight: 600;
+    }
+    .ad-section button {
+        background: linear-gradient(90deg, #FF6F61 0%, #FF3D00 100%);
+        color: #FFFFFF;
+        padding: 12px 24px;
+        font-size: 14px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+    .ad-section button:hover {
+        transform: scale(1.05);
+    }
+    .motivational-message {
+        background-color: rgba(230, 244, 250, 0.9);
         text-align: center;
         border: 1px solid #2AB7CA;
         color: #1A3550;
         font-weight: 600;
     }
-    .brief-counseling {
-        background-color: #E6F4FA;
-        text-align: left;
-        border: 1px solid #2AB7CA;
+    h1 {
+        font-size: 24px;
+        margin: 12px 0;
         color: #1A3550;
     }
-    .brief-counseling h3 {
-        color: #1A3550;
-        font-weight: 700;
-    }
-    .brief-counseling p, .brief-counseling li {
-        color: #1A3550;
+    p, li, .caption {
         font-size: 14px;
         line-height: 1.5;
+        margin: 6px 0;
+        color: #333333;
     }
-    .brief-counseling a {
-        color: #2AB7CA;
-        text-decoration: none;
-        font-weight: 600;
-    }
-    .brief-counseling a:hover {
-        text-decoration: underline;
-    }
-    .cta button {
+    button {
         width: 100%;
-        max-width: 300px;
+        max-width: 240px;
         padding: 14px;
         font-size: 16px;
         border-radius: 8px;
@@ -155,55 +201,86 @@ hide_streamlit_style = """
         cursor: pointer;
         margin: 12px auto;
         display: block;
+        min-height: 48px;
         background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
         color: #FFFFFF;
-        font-weight: 600;
         transition: transform 0.2s ease;
     }
-    .cta button:hover {
+    button:hover {
         transform: scale(1.05);
-    }
-    .product-card {
-        border: 2px solid;
-        border-radius: 12px;
-        padding: 16px;
-        margin: 16px 0;
-        background-color: #E6F4FA;
-        color: #1A3550;
     }
     input, select {
         width: 100%;
         padding: 12px;
         font-size: 15px;
         border-radius: 8px;
-        border: 2px solid #2AB7CA;
+        border: 1px solid #2AB7CA;
         margin: 8px 0;
         box-sizing: border-box;
-        background-color: #FFFFFF;
-        color: #1A3550;
+        background-color: rgba(255, 255, 255, 0.9);
     }
     .progress-text {
-        font-size: 16px;
+        font-size: 14px;
         text-align: center;
         margin: 8px 0;
-        color: #FFD700;
-        font-weight: 600;
+        color: #1A3550;
     }
-    .skip-button {
-        background: none;
-        border: none;
-        color: #FF6F61;
+    .instruction {
         font-size: 14px;
-        cursor: pointer;
-        margin-top: 8px;
-        text-decoration: underline;
+        color: #FFD700;
+        text-align: center;
+        margin-top: -4px;
+        font-weight: 600;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    }
+    .time-age-message {
+        font-size: 14px;
+        color: #333333;
+        text-align: center;
+        margin: 12px 0;
+    }
+    .testimonials {
+        text-align: center;
+        background-color: rgba(230, 255, 236, 0.9);
+        color: #333333;
+    }
+    .trust-badge {
+        background: rgba(230, 255, 236, 0.9);
+        text-align: center;
+    }
+    .trust-badge p {
+        color: #333333;
+    }
+    .flash {
+        animation: flash 1.5s infinite;
+    }
+    @keyframes flash {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
     }
     .stProgress > div > div > div {
-        background: linear-gradient(90deg, #FFD700 0%, #FF6F61 100%);
+        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
     }
-    @keyframes slideIn {
-        0% { opacity: 0; transform: translateY(20px); }
-        100% { opacity: 1; transform: translateY(0); }
+    @media (max-width: 600px) {
+        h1 {
+            font-size: 20px;
+        }
+        p, li, .caption {
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 8px 0;
+        }
+        button {
+            font-size: 14px;
+            padding: 12px;
+        }
+        .flash-alert {
+            font-size: 13px;
+        }
+        .header, .trust-badge {
+            padding: 16px;
+        }
     }
     .fade-in {
         animation: fadeIn 1s ease-in;
@@ -212,44 +289,64 @@ hide_streamlit_style = """
         0% { opacity: 0; }
         100% { opacity: 1; }
     }
+    .form-container {
+        background: rgba(255, 255, 255, 0.85);
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 80px; /* Adjust for fixed info section */
+    }
+    /* Hide the "Manage App" icon and add a decorative element */
+    div[data-testid="stStatusWidget"] {
+        visibility: hidden;
+    }
+    .branding-overlay {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        z-index: 1000;
+        background: rgba(26, 53, 80, 0.9);
+        padding: 8px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    .branding-overlay p {
+        color: #FFD700;
+        font-size: 12px;
+        margin: 0;
+        font-weight: 500;
+    }
     </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-# Initialize session state
-if 'session_id' not in st.session_state:
-    st.session_state.session_id = str(uuid.uuid4())
-if 'answers' not in st.session_state:
-    st.session_state.answers = {}
-if 'q_index' not in st.session_state:
-    st.session_state.q_index = 0
-if 'completed' not in st.session_state:
-    st.session_state.completed = False
-if 'flash_index' not in st.session_state:
-    st.session_state.flash_index = 0
-if 'slots_left' not in st.session_state:
-    st.session_state.slots_left = random.randint(15, 40)
-if 'user_data_sent' not in st.session_state:
-    st.session_state.user_data_sent = False
-if 'follow_up_messages' not in st.session_state:
-    st.session_state.follow_up_messages = []
+# Load API key and Google Sheets URL
+try:
+    openai.api_key = st.secrets["OPENAI_API_KEY"]
+    google_sheets_url = st.secrets["GOOGLE_SHEETS_URL"]
+except KeyError as e:
+    st.error(
+        f"Missing secret: {str(e)}. Please ensure the following are defined:\n"
+        "- OPENAI_API_KEY: Your OpenAI API key\n"
+        "- GOOGLE_SHEETS_URL: The Google Sheets API URL\n\n"
+        "If running locally, add them to '.streamlit/secrets.toml'. "
+        "If deployed on Streamlit Cloud, add them in the app settings under 'Secrets'."
+    )
+    st.markdown(
+        "For more info, see: [Streamlit Secrets Management](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/secrets-management)"
+    )
+    st.stop()
 
-# Employment status options
-employment_statuses = ["Student", "Fresher", "Working Professional", "Freelancer", "Business Owner"]
+# Validate OpenAI API key
+try:
+    openai.Model.list()  # Make a simple API call to validate the key
+except openai.error.AuthenticationError:
+    st.error("Invalid OpenAI API key. Please check your OPENAI_API_KEY in secrets.")
+    st.stop()
+except Exception as e:
+    st.error(f"Failed to validate OpenAI API key: {str(e)}")
+    st.stop()
 
-# Domain options
-domains = [
-    "Data Science", "Sales", "Marketing", "Accounting", "Developer", "Web Designer",
-    "Software Testing", "Hardware Testing", "Cybersecurity", "BPO", "Other"
-]
-
-# Career goals options
-career_goals = [
-    "Get a Job", "Switch Careers", "Grow in Current Role", "Start Freelancing", 
-    "Scale My Business", "Learn New Skills", "Other"
-]
-
-# Country codes for phone number
+# Country codes and currency map
 dial_codes = {
     "+93": "Afghanistan", "+355": "Albania", "+213": "Algeria", "+376": "Andorra", "+244": "Angola",
     "+54": "Argentina", "+374": "Armenia", "+61": "Australia", "+43": "Austria", "+994": "Azerbaijan",
@@ -289,7 +386,76 @@ dial_codes = {
     "+967": "Yemen", "+260": "Zambia", "+263": "Zimbabwe"
 }
 
-# Info Section
+currency_map = {
+    "Afghanistan": "AFN", "Albania": "ALL", "Algeria": "DZD", "Andorra": "EUR", "Angola": "AOA",
+    "Argentina": "ARS", "Armenia": "AMD", "Australia": "AUD", "Austria": "EUR", "Azerbaijan": "AZN",
+    "Bahrain": "BHD", "Bangladesh": "BDT", "Belarus": "BYN", "Belgium": "EUR", "Belize": "BZD",
+    "Benin": "XOF", "Bhutan": "BTN", "Bolivia": "BOB", "Bosnia and Herzegovina": "BAM", "Botswana": "BWP",
+    "Brazil": "BRL", "Brunei": "BND", "Bulgaria": "BGN", "Burkina Faso": "XOF", "Burundi": "BIF",
+    "Cambodia": "KHR", "Cameroon": "XAF", "Canada": "$", "Cape Verde": "CVE", "Central African Republic": "XAF",
+    "Chile": "CLP", "China": "CNY", "Colombia": "COP", "Comoros": "KMF", "Congo": "XAF",
+    "Costa Rica": "CRC", "Croatia": "HRK", "Cuba": "CUP", "Cyprus": "EUR", "Czech Republic": "CZK",
+    "Denmark": "DKK", "Djibouti": "DJF", "Dominican Republic": "DOP", "Ecuador": "USD", "Egypt": "EGP",
+    "El Salvador": "USD", "Equatorial Guinea": "XAF", "Eritrea": "ERN", "Estonia": "EUR", "Ethiopia": "ETB",
+    "Fiji": "FJD", "Finland": "EUR", "France": "EUR", "Gabon": "XAF", "Gambia": "GMD",
+    "Georgia": "GEL", "Germany": "EUR", "Ghana": "GHS", "Greece": "EUR", "Guatemala": "GTQ",
+    "Guinea": "GNF", "Guinea-Bissau": "XOF", "Guyana": "GYD", "Haiti": "HTG", "Honduras": "HNL",
+    "Hong Kong": "HKD", "Hungary": "HUF", "Iceland": "ISK", "India": "₹", "Indonesia": "IDR",
+    "Iran": "IRR", "Iraq": "IQD", "Ireland": "EUR", "Israel": "₪", "Italy": "EUR",
+    "Japan": "JPY", "Jordan": "JOD", "Kazakhstan": "KZT", "Kenya": "KES", "Kiribati": "AUD",
+    "Kuwait": "KWD", "Kyrgyzstan": "KGS", "Laos": "LAK", "Latvia": "EUR", "Lebanon": "LBP",
+    "Lesotho": "LSL", "Liberia": "LRD", "Libya": "LYD", "Liechtenstein": "CHF", "Lithuania": "EUR",
+    "Luxembourg": "EUR", "Macau": "MOP", "North Macedonia": "MKD", "Madagascar": "MGA", "Malawi": "MWK",
+    "Malaysia": "MYR", "Maldives": "MVR", "Mali": "XOF", "Malta": "EUR", "Marshall Islands": "USD",
+    "Mauritania": "MRU", "Mauritius": "MUR", "Mexico": "MXN", "Micronesia": "USD", "Moldova": "MDL",
+    "Monaco": "EUR", "Mongolia": "MNT", "Montenegro": "EUR", "Morocco": "MAD", "Mozambique": "MZN",
+    "Myanmar": "MMK", "Namibia": "NAD", "Nauru": "AUD", "Nepal": "NPR", "Netherlands": "EUR",
+    "New Zealand": "NZD", "Nicaragua": "NIO", "Niger": "XOF", "Nigeria": "NGN", "Norway": "NOK",
+    "Oman": "OMR", "Pakistan": "PKR", "Palau": "USD", "Panama": "PAB", "Papua New Guinea": "PGK",
+    "Paraguay": "PYG", "Peru": "PEN", "Philippines": "PHP", "Poland": "PLN", "Portugal": "EUR",
+    "Qatar": "QAR", "Romania": "RON", "Russia": "RUB", "Rwanda": "RWF", "Samoa": "WST",
+    "San Marino": "EUR", "Saudi Arabia": "SAR", "Senegal": "XOF", "Serbia": "RSD", "Seychelles": "SCR",
+    "Sierra Leone": "SLL", "Singapore": "SGD", "Slovakia": "EUR", "Slovenia": "EUR", "Solomon Islands": "SBD",
+    "Somalia": "SOS", "South Africa": "ZAR", "South Korea": "KRW", "Spain": "EUR", "Sri Lanka": "LKR",
+    "Sudan": "SDG", "Suriname": "SRD", "Sweden": "SEK", "Switzerland": "CHF", "Syria": "SYP",
+    "Taiwan": "TWD", "Tajikistan": "TJS", "Tanzania": "TZS", "Thailand": "THB", "Togo": "XOF",
+    "Tonga": "TOP", "Tunisia": "TND", "Turkey": "TRY", "Turkmenistan": "TMT", "Tuvalu": "AUD",
+    "Uganda": "UGX", "Ukraine": "UAH", "UAE": "AED", "UK": "£", "USA": "$",
+    "Uruguay": "UYU", "Uzbekistan": "UZS", "Vanuatu": "VUV", "Venezuela": "VES", "Vietnam": "VND",
+    "Yemen": "YER", "Zambia": "ZMW", "Zimbabwe": "ZWL"
+}
+
+# List of domains for the dropdown
+domains = [
+    "Data Science", "Sales", "Marketing", "Accounting", "Developer", "Web Designer",
+    "Software Testing", "Hardware Testing", "Cybersecurity", "BPO", "Other"
+]
+
+# Initialize global cache for recent company recommendations
+if 'recent_companies' not in st.session_state:
+    st.session_state.recent_companies = []
+
+# Initialize session state for each user
+if 'session_id' not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())
+if 'answers' not in st.session_state:
+    st.session_state.answers = {}
+if 'q_index' not in st.session_state:
+    st.session_state.q_index = 0
+if 'completed' not in st.session_state:
+    st.session_state.completed = False
+if 'flash_index' not in st.session_state:
+    st.session_state.flash_index = 0
+if 'slots_left' not in st.session_state:
+    st.session_state.slots_left = random.randint(15, 40)
+if 'user_data_sent' not in st.session_state:
+    st.session_state.user_data_sent = False
+if 'referral_data_sent' not in st.session_state:
+    st.session_state.referral_data_sent = False
+if 'show_motivational_message' not in st.session_state:
+    st.session_state.show_motivational_message = False
+
+# Fixed Info Section (Privacy Policy, Terms, Contact Info)
 st.markdown("""
 <div class="info-section container fade-in">
     <p>© 2025 CareerUpskillers | <a href="https://www.careerupskillers.com/about-1" target="_blank">Privacy Policy</a> | <a href="https://www.careerupskillers.com/terms-of-service" target="_blank">Terms of Service</a></p>
@@ -302,10 +468,11 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Flash Alert
+# Dynamic Flash Purchase Alert
 flash_countries = ["USA", "India", "UAE", "UK", "USA"]
 flash_country = flash_countries[st.session_state.flash_index % len(flash_countries)]
 time_ago = datetime.now() - timedelta(minutes=random.randint(1, 10))
+
 st.markdown(f"""
 <div class="flash-alert container fade-in">
   📢 <strong>Flash Alert:</strong> Someone just purchased from <strong>{flash_country}</strong> {time_ago.strftime('%M mins ago')} | Only <strong>{st.session_state.slots_left}</strong> kits remaining!
@@ -314,405 +481,397 @@ st.markdown(f"""
 st.session_state.flash_index += 1
 st.session_state.slots_left = max(5, st.session_state.slots_left - random.randint(1, 2))
 
-# Header
-st.markdown("""
+# Updated Header with Welcome Message
+end_date = datetime(2025, 3, 31)
+time_left = end_date - datetime.now()
+days_left = time_left.days
+
+st.markdown(f"""
 <div class="header container fade-in">
     <h1>🌟 Welcome to CareerUpskillers AI Advisor</h1>
-    <p>Let’s build your career roadmap in just a few steps! Answer a few quick questions, and I’ll help you unlock your potential.</p>
+    <p><strong>We’ve empowered over 3,000 professionals in the USA, UK, UAE, Israel, and India to unlock their career potential with AI.</strong></p>
+    <p style="color: #FF6F61; font-weight: 600;">Are you ready to future-proof your career?</p>
+    <p style="color: #2AB7CA;">⏰ Only {days_left} days left to seize this opportunity!</p>
 </div>
 """, unsafe_allow_html=True)
 
-# Base questions (will be customized based on employment status)
-base_questions = [
-    ("📊 What best describes your current status?", "This helps us customize your roadmap."),
-    ("👋 Hi there! I’m your AI Career Advisor. What’s your name?", "Let’s get to know each other!"),
-    ("📧 Great, {name}! Can I have your email to send you personalized career insights?", "We’ll use this to share job opportunities and tips."),
-    ("📞 What’s your phone number? (Select your country code first)", "This helps us connect with you for exclusive opportunities."),
-    ("💼 What’s your professional domain?", "This helps us tailor your career plan."),
-    ("🌍 Where are you located? (e.g., Mumbai, India)", "We’ll find opportunities near you."),
-    ("🎯 What are your career goals?", "So we can tailor our recommendations.")
-]
+# Ad Section (Before Form)
+st.markdown(f"""
+<div class="ad-section container fade-in">
+    <p>✨ Limited Time Offer: Get Your Personalized AI Career Plan for Just ₹199!</p>
+    <p>Discover your market value, top opportunities, and a step-by-step roadmap to elevate your career!</p>
+    <a href="https://rzp.io/rzp/FAsUJ9k" target="_blank"><button>Claim Now!</button></a>
+</div>
+""", unsafe_allow_html=True)
 
-# Additional questions based on employment status
-additional_questions = {
-    "Student": [
-        ("🎓 What’s your field of study?", "This helps us suggest relevant career paths."),
-        ("📅 What year will you graduate?", "This helps us plan your next steps.")
-    ],
-    "Fresher": [
-        ("🎓 What’s your field of study?", "This helps us suggest relevant career paths."),
-        ("📅 What year did you graduate?", "This helps us plan your next steps.")
-    ],
-    "Working Professional": [
-        ("💰 What’s your current salary? (Optional)", "Enter numbers only (e.g., 50000)."),
-        ("💡 What’s your expected salary? (Optional)", "Enter a realistic number (e.g., 60000).")
-    ],
-    "Freelancer": [
-        ("💰 What’s your average monthly freelance earnings? (Optional)", "Enter numbers only (e.g., 50000)."),
-        ("💡 What’s your expected monthly freelance earnings? (Optional)", "Enter a realistic number (e.g., 60000).")
-    ],
-    "Business Owner": [
-        ("💰 What’s your average monthly business revenue? (Optional)", "Enter numbers only (e.g., 50000)."),
-        ("💡 What’s your expected monthly business revenue? (Optional)", "Enter a realistic number (e.g., 60000).")
-    ]
-}
+# Updated Call-to-Action
+st.markdown(f"""
+<div class="counseling-promo container fade-in">
+    <p>🌟 Begin Your Free AI Career Counseling Today – Unlock Your Market Value & Top Opportunities!</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Questions
+questions = [
+    ("👤 What's your Name?", "To personalize your AI roadmap!"),
+    ("📧 Email Address:", "Get job insights and gigs!"),
+    ("📞 Phone Number:", "Select your country code and enter your phone number (e.g., 9876543210)."),
+    ("🏢 Current Company:", "Where do you currently work?"),
+    ("🏢 Can you share more about your current company?", "E.g., industry, size, culture."),
+    ("📅 When was your last promotion, and was it with a salary hike or only a position upgrade?", "E.g., 'Jan 2023, with salary hike' or 'June 2022, position upgrade only'."),
+    ("⏰ How many hours do you typically spend working for your company each week?", "This helps us understand your work-life balance."),
+    ("💼 How many years of experience do you have in your field?", "Enter a number (e.g., 5). This helps us assess if you're paid fairly."),
+    ("🛠️ Your Primary Skills:", "We’ll match AI niches."),
+    ("💼 Your Domain:", "Select your professional domain."),
+    ("📍 Current Location:", "Find roles near you."),
+    ("💰 Monthly Salary (in your currency):", "Compare with market rates. Enter numbers only (e.g., 50000)."),
+    ("🌍 Are there any other countries where you’d be interested in working?", "List countries you’d like to explore for future opportunities (e.g., 'USA, Canada, Germany')."),
+    ("✨ What changes in your career or workplace would excite you the most?", "E.g., 'More remote work options, better mentorship, or higher salary'."),
+]
 
 keys = [
-    "employment_status", "name", "email", "phone", "domain", "location", "career_goals",
-    "field_of_study", "graduation_year",  # For Student/Fresher
-    "current_salary", "expected_salary",  # For Working Professional
-    "current_earnings", "expected_earnings",  # For Freelancer
-    "current_revenue", "expected_revenue"  # For Business Owner
+    "name", "email", "phone", "company", "company_details", "last_promotion", 
+    "hours_per_week", "years_of_experience", "skills", "domain", "location", "salary", 
+    "other_countries", "exciting_changes"
 ]
 
-# Dynamically build the questions list based on employment status
-if "employment_status" in st.session_state.answers:
-    emp_status = st.session_state.answers["employment_status"]
-    questions = base_questions + additional_questions.get(emp_status, [])
-else:
-    questions = base_questions
-
-# Conversational Form Logic
+# Form Logic with Progress Bar and Validation
 if not st.session_state.completed:
-    total_questions = len(questions)
-    progress = int((st.session_state.q_index / total_questions) * 100)
-    st.markdown(f"<div class='progress-text container fade-in'>Step {st.session_state.q_index + 1} of {total_questions} 🚀</div>", unsafe_allow_html=True)
-    st.progress(progress)
+    # Show motivational message if the user has just submitted a question
+    if st.session_state.show_motivational_message and st.session_state.q_index < len(questions):
+        st.markdown("""
+        <div class="motivational-message container fade-in">
+            Great! You have almost reached. A little more step to unlock your top opportunities and salary standard on: Are you paid correctly?
+        </div>
+        """, unsafe_allow_html=True)
+        # Reset the flag after displaying the message
+        st.session_state.show_motivational_message = False
 
-    # Display previous answers as a conversation
-    for i in range(st.session_state.q_index):
-        q, _ = questions[i]
-        answer = st.session_state.answers.get(keys[i], "Skipped")
-        st.markdown(f"<div class='chat-bubble container'>{q}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='user-response container'>{answer}</div>", unsafe_allow_html=True)
-
-    # Current question
     q, hint = questions[st.session_state.q_index]
-    # Personalize the question with the user's name if available
-    if "{name}" in q and "name" in st.session_state.answers:
-        q = q.format(name=st.session_state.answers["name"])
-    st.markdown(f"<div class='chat-bubble container'><p>{q}</p><p><em>{hint}</em></p></div>", unsafe_allow_html=True)
-
+    progress = int((st.session_state.q_index / len(questions)) * 100)
+    st.markdown(f"<div class='progress-text container fade-in'>Step {st.session_state.q_index + 1} of {len(questions)}</div>", unsafe_allow_html=True)
+    st.progress(progress)
+    
     with st.form(key=f"form_{st.session_state.q_index}"):
-        user_input = None
-        if st.session_state.q_index == 0:  # Employment Status
-            user_input = st.selectbox("", employment_statuses, key="employment_status_input")
-        elif st.session_state.q_index == 1:  # Name
-            user_input = st.text_input("", placeholder="Enter your name", key=f"input_{st.session_state.q_index}")
-        elif st.session_state.q_index == 2:  # Email
-            user_input = st.text_input("", placeholder="Enter your email", key=f"input_{st.session_state.q_index}")
-        elif st.session_state.q_index == 3:  # Phone Number
+        st.markdown(f"<div class='form-container container fade-in'><strong>{q}</strong>", unsafe_allow_html=True)
+        st.markdown(f"<div class='container caption'>{hint}</div>", unsafe_allow_html=True)
+        
+        if st.session_state.q_index == 2:
             code = st.selectbox("Country Code", sorted(list(dial_codes.keys())), index=0, key="country_code_input")
-            phone = st.text_input("", placeholder="Enter your phone number (e.g., 9876543210)", key="phone_input")
+            country = dial_codes.get(code, "Unknown")
+            st.markdown(f"<div class='container caption'>Country: {country}</div>", unsafe_allow_html=True)
+            phone = st.text_input("Phone Number (e.g., 9876543210)", key="phone_input")
             user_input = f"{code} {phone}" if phone else None
-        elif st.session_state.q_index == 4:  # Domain
-            user_input = st.selectbox("", domains, key="domain_input")
+        elif st.session_state.q_index == 9:
+            user_input = st.selectbox("Select your domain", domains, key="domain_input")
             if user_input == "Other":
-                other_domain = st.text_input("Please specify your domain:", placeholder="Enter your domain", key="other_domain_input")
+                other_domain = st.text_input("Please specify your domain:", key="other_domain_input")
                 user_input = f"Other: {other_domain}" if other_domain else "Other"
-        elif st.session_state.q_index == 5:  # Location
-            user_input = st.text_input("", placeholder="e.g., Mumbai, India", key=f"input_{st.session_state.q_index}")
-        elif st.session_state.q_index == 6:  # Career Goals
-            user_input = st.selectbox("", career_goals, key="career_goals_input")
-            if user_input == "Other":
-                other_goal = st.text_input("Please specify your career goal:", placeholder="Enter your goal", key="other_goal_input")
-                user_input = f"Other: {other_goal}" if other_goal else "Other"
-        elif st.session_state.q_index in [7, 8]:  # Field of Study, Graduation Year (Student/Fresher) or Salary/Earnings (Others)
-            emp_status = st.session_state.answers["employment_status"]
-            if emp_status in ["Student", "Fresher"]:
-                if st.session_state.q_index == 7:  # Field of Study
-                    user_input = st.text_input("", placeholder="e.g., Computer Science", key=f"input_{st.session_state.q_index}")
-                elif st.session_state.q_index == 8:  # Graduation Year
-                    user_input = st.text_input("", placeholder="e.g., 2023", key=f"input_{st.session_state.q_index}")
-            else:  # Working Professional, Freelancer, Business Owner
-                user_input = st.text_input("", placeholder="Enter numbers only (e.g., 50000)", key=f"input_{st.session_state.q_index}")
+        elif st.session_state.q_index == 7:
+            user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
+            if user_input:
+                if not user_input.isdigit():
+                    st.error("Please enter a valid number for years of experience (e.g., 5).")
+                    user_input = None
+        elif st.session_state.q_index == 11:
+            user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
+            if user_input:
+                cleaned_input = user_input.replace(',', '')
+                if not cleaned_input.isdigit():
+                    st.error("Please enter a valid salary (numbers only, e.g., 50000).")
+                    user_input = None
+        else:
+            user_input = st.text_input("Your answer", key=f"input_{st.session_state.q_index}")
 
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            submit_button = st.form_submit_button("Next")
-        with col2:
-            skip_button = st.form_submit_button("Skip", help="Skip this question (optional)")
+        if st.session_state.q_index == 6:
+            st.markdown("<div class='time-age-message'><strong>Time and experience are key to your career growth. Invest them wisely to unlock new opportunities!</strong></div>", unsafe_allow_html=True)
+
+        # Add the "Next" button with a double-click requirement
+        submit_button = st.form_submit_button("Next", help="Double-click to submit your answer")
+        st.markdown("<div class='instruction'><strong>Double-click to submit your answer</strong></div>", unsafe_allow_html=True)
+
+        # Add JavaScript to enforce double-click behavior
+        st.markdown("""
+        <script>
+            document.querySelector('button[kind="formSubmit"]').addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent single-click submission
+            });
+            document.querySelector('button[kind="formSubmit"]').addEventListener('dblclick', function() {
+                this.click(); // Trigger the Streamlit form submission on double-click
+            });
+        </script>
+        """, unsafe_allow_html=True)
 
         if submit_button:
             if user_input:
-                if st.session_state.q_index == 2:  # Email Validation
-                    if "@" not in user_input or "." not in user_input:
-                        st.error("Please enter a valid email address (e.g., example@domain.com).")
-                        st.stop()
-                if st.session_state.q_index == 3:  # Phone Number Validation
+                if st.session_state.q_index == 2:
                     phone_part = user_input.split(" ")[1] if len(user_input.split(" ")) > 1 else ""
                     if not phone_part.isdigit() or len(phone_part) != 10:
                         st.error("Please enter a valid phone number (exactly 10 digits, e.g., 9876543210).")
                         st.stop()
-                if st.session_state.q_index in [7, 8]:  # Salary/Earnings Validation
-                    emp_status = st.session_state.answers["employment_status"]
-                    if emp_status in ["Working Professional", "Freelancer", "Business Owner"]:
-                        cleaned_input = user_input.replace(',', '')
-                        if cleaned_input and not cleaned_input.isdigit():
-                            st.error("Please enter a valid number (e.g., 50000).")
-                            st.stop()
-                        if cleaned_input:
-                            # Check for 2-digit or 3-digit numbers
-                            if len(cleaned_input) < 4:
-                                st.error("Please enter a realistic amount (at least 4 digits, e.g., 1000 or higher).")
-                                st.stop()
-                            # Check for realistic expected salary/earnings (for index 8)
-                            if st.session_state.q_index == 8:
-                                current_key = "current_salary" if emp_status == "Working Professional" else "current_earnings" if emp_status == "Freelancer" else "current_revenue"
-                                expected_key = "expected_salary" if emp_status == "Working Professional" else "expected_earnings" if emp_status == "Freelancer" else "expected_revenue"
-                                current_value = st.session_state.answers.get(current_key)
-                                if current_value and current_value != "Skipped":
-                                    current_value = int(current_value.replace(',', ''))
-                                    expected_value = int(cleaned_input)
-                                    if expected_value > current_value * 3:  # Expected value shouldn't be more than 3x current
-                                        st.error("Your expected amount seems too high. Please enter a more realistic expectation (e.g., up to 3x your current amount).")
-                                        st.stop()
+                
+                if st.session_state.q_index == 1:
+                    if "@" not in user_input or "." not in user_input:
+                        st.error("Please enter a valid email address (e.g., example@domain.com).")
+                        st.stop()
 
                 st.session_state.answers[keys[st.session_state.q_index]] = user_input
                 st.session_state.q_index += 1
+                st.session_state.show_motivational_message = True  # Set flag to show motivational message
                 if st.session_state.q_index >= len(questions):
                     st.session_state.completed = True
-                st.rerun()
             else:
-                st.warning("Please provide an answer or click 'Skip' to proceed.")
-        if skip_button:
-            st.session_state.answers[keys[st.session_state.q_index]] = "Skipped"
-            st.session_state.q_index += 1
-            if st.session_state.q_index >= len(questions):
-                st.session_state.completed = True
-            st.rerun()
+                st.warning("Please provide a valid answer to proceed.")
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # After Submission
 if st.session_state.completed:
     user = st.session_state.answers
     user["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    user["session_id"] = st.session_state.session_id
-    user["referral_link"] = f"https://www.careerupskillers.com?ref={st.session_state.session_id}"
-
-    # Send data to Google Sheets
+    
     if not st.session_state.user_data_sent:
-        try:
-            response = requests.post(google_sheets_url, json=user)
-            response.raise_for_status()
-            st.session_state.user_data_sent = True
-            st.success("Your data has been successfully submitted to our system!")
-        except Exception as e:
-            st.error(f"Failed to send user data: {str(e)}")
-            st.warning("Don’t worry, you can still proceed to see your career insights.")
+        if google_sheets_url:
+            try:
+                response = requests.post(google_sheets_url, json=user)
+                response.raise_for_status()
+                st.session_state.user_data_sent = True
+            except Exception as e:
+                st.error(f"Failed to send user data: {str(e)}")
+        else:
+            st.error("Google Sheets URL is missing. Please ensure GOOGLE_SHEETS_URL is defined in secrets.")
 
-    # Post-Submission Message
-    st.markdown(f"""
-    <div class="post-submission container fade-in">
-        <p>✅ Thanks for sharing, {user.get('name', 'User')}! Let me generate your personalized career insights...</p>
-    </div>
-    """, unsafe_allow_html=True)
+    country_code = user['phone'].split()[0]
+    country = dial_codes.get(country_code, "Unknown")
+    currency = currency_map.get(country, "USD")
 
-    # Use ChatGPT 3.5 Turbo to generate career advice
-    domain = user.get('domain', 'Data Science')
-    employment_status = user.get('employment_status', 'Working Professional')
-    location = user.get('location', 'your area')
-    career_goal = user.get('career_goals', 'Get a Job')
-
-    # Prepare the prompt for ChatGPT
-    prompt = f"""
-    You are a career advisor. Provide personalized career advice for a user with the following details:
-    - Employment Status: {employment_status}
-    - Professional Domain: {domain}
-    - Location: {location}
-    - Career Goal: {career_goal}
-
-    ### Instructions:
-    1. **Free Course Recommendation**: Suggest one free online course that aligns with their domain and career goal. Include the course name, platform (e.g., Coursera, Udemy, YouTube), and a direct link to the course. Ensure the course is free and accessible.
-    2. **Career Map Overview**: Provide a 3-step career roadmap tailored to their employment status, domain, location, and career goal. Each step should be actionable and specific, considering their location for opportunities (e.g., local job platforms, networking events). Suggest a relevant platform for building a portfolio based on their domain (e.g., Behance for designers, GitHub for developers, LinkedIn for marketing professionals).
-
-    ### Output Format:
-    - **Course Recommendation**: "I recommend starting with this free course: [Course Name] on [Platform] - [Link]"
-    - **Career Map**:
-      - Step 1: [Actionable step]
-      - Step 2: [Actionable step]
-      - Step 3: [Actionable step]
-
-    Keep the advice concise and practical.
-    """
+    current_company = user.get('company', 'Not Provided')
+    years_of_experience = user.get('years_of_experience', '0')
+    try:
+        years_of_experience = int(years_of_experience)
+    except ValueError:
+        years_of_experience = 0
+    current_role = user.get('domain', 'Data Science')
+    
+    salary_input = user.get('salary', '0').replace(',', '')
+    salary_cleaned = re.sub(r'[^0-9]', '', salary_input)
+    current_salary = int(salary_cleaned) if salary_cleaned else 0
 
     try:
-        # Call ChatGPT 3.5 Turbo
+        time.sleep(1)  # Add a 1-second delay to avoid rate limiting
+        session_seed = hash(st.session_state.session_id + user.get('name', '')) % 1000
+        recent_companies = st.session_state.recent_companies[-10:]
+
+        prompt = f"""
+        You are a career counselor specializing in AI and tech roles across various domains. Based on the following user profile, provide a detailed career plan:
+        - Name: {user.get('name')}
+        - Current Role: {current_role}
+        - Current Company: {current_company}
+        - Company Details: {user.get('company_details', 'Not provided')}
+        - Last Promotion: {user.get('last_promotion', 'Not provided')}
+        - Hours per Week: {user.get('hours_per_week', 'Not provided')}
+        - Years of Experience: {years_of_experience}
+        - Primary Skills: {user.get('skills')}
+        - Domain: {user.get('domain')}
+        - Location: {user.get('location')}
+        - Current Salary: {currency}{current_salary:,}
+        - Other Countries of Interest: {user.get('other_countries', 'Not provided')}
+        - Exciting Changes Desired: {user.get('exciting_changes', 'Not provided')}
+
+        Provide the following:
+        1. A profile validation statement comparing the user's salary to the market rate for their role and domain in their current location ({user.get('location')}). If the user has specified other countries of interest ({user.get('other_countries')}), also compare their salary to the market rate in those countries. Include specific sources for salary data (e.g., Glassdoor, Indeed, Payscale) and mention the year of the data (e.g., 2024).
+        2. Recommended skills to upskill in, relevant to their domain and the AI industry.
+        3. A list of 3 top companies hiring in the user's location for their role or domain, with estimated salaries and sources (e.g., Glassdoor, Indeed, Payscale, 2024 data). Avoid recommending the following companies: {', '.join(recent_companies) if recent_companies else 'None'}.
+        4. A brief next step recommendation to achieve a higher salary, considering their hours per week and desired changes.
+
+        To ensure variability, use a randomization seed: {session_seed}.
+
+        Format the response as plain text, with sections separated by newlines and bolded headers (e.g., **Profile Validation:**).
+        """
+
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a career advisor providing personalized advice."},
+                {"role": "system", "content": "You are a career counselor specializing in AI and tech roles across various domains."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=300,
-            temperature=0.7
+            max_tokens=500,
+            temperature=0.9
         )
 
-        # Extract the response
-        career_advice = response.choices[0].message['content'].strip()
-
-        # Parse the response to extract course and career map
-        course_section = career_advice.split("### Career Map")[0].replace("### Course Recommendation", "").strip()
-        career_map_section = career_advice.split("### Career Map")[1].strip()
-
-        # Extract course details
-        course_line = course_section.split("I recommend starting with this free course:")[1].strip()
-        course_name = course_line.split(" on ")[0].strip()
-        course_platform = course_line.split(" on ")[1].split(" - ")[0].strip()
-        course_link = course_line.split(" - ")[1].strip()
-
-        # Extract career map steps
-        career_map_lines = career_map_section.split("\n")
-        career_map = [line.strip().replace("- ", "") for line in career_map_lines if line.strip().startswith("-")]
+        career_plan_text = response.choices[0].message.content.strip()
+        companies = re.findall(r"- (.*?):", career_plan_text)
+        st.session_state.recent_companies.extend(companies)
+        st.session_state.recent_companies = st.session_state.recent_companies[-10:]
 
     except Exception as e:
-        st.error(f"Failed to generate career advice with ChatGPT: {str(e)}")
-        # Fallback to static advice if ChatGPT fails
-        course_name = "Introduction to Web Design"
-        course_platform = "Coursera"
-        course_link = "https://www.coursera.org/learn/web-design-for-everybody"
-        career_map = [
-            "Start learning with the free course above to build foundational skills.",
-            "Create a portfolio showcasing your projects on Behance or Dribbble.",
-            f"Apply for internships or entry-level roles in {location} on platforms like LinkedIn or Internshala."
-        ]
+        market_salary = current_salary * 1.5
+        other_countries = user.get('other_countries', 'Not provided')
+        salary_comparison = f"In your current location ({user.get('location')}), the market salary for a {current_role} with {years_of_experience} years of experience is around {currency}{market_salary:,} (Source: Glassdoor, 2024 data)."
+        if other_countries != 'Not provided':
+            salary_comparison += f"\nIn {other_countries}, the market salary for a similar role is approximately {currency}{market_salary * 1.2:,} (Source: Payscale, 2024 data)."
+        career_plan_text = f"""
+        **Profile Validation:** Based on your profile, we see you have {years_of_experience} years of experience at {current_company} in a {current_role} role. Your current salary of {currency}{current_salary:,} is comparatively underpaid. {salary_comparison}
 
-    # Display the career advice
+        **Upskilling Recommendation:** To boost your career and aim for higher-paying roles, we recommend upskilling in skills relevant to your domain. These skills will help you stay ahead in the AI-driven job market.
+
+        **Top Companies to Apply to After Upskilling:**
+        - Company A: {currency}{market_salary + 7500:,} (Source: Glassdoor, 2024 data)
+        - Company B: {currency}{market_salary + 17500:,} (Source: Indeed, 2024 estimates)
+        - Company C: {currency}{market_salary + 27500:,} (Source: Payscale, 2024 data)
+
+        **Next Step:** To get a detailed plan and career roadmap to achieve a higher salary with your skills, apply for our ₹199 Personalized Career Plan. This roadmap will also help you find free resources to upskill and take your career to the next level!
+        """
+
+    career_plan = f"""
+    <div class="career-plan container fade-in">
+    🎯 <strong>{user.get('name')}'s AI Career Revolution Plan</strong>
+    {career_plan_text.replace('**', '<strong>').replace('**', '</strong>')}
+    </div>
+    """
+
+    st.success("✅ Your Personalized Plan is Ready!")
+    st.markdown(career_plan, unsafe_allow_html=True)
+
+    # Ad Section (After Career Plan)
     st.markdown(f"""
-    <div class="brief-counseling container fade-in">
-        <h3>🎯 Quick Career Boost for {user.get('name', 'User')}</h3>
-        <p>Here’s a quick start to achieve your goal of <strong>{career_goal}</strong> as a {employment_status} in {domain}:</p>
-        
-        <h4>Free Course Recommendation:</h4>
-        <p>I recommend starting with this free course:</p>
-        <ul>
-            <li><strong>{course_name} on {course_platform}:</strong> <a href="{course_link}" target="_blank">Enroll Now</a> – Kickstart your journey!</li>
-        </ul>
-        
-        <h4>Your Career Map Overview:</h4>
-        <p>Here’s a simple roadmap to get you started:</p>
-        <ul>
-            <li><strong>Step 1:</strong> {career_map[0]}</li>
-            <li><strong>Step 2:</strong> {career_map[1]}</li>
-            <li><strong>Step 3:</strong> {career_map[2]}</li>
-        </ul>
+    <div class="ad-section container fade-in">
+        <p>✨ Don’t Miss Out: Get Your ₹499 AI Freelance Kit Now!</p>
+        <p>Learn to earn ₹90K–₹3L/month with just 8 hours on weekends! Includes tools, templates, and a step-by-step guide.</p>
+        <a href="https://rzp.io/rzp/t37swnF" target="_blank"><button>Claim Now!</button></a>
     </div>
     """, unsafe_allow_html=True)
 
-    # Product Recommendations
+    # ₹199 Personalized Career Plan CTA
     st.markdown(f"""
-    <div class="brief-counseling container fade-in">
-        <h3>🚀 Recommended Career Solutions</h3>
-        <p>Take your career to the next level with these tailored solutions:</p>
+    <div class="cta container fade-in">
+        <a href='https://rzp.io/rzp/FAsUJ9k' target='_blank'><button style='background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);color:#FFFFFF;'>📋 Get ₹199 Career Plan</button></a>
     </div>
     """, unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
+    # ₹499 AI Freelance Kit as Backup Plan
+    st.markdown(f"""
+    <div class="career-plan container fade-in">
+    <strong>Looking for an Alternative Plan?</strong> As AI is driving automation, always have a backup plan! Take our AI Freelance Kit (worth ₹10,000) for just {currency}499 – a limited period offer!
 
-    with col1:
-        # Show Freelancer Kit for Freelancers or those interested in freelancing
-        if employment_status == "Freelancer" or career_goal in ["Start Freelancing", "Other: Start Freelancing"]:
-            st.markdown("""
-            <div class="product-card" style="border-color: #2AB7CA">
-                <h3>AI Freelancer Kit (₹499)</h3>
-                <ul>
-                    <li>Proven freelancing templates</li>
-                    <li>Step-by-step client acquisition</li>
-                    <li>AI tools you can resell</li>
-                </ul>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button("Get Freelancer Kit", key="freelancer"):
-                st.markdown("[Redirecting to payment...](https://rzp.io/rzp/t37swnF)")
+    <strong>What You Get:</strong>
+    - Spend just 8 hours on weekends (4h Sat, 4h Sun) over 4 weeks to earn ₹90K–₹3L/month.
+    - Includes YouTube links for learning, bonus AI tools like a chat script and fake news detector (copy-paste and sell to earn ₹15K–₹20K from a basic app).
+    - Step-by-step guide to set up your freelance account on Upwork and Fiverr, find your niche, and use templates to target customers.
+    - A 360-degree solution kit: from building your freelance profile to selling to customers.
+
+    <strong>How It Works:</strong>
+    - In the first 2 months, spend 8 hours per weekend to build your niche.
+    - Once your niche is set, use ready-made content (alter it to customer needs) and sell it in just 3 hours per weekend to earn ₹50K.
+
+    <strong>Join Our Community:</strong> Join our 3,000+ success community from the USA, UK, Dubai, Israel, and India. Don’t just rely on a job – it might go at any moment! We have success stories of people who quit their jobs after 8 months and started their own AI business agencies. Be among them and escape the matrix – work for yourself, not for other companies!
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ₹499 AI Freelance Kit CTA
+    st.markdown(f"""
+    <div class="cta container fade-in">
+        <a href='https://rzp.io/rzp/t37swnF' target='_blank'><button style='background: linear-gradient(90deg, #FF6F61 0%, #FF3D00 100%);color:#FFFFFF;'>🌟 Get AI Freelance Kit ({currency}499)</button></a>
+        <p>After payment, check your email for your AI Freelance Kit!</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Warning
+    st.markdown(f"""
+    <div class="warning container fade-in" style="color: #FF6F61;">
+    <strong>⚠️ Warning:</strong> Companies are laying off due to automation. Spend 8 hours on weekends upskilling & building a backup plan!
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Updated Testimonials
+    testimonials = [
+        "“Landed a $2K gig with the AI Kit! This app helped me pivot my career in just 6 weeks.” – Alex, Data Scientist, USA",
+        "“From zero to ₹1L/month in 6 weeks! The career plan was a game-changer.” – Neha, Marketing Professional, India",
+    ]
+    selected_testimonial = random.choice(testimonials)
+    st.markdown(f"""
+    <div class="testimonials container fade-in">
+        <span class="flash"><strong>{selected_testimonial}</strong></span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Updated Trust Badge
+    st.markdown(f"""
+    <div class="trust-badge container fade-in">
+        <p><strong>📈 Trusted by 3,000+ learners worldwide!</strong></p>
+        <p><strong>🎁 Free AI Niche PDF + Chatbot access after payment!</strong></p>
+        <p><strong>🔒 Your data is secure with us. We use HTTPS and comply with privacy regulations.</strong></p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Share with Friends Section
+    base_url = "https://www.careerupskillers.com"
+    referral_link = f"{base_url}?ref={st.session_state.session_id}"
+
+    share_message = f"🌟 I just got my personalized AI Career Plan from CareerUpskillers AI Advisor! It helped me discover if I'm paid fairly and find top companies hiring for my skills. Check it out: {referral_link}"
+    encoded_message = requests.utils.quote(share_message)
+
+    st.markdown(f"""
+    <div class="share-section container fade-in">
+        <p>📢 Share with Friends & Earn Rewards!</p>
+        <p>Invite your friends to try CareerUpskillers AI Advisor! If they sign up using your link, you'll get a <strong>10% discount</strong> on the ₹199 Career Plan or a <strong>free AI Niche PDF</strong>!</p>
+        <input type="text" id="referralLink" value="{referral_link}" readonly>
+        <button onclick="copyLink()">Copy Link</button>
+        <br>
+        <a href="https://wa.me/?text={encoded_message}" target="_blank"><button>Share on WhatsApp</button></a>
+        <a href="mailto:?subject=Check out CareerUpskillers AI Advisor!&body={encoded_message}" target="_blank"><button>Share via Email</button></a>
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url={referral_link}" target="_blank"><button>Share on LinkedIn</button></a>
+        <a href="https://twitter.com/intent/tweet?text={encoded_message}" target="_blank"><button>Share on Twitter</button></a>
+    </div>
+    <script>
+        function copyLink() {{
+            var link = document.getElementById("referralLink");
+            link.select();
+            document.execCommand("copy");
+            alert("Referral link copied to clipboard!");
+        }}
+    </script>
+    """, unsafe_allow_html=True)
+
+    if not st.session_state.referral_data_sent:
+        referral_data = {
+            "session_id": st.session_state.session_id,
+            "referral_link": referral_link,
+            "user_email": user.get('email', 'N/A'),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        if google_sheets_url:
+            try:
+                response = requests.post(google_sheets_url, json=referral_data)
+                response.raise_for_status()
+                st.session_state.referral_data_sent = True
+            except Exception as e:
+                st.error(f"Failed to send referral data: {str(e)}")
         else:
-            # Placeholder for other users
-            st.markdown("""
-            <div class="product-card" style="border-color: #2AB7CA">
-                <h3>Explore Freelancing (₹499)</h3>
-                <ul>
-                    <li>Learn how to start freelancing</li>
-                    <li>Step-by-step client acquisition</li>
-                    <li>Access to AI tools</li>
-                </ul>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button("Explore Freelancing", key="freelancer"):
-                st.markdown("[Redirecting to payment...](https://rzp.io/rzp/t37swnF)")
+            st.error("Google Sheets URL is missing. Please ensure GOOGLE_SHEETS_URL is defined in secrets.")
 
-    with col2:
-        st.markdown("""
-        <div class="product-card" style="border-color: #FF6F61">
-            <h3>Career Plan (₹199)</h3>
-            <ul>
-                <li>Market salary analysis</li>
-                <li>Company recommendations</li>
-                <li>Interview preparation</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Get Career Plan", key="career"):
-            st.markdown("[Redirecting to payment...](https://rzp.io/rzp/FAsUJ9k)")
-
-    # Follow-Up Questions Section
-    st.markdown(f"""
-    <div class="brief-counseling container fade-in">
-        <h3>💬 Have More Questions?</h3>
-        <p>Ask me anything about your career, and I’ll provide personalized advice!</p>
+    # Feedback Link
+    st.markdown("""
+    <div class="feedback container fade-in">
+        <p><strong>We’d love to hear your feedback!</strong> <a href="https://forms.gle/5kN3jXzB2zL9pWvJ6" target="_blank">Share your thoughts here</a>.</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Display previous follow-up messages
-    for message in st.session_state.follow_up_messages:
-        st.markdown(f"<div class='user-response container'>{message['user']}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='chat-bubble container'>{message['bot']}</div>", unsafe_allow_html=True)
+    # Footer (Repeated at the end)
+    st.markdown("""
+    <div class="footer container fade-in">
+        <p>© 2025 CareerUpskillers | <a href="https://www.careerupskillers.com/about-1" target="_blank">Privacy Policy</a> | <a href="https://www.careerupskillers.com/terms-of-service" target="_blank">Terms of Service</a></p>
+        <p>Contact us: <a href="mailto:careerupskillers@gmail.com">careerupskillers@gmail.com</a> | Call/WhatsApp: <a href="tel:+917892116728">+91 78921 16728</a></p>
+        <p>Follow us: 
+            <a href="https://www.linkedin.com/company/careerupskillers/?viewAsMember=true" target="_blank">LinkedIn</a> | 
+            <a href="https://youtube.com/@careerupskillers?si=zQ9JVshWBkBQeGfv" target="_blank">YouTube</a> | 
+            <a href="https://www.instagram.com/careerupskillers?igsh=YWNmOGMwejBrb24z" target="_blank">Instagram</a>
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # Follow-up question input
-    with st.form(key="follow_up_form"):
-        follow_up_question = st.text_input("Your question", placeholder="e.g., How can I improve my portfolio?")
-        if st.form_submit_button("Ask"):
-            if follow_up_question:
-                # Prepare the follow-up prompt
-                follow_up_prompt = f"""
-                You are a career advisor. The user has the following details:
-                - Employment Status: {employment_status}
-                - Professional Domain: {domain}
-                - Location: {location}
-                - Career Goal: {career_goal}
-
-                The user asked: "{follow_up_question}"
-
-                Provide a concise, actionable response to their question.
-                """
-
-                try:
-                    # Call ChatGPT 3.5 Turbo for follow-up
-                    follow_up_response = openai.ChatCompletion.create(
-                        model="gpt-3.5-turbo",
-                        messages=[
-                            {"role": "system", "content": "You are a career advisor providing personalized advice."},
-                            {"role": "user", "content": follow_up_prompt}
-                        ],
-                        max_tokens=150,
-                        temperature=0.7
-                    )
-
-                    bot_response = follow_up_response.choices[0].message['content'].strip()
-                except Exception as e:
-                    bot_response = "I’m sorry, I couldn’t process your question right now. Please try again later!"
-
-                # Store the conversation
-                st.session_state.follow_up_messages.append({
-                    "user": follow_up_question,
-                    "bot": bot_response
-                })
-                st.rerun()
-            else:
-                st.warning("Please enter a question to proceed.")
-
-    # Restart Option
-    if st.button("Start Over"):
-        st.session_state.q_index = 0
-        st.session_state.completed = False
-        st.session_state.answers = {}
-        st.session_state.user_data_sent = False
-        st.session_state.follow_up_messages = []
-        st.rerun()
+# Add a decorative branding element to cover the "Manage App" icon
+st.markdown("""
+<div class="branding-overlay">
+    <p>🌟 CareerUpskillers</p>
+</div>
+""", unsafe_allow_html=True)
