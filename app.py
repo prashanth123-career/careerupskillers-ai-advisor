@@ -43,7 +43,7 @@ hide_streamlit_style = """
         text-align: right;
         animation: slideIn 0.3s ease-in;
     }
-    .info-section, .flash-alert, .header, .post-submission, .brief-counseling, .cta {
+    .info-section, .flash-alert, .header, .post-submission, .brief-counseling {
         width: 100%;
         padding: 16px;
         box-sizing: border-box;
@@ -81,48 +81,6 @@ hide_streamlit_style = """
         border: 1px solid #2AB7CA;
         color: #1A3550;
     }
-    .cta button {
-        width: 100%;
-        padding: 14px;
-        font-size: 16px;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        margin: 12px auto;
-        display: block;
-        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
-        color: #FFFFFF;
-        transition: transform 0.2s ease;
-    }
-    .cta button:hover {
-        transform: scale(1.05);
-    }
-    input, select {
-        width: 100%;
-        padding: 12px;
-        font-size: 15px;
-        border-radius: 8px;
-        border: 2px solid #2AB7CA;
-        margin: 8px 0;
-        box-sizing: border-box;
-    }
-    .progress-text {
-        font-size: 16px;
-        text-align: center;
-        margin: 8px 0;
-        color: #FFD700;
-    }
-    .fade-in {
-        animation: fadeIn 0.5s ease-in;
-    }
-    @keyframes fadeIn {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
-    }
-    @keyframes slideIn {
-        0% { opacity: 0; transform: translateY(10px); }
-        100% { opacity: 1; transform: translateY(0); }
-    }
     .product-card {
         border: 2px solid;
         border-radius: 12px;
@@ -135,6 +93,20 @@ hide_streamlit_style = """
     }
     .career-card {
         border-color: #FF6F61;
+    }
+    .stButton>button {
+        width: 100%;
+        padding: 14px;
+        font-size: 16px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        margin: 12px auto;
+        display: block;
+        transition: transform 0.2s ease;
+    }
+    .stButton>button:hover {
+        transform: scale(1.05);
     }
     </style>
 """
@@ -154,10 +126,30 @@ if 'slots_left' not in st.session_state:
 if 'user_data_sent' not in st.session_state:
     st.session_state.user_data_sent = False
 
-# Product Offerings Section - Corrected Implementation
+# Google Sheets URL for lead capture
+google_sheets_url = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"
+
+def capture_lead(product_choice):
+    """Function to capture lead data when a product is selected"""
+    user_data = {
+        **st.session_state.answers,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "session_id": st.session_state.session_id,
+        "product_selected": product_choice,
+        "conversion": "pending"
+    }
+    try:
+        response = requests.post(google_sheets_url, json=user_data)
+        response.raise_for_status()
+        return True
+    except Exception as e:
+        st.error(f"Error submitting data: {str(e)}")
+        return False
+
 def show_product_offerings():
+    """Display the product options with proper Streamlit buttons"""
     st.markdown("""
-    <div class="brief-counseling container fade-in">
+    <div class="brief-counseling">
         <h3>🎯 Upgrade Your Career</h3>
         <p>Choose the option that best fits your needs:</p>
     </div>
@@ -183,7 +175,9 @@ def show_product_offerings():
                     key="freelancer_kit",
                     use_container_width=True,
                     type="primary"):
-            st.markdown("[Redirecting to payment...](https://rzp.io/rzp/t37swnF)")
+            if capture_lead("AI Freelancer Kit"):
+                st.success("Redirecting to payment...")
+                st.markdown("[Click here if not redirected](https://rzp.io/rzp/t37swnF)")
     
     with col2:
         st.markdown("""
@@ -203,24 +197,42 @@ def show_product_offerings():
                     key="career_plan",
                     use_container_width=True,
                     type="secondary"):
-            st.markdown("[Redirecting to payment...](https://rzp.io/rzp/FAsUJ9k)")
+            if capture_lead("Career Plan"):
+                st.success("Redirecting to payment...")
+                st.markdown("[Click here if not redirected](https://rzp.io/rzp/FAsUJ9k)")
+
+# [Rest of your existing form and question logic...]
+
+# After form submission
+if st.session_state.completed:
+    # Display user's information
+    st.markdown(f"""
+    <div class="post-submission">
+        <p>✅ Thanks, {st.session_state.answers.get('name', 'User')}! Your career insights are ready!</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    st.markdown("""
-    <p style="text-align: center; margin-top: 24px;">
-        <strong>Special Offer:</strong> Get both for ₹599 (save ₹99) | 
-        <a href="https://rzp.io/rzp/bundle-offer" target="_blank" style="color: #2AB7CA;">Click here</a>
-    </p>
+    # Show the product offerings
+    show_product_offerings()
+
+    # Testimonials
+    testimonials = [
+        "The ₹199 plan helped me negotiate a 30% salary hike! - Rohan, Mumbai",
+        "With the AI Kit, I made ₹1.2L in my first month! - Priya, Freelancer"
+    ]
+    st.markdown(f"""
+    <div class="brief-counseling">
+        <h4>🌟 Success Stories</h4>
+        <p>{random.choice(testimonials)}</p>
+        <p style="text-align: center; font-size: 12px; margin-top: 16px;">
+            Limited slots available - {st.session_state.slots_left} remaining today
+        </p>
+    </div>
     """, unsafe_allow_html=True)
 
-# [Rest of your existing code...]
-
-# After Submission - Replace your product offerings section with:
-if st.session_state.completed:
-    # [Your existing post-submission code...]
-    
-    # Display the corrected product offerings
-    show_product_offerings()
-    
-    # [Rest of your existing code...]
-
-# [Rest of your script...]
+    # Restart option
+    if st.button("Start Over", key="restart_button"):
+        st.session_state.q_index = 0
+        st.session_state.completed = False
+        st.session_state.answers = {}
+        st.rerun()
