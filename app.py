@@ -68,7 +68,7 @@ countries = [
     "South Africa", "Brazil", "Other"
 ]
 
-# CSS styling with fixes for visibility and mobile responsiveness
+# CSS styling with updates for welcome message, Streamlit elements, and mobile responsiveness
 st.markdown("""
 <style>
     .chat-bubble {
@@ -123,18 +123,29 @@ st.markdown("""
         border-radius: 12px;
         margin: 20px 0;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        color: #1A3550;  /* Ensure text is dark and readable */
-        overflow: auto;  /* Allow scrolling if content overflows */
-        min-height: 300px;  /* Ensure enough height for content */
+        color: #1A3550;
+        overflow: auto;
+        min-height: 300px;
     }
     .welcome-message {
-        background-color: #E6F4FA;
+        background-color: #FFD700;  /* Gold background */
         padding: 15px;
         border-radius: 12px;
         margin-bottom: 20px;
         text-align: center;
         font-size: 16px;
-        color: #1A3550;
+        color: #000000;  /* Dark black text */
+        font-weight: bold;  /* Bold text */
+    }
+    .welcome-message strong {
+        color: #000000;  /* Ensure strong tags are also dark black */
+        font-weight: bold;
+        animation: flash 1s infinite;  /* Flashing effect */
+    }
+    @keyframes flash {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
     }
     .stButton>button {
         background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
@@ -154,8 +165,12 @@ st.markdown("""
         background: #E6F4FA;
         border-radius: 12px;
         margin-bottom: 20px;
-        color: #1A3550;  /* Ensure text is dark and readable */
-        opacity: 1 !important;  /* Force full opacity */
+        color: #1A3550;
+        opacity: 1 !important;
+    }
+    /* Hide Streamlit elements */
+    .stApp > header {
+        display: none !important;  /* Hide the entire Streamlit header including Share, Star, etc. */
     }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -180,17 +195,23 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Header section with corrected Contact Us and Call/WhatsApp links
+# Header section with updated links
 st.markdown("""
 <div class="info-section">
     <p>© 2025 CareerUpskillers | 
     <a href="https://www.careerupskillers.com/post/the-ultimate-ai-career-guide-jobs-freelancing-and-startups#contact" style="color:white;">Contact Us</a> | 
-    <a href="https://wa.me/917892116728" style="color:white;">Call/WhatsApp</a>
+    <a href="https://wa.me/917892116728" style="color:white;">Call/WhatsApp</a> | 
+    <a href="https://www.careerupskillers.com/about-1" style="color:white;">Privacy</a> | 
+    <a href="https://www.careerupskillers.com/about-1" style="color:white;">About Us</a> | 
+    <a href="https://www.linkedin.com/company/careerupskillers/" style="color:white;">LinkedIn</a> | 
+    <a href="https://www.instagram.com/careerupskillers?igsh=YWNmOGMwejBrb24z" style="color:white;">Instagram</a> | 
+    <a href="https://www.youtube.com/@Careerupskillers" style="color:white;">YouTube</a> | 
+    <a href="https://www.facebook.com/share/18gUeR73H6/" style="color:white;">Facebook</a>
     </p>
 </div>
 """, unsafe_allow_html=True)
 
-# Welcome message for all audiences
+# Welcome message with flashing, bold, dark black text and gold background
 st.markdown("""
 <div class="welcome-message">
     🌍 <strong>Welcome to CareerUpskillers AI Advisor!</strong><br>
@@ -206,7 +227,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Main header (ensuring visibility)
+# Main header
 st.markdown("""
 <div class="header">
     <h1>🌟 CareerUpskillers AI Advisor</h1>
