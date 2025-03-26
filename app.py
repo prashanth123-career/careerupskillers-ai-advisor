@@ -68,7 +68,7 @@ countries = [
     "South Africa", "Brazil", "Other"
 ]
 
-# CSS styling
+# CSS styling with fixes for visibility and mobile responsiveness
 st.markdown("""
 <style>
     .chat-bubble {
@@ -115,7 +115,7 @@ st.markdown("""
         border-radius: 12px;
         margin-bottom: 20px;
         text-align: center;
-        display: block;  /* Ensure visibility */
+        display: block;
     }
     .career-plan {
         background-color: #E6F4FA;
@@ -123,6 +123,9 @@ st.markdown("""
         border-radius: 12px;
         margin: 20px 0;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        color: #1A3550;  /* Ensure text is dark and readable */
+        overflow: auto;  /* Allow scrolling if content overflows */
+        min-height: 300px;  /* Ensure enough height for content */
     }
     .welcome-message {
         background-color: #E6F4FA;
@@ -145,9 +148,35 @@ st.markdown("""
     .stProgress > div > div > div {
         background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
     }
+    .testimonial {
+        text-align: center;
+        padding: 20px;
+        background: #E6F4FA;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        color: #1A3550;  /* Ensure text is dark and readable */
+        opacity: 1 !important;  /* Force full opacity */
+    }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header {visibility: visible;}  /* Ensure header is visible */
+    header {visibility: visible;}
+
+    /* Mobile responsiveness */
+    @media (max-width: 600px) {
+        .career-plan, .testimonial {
+            padding: 10px;
+            font-size: 14px;
+            min-height: 200px;
+        }
+        .header, .welcome-message {
+            padding: 10px;
+            font-size: 14px;
+        }
+        .stButton>button {
+            font-size: 14px;
+            padding: 8px 16px;
+        }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -363,14 +392,14 @@ if st.session_state.completed:
             # Directly redirect to payment page
             st.markdown('<meta http-equiv="refresh" content="0;url=https://rzp.io/rzp/FAsUJ9k">', unsafe_allow_html=True)
 
-    # Testimonials for both products
+    # Testimonials for both products with improved visibility
     st.markdown("---")
     st.markdown("### What Our Users Say")
     st.markdown("""
-    <div style="text-align: center; padding: 20px; background: #E6F4FA; border-radius: 12px; margin-bottom: 20px;">
+    <div class="testimonial">
         <p><i>“The AI Freelancer Kit helped me double my income in just 3 months!” – Ahmed, Freelancer, UAE</i></p>
     </div>
-    <div style="text-align: center; padding: 20px; background: #E6F4FA; border-radius: 12px;">
+    <div class="testimonial">
         <p><i>“The Detailed Career Plan gave me a clear path to follow and free courses to upskill!” – Priya, Student, India</i></p>
     </div>
     """, unsafe_allow_html=True)
