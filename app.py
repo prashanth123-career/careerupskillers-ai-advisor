@@ -3,7 +3,6 @@ import requests
 from datetime import datetime, timedelta
 import random
 import uuid
-import time
 
 # Set Streamlit page config
 st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🌟", layout="centered")
@@ -165,7 +164,7 @@ base_questions = [
     ("📊 What best describes your current status?", "This helps us customize your roadmap."),
     ("👋 Hi there! I'm your AI Career Advisor. What's your name?", "Let's get to know each other!"),
     ("📧 Great, {name}! Can I have your email to send you personalized career insights?", "We'll use this to share opportunities."),
-    ("📞 What's your phone number? (Select country code first)", "This helps us connect with you."),
+    ("📞 What's your phone number?", "This helps us connect with you."),
     ("💼 What's your professional domain?", "This helps us tailor your career plan."),
     ("🌍 Where are you located? (e.g., Mumbai, India)", "We'll find opportunities near you."),
 ]
@@ -268,31 +267,72 @@ if not st.session_state.completed:
     with st.form(key=f"form_{st.session_state.q_index}"):
         user_input = None
         if st.session_state.q_index == 0:  # Employment Status
-            user_input = st.selectbox("", employment_statuses, key="employment_status_input")
+            user_input = st.selectbox(
+                "Select your employment status",
+                employment_statuses,
+                key="employment_status_input",
+                label_visibility="collapsed"
+            )
         elif st.session_state.q_index == 1:  # Name
-            user_input = st.text_input("", placeholder="Enter your name", key="name_input")
+            user_input = st.text_input(
+                "Enter your name",
+                placeholder="Enter your name",
+                key="name_input",
+                label_visibility="collapsed"
+            )
         elif st.session_state.q_index == 2:  # Email
-            user_input = st.text_input("", placeholder="Enter your email", key="email_input")
+            user_input = st.text_input(
+                "Enter your email",
+                placeholder="Enter your email",
+                key="email_input",
+                label_visibility="collapsed"
+            )
         elif st.session_state.q_index == 3:  # Phone
-            code = st.selectbox("Country Code", list(dial_codes.keys()), key="country_code")
-            phone = st.text_input("Phone Number", placeholder="e.g., 9876543210", key="phone_input")
+            col1, col2 = st.columns([1, 2])
+            with col1:
+                code = st.selectbox(
+                    "Country code",
+                    list(dial_codes.keys()),
+                    key="country_code",
+                    label_visibility="collapsed"
+                )
+            with col2:
+                phone = st.text_input(
+                    "Phone number",
+                    placeholder="e.g., 9876543210",
+                    key="phone_input",
+                    label_visibility="collapsed"
+                )
             user_input = f"{code} {phone}" if phone else None
         elif st.session_state.q_index == 4:  # Domain
-            user_input = st.selectbox("", domains, key="domain_input")
+            user_input = st.selectbox(
+                "Select your domain",
+                domains,
+                key="domain_input",
+                label_visibility="collapsed"
+            )
             if user_input == "Other":
-                other_domain = st.text_input("Please specify your domain:", key="other_domain")
+                other_domain = st.text_input(
+                    "Specify your domain",
+                    placeholder="Enter your domain",
+                    key="other_domain",
+                    label_visibility="collapsed"
+                )
                 user_input = f"Other: {other_domain}" if other_domain else "Other"
         elif st.session_state.q_index == 5:  # Location
-            user_input = st.text_input("", placeholder="e.g., Mumbai, India", key="location_input")
+            user_input = st.text_input(
+                "Enter your location",
+                placeholder="e.g., Mumbai, India",
+                key="location_input",
+                label_visibility="collapsed"
+            )
         else:  # Additional questions
-            emp_status = st.session_state.answers["employment_status"]
-            if emp_status in ["Student", "Fresher"]:
-                user_input = st.text_input("", placeholder="Your answer", key=f"input_{st.session_state.q_index}")
-            else:  # Professional, Freelancer, Business Owner
-                if "salary" in questions[st.session_state.q_index][0].lower() or "earnings" in questions[st.session_state.q_index][0].lower() or "revenue" in questions[st.session_state.q_index][0].lower():
-                    user_input = st.text_input("", placeholder="Numbers only (e.g., 50000)", key=f"input_{st.session_state.q_index}")
-                else:
-                    user_input = st.text_input("", placeholder="Your answer", key=f"input_{st.session_state.q_index}")
+            user_input = st.text_input(
+                "Your answer",
+                placeholder="Type your response here",
+                key=f"input_{st.session_state.q_index}",
+                label_visibility="collapsed"
+            )
 
         col1, col2 = st.columns([1, 1])
         with col1:
@@ -450,4 +490,4 @@ if st.session_state.completed:
         st.session_state.q_index = 0
         st.session_state.completed = False
         st.session_state.answers = {}
-        st.experimental_rerun()
+        st.rerun()
