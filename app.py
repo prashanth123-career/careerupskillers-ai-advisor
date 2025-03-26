@@ -4,9 +4,18 @@ from datetime import datetime, timedelta
 import random
 import uuid
 import time
+import openai
 
 # Set Streamlit page config
 st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🌟", layout="centered")
+
+# Access secrets from Streamlit secrets.toml
+try:
+    openai.api_key = st.secrets["OPENAI_API_KEY"]
+    google_sheets_url = st.secrets["GOOGLE_SHEETS_URL"]
+except KeyError as e:
+    st.error(f"Missing secret: {str(e)}. Please ensure OPENAI_API_KEY and GOOGLE_SHEETS_URL are defined in secrets.toml.")
+    st.stop()
 
 # CSS for a conversational, interactive interface
 hide_streamlit_style = """
@@ -222,9 +231,8 @@ if 'slots_left' not in st.session_state:
     st.session_state.slots_left = random.randint(15, 40)
 if 'user_data_sent' not in st.session_state:
     st.session_state.user_data_sent = False
-
-# Google Sheets URL
-google_sheets_url = "https://script.google.com/macros/s/AKfycbxJ8Zk87PKqaDNpQC0UgCFkSw55gT1LphbvH3rZlZ9nf7scD8nTgDU5dgv_hWTEHvnN6g/exec"
+if 'follow_up_messages' not in st.session_state:
+    st.session_state.follow_up_messages = []
 
 # Employment status options
 employment_statuses = ["Student", "Fresher", "Working Professional", "Freelancer", "Business Owner"]
@@ -495,63 +503,80 @@ if st.session_state.completed:
     # Post-Submission Message
     st.markdown(f"""
     <div class="post-submission container fade-in">
-        <p>✅ Thanks for sharing, {user.get('name', 'User')}! Your career insights are ready!</p>
+        <p>✅ Thanks for sharing, {user.get('name', 'User')}! Let me generate your personalized career insights...</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Brief Counseling Section
+    # Use ChatGPT 3.5 Turbo to generate career advice
     domain = user.get('domain', 'Data Science')
     employment_status = user.get('employment_status', 'Working Professional')
     location = user.get('location', 'your area')
     career_goal = user.get('career_goals', 'Get a Job')
 
-    # Tailored course recommendation and career map based on employment status
-    course_recommendations = {
-        "Data Science": ("Data Science with Python (Coursera)", "https://www.coursera.org/learn/data-science-with-python"),
-        "Developer": ("Python for Beginners (Udemy)", "https://www.udemy.com/course/python-for-beginners/"),
-        "Web Designer": ("Web Design for Beginners (Skillshare)", "https://www.skillshare.com/classes/Web-Design-for-Beginners/123456"),
-        "Marketing": ("Digital Marketing Fundamentals (Coursera)", "https://www.coursera.org/learn/digital-marketing"),
-        "Sales": ("Sales Strategies (Udemy)", "https://www.udemy.com/course/sales-strategies/"),
-        "Accounting": ("Accounting Basics (Coursera)", "https://www.coursera.org/learn/accounting-basics"),
-        "Software Testing": ("Software Testing Basics (Udemy)", "https://www.udemy.com/course/software-testing-basics/"),
-        "Hardware Testing": ("Hardware Testing Fundamentals (Udemy)", "https://www.udemy.com/course/hardware-testing-fundamentals/"),
-        "Cybersecurity": ("Cybersecurity Essentials (Coursera)", "https://www.coursera.org/learn/cybersecurity-essentials"),
-        "BPO": ("Customer Service Skills (Skillshare)", "https://www.skillshare.com/classes/Customer-Service-Skills/123456"),
-    }
-    course_name, course_link = course_recommendations.get(domain, ("Data Science with Python (Coursera)", "https://www.coursera.org/learn/data-science-with-python"))
+    # Prepare the prompt for ChatGPT
+    prompt = f"""
+    You are a career advisor. Provide personalized career advice for a user with the following details:
+    - Employment Status: {employment_status}
+    - Professional Domain: {domain}
+    - Location: {location}
+    - Career Goal: {career_goal}
 
-    # Customize course and career map for each employment status
-    if employment_status == "Business Owner":
-        course_name = "Scaling Your Business (Coursera)"
-        course_link = "https://www.coursera.org/learn/scaling-operations"
-        career_map = [
-            "Learn strategies to scale your business with the free course above.",
-            "Optimize your business operations using tools like Trello or QuickBooks.",
-            f"Expand your reach in {location} through digital marketing and networking."
-        ]
-    elif employment_status == "Freelancer":
-        course_name = "Freelancing 101 (Skillshare)"
-        course_link = "https://www.skillshare.com/classes/Freelancing-101/123456"
-        career_map = [
-            "Build your freelance skills with the free course above.",
-            "Create a portfolio on platforms like Upwork, Fiverr, or Behance.",
-            f"Find clients in {location} by networking on LinkedIn and local events."
-        ]
-    elif employment_status in ["Student", "Fresher"]:
-        course_name = course_recommendations.get(domain, ("Data Science with Python (Coursera)", "https://www.coursera.org/learn/data-science-with-python"))[0]
-        course_link = course_recommendations.get(domain, ("Data Science with Python (Coursera)", "https://www.coursera.org/learn/data-science-with-python"))[1]
+    ### Instructions:
+    1. **Free Course Recommendation**: Suggest one free online course that aligns with their domain and career goal. Include the course name, platform (e.g., Coursera, Udemy, YouTube), and a direct link to the course. Ensure the course is free and accessible.
+    2. **Career Map Overview**: Provide a 3-step career roadmap tailored to their employment status, domain, location, and career goal. Each step should be actionable and specific, considering their location for opportunities (e.g., local job platforms, networking events). Suggest a relevant platform for building a portfolio based on their domain (e.g., Behance for designers, GitHub for developers, LinkedIn for marketing professionals).
+
+    ### Output Format:
+    - **Course Recommendation**: "I recommend starting with this free course: [Course Name] on [Platform] - [Link]"
+    - **Career Map**:
+      - Step 1: [Actionable step]
+      - Step 2: [Actionable step]
+      - Step 3: [Actionable step]
+
+    Keep the advice concise and practical.
+    """
+
+    try:
+        # Call ChatGPT 3.5 Turbo
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a career advisor providing personalized advice."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=300,
+            temperature=0.7
+        )
+
+        # Extract the response
+        career_advice = response.choices[0].message['content'].strip()
+
+        # Parse the response to extract course and career map
+        course_section = career_advice.split("### Career Map")[0].replace("### Course Recommendation", "").strip()
+        career_map_section = career_advice.split("### Career Map")[1].strip()
+
+        # Extract course details
+        course_line = course_section.split("I recommend starting with this free course:")[1].strip()
+        course_name = course_line.split(" on ")[0].strip()
+        course_platform = course_line.split(" on ")[1].split(" - ")[0].strip()
+        course_link = course_line.split(" - ")[1].strip()
+
+        # Extract career map steps
+        career_map_lines = career_map_section.split("\n")
+        career_map = [line.strip().replace("- ", "") for line in career_map_lines if line.strip().startswith("-")]
+
+    except Exception as e:
+        st.error(f"Failed to generate career advice with ChatGPT: {str(e)}")
+        # Fallback to static advice if ChatGPT fails
+        course_name = "Introduction to Web Design"
+        course_platform = "Coursera"
+        course_link = "https://www.coursera.org/learn/web-design-for-everybody"
         career_map = [
             "Start learning with the free course above to build foundational skills.",
-            "Create a portfolio showcasing your projects (e.g., GitHub for developers).",
-            f"Apply for internships or entry-level roles in {location} on platforms like LinkedIn."
-        ]
-    else:  # Working Professional
-        career_map = [
-            "Learn in-demand skills with the free course above.",
-            "Build a portfolio showcasing your work (e.g., GitHub for developers, Behance for designers).",
-            f"Apply to jobs or freelance gigs in {location} on platforms like LinkedIn, Upwork, or Fiverr."
+            "Create a portfolio showcasing your projects on Behance or Dribbble.",
+            f"Apply for internships or entry-level roles in {location} on platforms like LinkedIn or Internshala."
         ]
 
+    # Display the career advice
     st.markdown(f"""
     <div class="brief-counseling container fade-in">
         <h3>🎯 Quick Career Boost for {user.get('name', 'User')}</h3>
@@ -560,7 +585,7 @@ if st.session_state.completed:
         <h4>Free Course Recommendation:</h4>
         <p>I recommend starting with this free course:</p>
         <ul>
-            <li><strong>{course_name}:</strong> <a href="{course_link}" target="_blank">Enroll Now</a> – Kickstart your journey!</li>
+            <li><strong>{course_name} on {course_platform}:</strong> <a href="{course_link}" target="_blank">Enroll Now</a> – Kickstart your journey!</li>
         </ul>
         
         <h4>Your Career Map Overview:</h4>
@@ -627,10 +652,67 @@ if st.session_state.completed:
         if st.button("Get Career Plan", key="career"):
             st.markdown("[Redirecting to payment...](https://rzp.io/rzp/FAsUJ9k)")
 
+    # Follow-Up Questions Section
+    st.markdown(f"""
+    <div class="brief-counseling container fade-in">
+        <h3>💬 Have More Questions?</h3>
+        <p>Ask me anything about your career, and I’ll provide personalized advice!</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Display previous follow-up messages
+    for message in st.session_state.follow_up_messages:
+        st.markdown(f"<div class='user-response container'>{message['user']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='chat-bubble container'>{message['bot']}</div>", unsafe_allow_html=True)
+
+    # Follow-up question input
+    with st.form(key="follow_up_form"):
+        follow_up_question = st.text_input("Your question", placeholder="e.g., How can I improve my portfolio?")
+        if st.form_submit_button("Ask"):
+            if follow_up_question:
+                # Prepare the follow-up prompt
+                follow_up_prompt = f"""
+                You are a career advisor. The user has the following details:
+                - Employment Status: {employment_status}
+                - Professional Domain: {domain}
+                - Location: {location}
+                - Career Goal: {career_goal}
+
+                The user asked: "{follow_up_question}"
+
+                Provide a concise, actionable response to their question.
+                """
+
+                try:
+                    # Call ChatGPT 3.5 Turbo for follow-up
+                    follow_up_response = openai.ChatCompletion.create(
+                        model="gpt-3.5-turbo",
+                        messages=[
+                            {"role": "system", "content": "You are a career advisor providing personalized advice."},
+                            {"role": "user", "content": follow_up_prompt}
+                        ],
+                        max_tokens=150,
+                        temperature=0.7
+                    )
+
+                    bot_response = follow_up_response.choices[0].message['content'].strip()
+                except Exception as e:
+                    bot_response = "I’m sorry, I couldn’t process your question right now. Please try again later!"
+
+                # Store the conversation
+                st.session_state.follow_up_messages.append({
+                    "user": follow_up_question,
+                    "bot": bot_response
+                })
+                st.rerun()
+            else:
+                st.warning("Please enter a question to proceed.")
+
     # Restart Option
     if st.button("Start Over"):
         st.session_state.q_index = 0
         st.session_state.completed = False
         st.session_state.answers = {}
         st.session_state.user_data_sent = False
+        st.session_state.follow_up_messages = []
         st.rerun()
