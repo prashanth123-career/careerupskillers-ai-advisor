@@ -26,7 +26,7 @@ st.set_page_config(page_title="CareerUpskillers AI Advisor", page_icon="🌟", l
 
 # Load API key and Google Sheets URL
 try:
-    openai.api_key = st.secrets["API_KEY"]  # Updated to match your secrets
+    openai.api_key = st.secrets["API_KEY"]
     google_sheets_url = st.secrets["GOOGLE_SHEETS_URL"]
 except KeyError as e:
     st.error(
@@ -50,6 +50,23 @@ except openai.error.AuthenticationError:
 except Exception as e:
     st.error(f"Failed to validate OpenAI API key: {str(e)}")
     st.stop()
+
+# Currency map for global pricing
+currency_map = {
+    "India": ("₹", 199, 499),
+    "USA": ("$", 3, 7),
+    "UK": ("£", 2.5, 6),
+    "UAE": ("AED", 10, 25),
+    "Canada": ("$", 4, 8),
+    "Australia": ("$", 4, 8),
+    "Other": ("$", 3, 7)
+}
+
+# Country list for dropdown
+countries = [
+    "India", "USA", "UK", "UAE", "Canada", "Australia", "Germany", "Singapore", 
+    "South Africa", "Brazil", "Other"
+]
 
 # CSS styling
 st.markdown("""
@@ -106,6 +123,15 @@ st.markdown("""
         margin: 20px 0;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
+    .welcome-message {
+        background-color: #E6F4FA;
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        text-align: center;
+        font-size: 16px;
+        color: #1A3550;
+    }
     .stButton>button {
         background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
         color: white;
@@ -114,6 +140,9 @@ st.markdown("""
     .stButton>button:hover {
         transform: scale(1.05);
         transition: transform 0.2s;
+    }
+    .stProgress > div > div > div {
+        background: linear-gradient(90deg, #2AB7CA 0%, #1A3550 100%);
     }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -131,6 +160,15 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# Welcome message for all audiences
+st.markdown("""
+<div class="welcome-message">
+    🌍 <strong>Welcome to CareerUpskillers AI Advisor!</strong><br>
+    Whether you're a <strong>student</strong>, <strong>fresher</strong>, <strong>working professional</strong>, 
+    <strong>freelancer</strong>, or <strong>business owner</strong>, we’re here to help you achieve your career dreams—anywhere in the world!
+</div>
+""", unsafe_allow_html=True)
+
 # Flash alert
 st.markdown(f"""
 <div class="flash-alert">
@@ -142,7 +180,7 @@ st.markdown(f"""
 st.markdown("""
 <div class="header">
     <h1>🌟 CareerUpskillers AI Advisor</h1>
-    <p>Let's build your career roadmap in just a few steps!</p>
+    <p>Let’s build your personalized career roadmap in just a few steps!</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -151,17 +189,22 @@ questions = [
     ("What's your name?", "We'll use this to personalize your experience"),
     ("What's your email address?", "We'll send your career insights here"),
     ("What's your phone number?", "We'll use this to contact you"),
-    ("What's your current profession?", "Help us understand your background"),
+    ("Which country are you currently based in?", "This helps us provide location-specific advice"),
+    ("What’s your current career stage?", "This helps us tailor our recommendations"),
+    ("What's your current profession or field of study?", "Help us understand your background"),
     ("What are your career goals?", "So we can tailor our recommendations")
 ]
 
-keys = ["name", "email", "phone", "profession", "career_goals"]
+keys = ["name", "email", "phone", "country", "career_stage", "profession", "career_goals"]
+
+# Career stage options
+career_stages = ["Student", "Fresher", "Working Professional", "Freelancer", "Business Owner"]
 
 # Display form if not completed
 if not st.session_state.completed:
     # Show progress
     progress = st.progress((st.session_state.q_index) / len(questions))
-    st.caption(f"Question {st.session_state.q_index + 1} of {len(questions)}")
+    st.caption(f"Step {st.session_state.q_index + 1} of {len(questions)} - Let’s get to know you better! 😊")
     
     # Show current question
     current_q = questions[st.session_state.q_index]
@@ -170,7 +213,12 @@ if not st.session_state.completed:
     
     # Input field
     with st.form(key=f'q{st.session_state.q_index}'):
-        user_input = st.text_input("Your answer", label_visibility="collapsed")
+        if st.session_state.q_index == 3:  # Country question
+            user_input = st.selectbox("Select your country", countries, label_visibility="collapsed")
+        elif st.session_state.q_index == 4:  # Career stage question
+            user_input = st.selectbox("Select your career stage", career_stages, label_visibility="collapsed")
+        else:
+            user_input = st.text_input("Your answer", label_visibility="collapsed")
         
         if st.form_submit_button("Next"):
             if user_input:
@@ -212,22 +260,29 @@ if st.session_state.completed:
         else:
             st.error("Google Sheets URL is missing. Please ensure GOOGLE_SHEETS_URL is defined in secrets.")
 
-    st.success("✅ Thank you! Generating your personalized career plan...")
+    st.success(f"✅ Thank you, {user.get('name', 'User')}! Generating your personalized career plan...")
+
+    # Determine currency and pricing based on user's country
+    country = user.get('country', 'Other')
+    currency, career_plan_price, freelancer_kit_price = currency_map.get(country, currency_map["Other"])
 
     # Generate career plan using ChatGPT 3.5 Turbo
     try:
         time.sleep(1)  # Add a 1-second delay to avoid rate limiting
         prompt = f"""
-        You are a career counselor specializing in AI and tech roles. Based on the following user profile, provide a detailed career plan:
+        You are a career counselor specializing in AI and tech roles, with expertise in guiding students, freshers, working professionals, freelancers, and business owners globally. Based on the following user profile, provide a detailed career plan:
+
         - Name: {user.get('name', 'Not provided')}
-        - Current Profession: {user.get('profession', 'Not provided')}
+        - Career Stage: {user.get('career_stage', 'Not provided')}
+        - Current Profession/Field of Study: {user.get('profession', 'Not provided')}
         - Career Goals: {user.get('career_goals', 'Not provided')}
+        - Location: {user.get('country', 'Not provided')}
 
         Provide the following:
-        1. A brief analysis of the user's current profession and how it aligns with their career goals.
-        2. Recommended skills to upskill in, relevant to their profession and goals.
-        3. A list of 3 actionable steps to achieve their career goals.
-        4. A motivational message to encourage the user.
+        1. A brief analysis of the user's current career stage and profession/field of study, and how it aligns with their career goals.
+        2. Recommended skills to upskill in, relevant to their career stage, profession, and goals. Include globally relevant skills (e.g., AI, remote work tools).
+        3. A list of 3 actionable steps to achieve their career goals, tailored to their career stage and location. Include global opportunities (e.g., remote work, international companies).
+        4. A motivational message that resonates with their career stage.
 
         Format the response as plain text, with sections separated by newlines and bolded headers (e.g., **Analysis:**).
         """
@@ -235,10 +290,10 @@ if st.session_state.completed:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a career counselor specializing in AI and tech roles."},
+                {"role": "system", "content": "You are a career counselor specializing in AI and tech roles for a global audience."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=500,
+            max_tokens=600,
             temperature=0.9
         )
 
@@ -246,16 +301,16 @@ if st.session_state.completed:
 
     except Exception as e:
         career_plan_text = f"""
-        **Analysis:** Based on your profession ({user.get('profession', 'Not provided')}), you seem to be on a promising path, but aligning with your goals ({user.get('career_goals', 'Not provided')}) may require some strategic steps.
+        **Analysis:** As a {user.get('career_stage', 'Not provided')} in {user.get('profession', 'Not provided')}, you're at an exciting point in your journey! Your goals ({user.get('career_goals', 'Not provided')}) are achievable with the right steps.
 
-        **Upskilling Recommendations:** Consider learning skills like AI fundamentals, data analysis, or project management to enhance your career prospects.
+        **Upskilling Recommendations:** Consider learning globally relevant skills like AI fundamentals, digital marketing, or remote collaboration tools (e.g., Slack, Notion) to enhance your career prospects.
 
         **Actionable Steps:**
-        - Step 1: Enroll in an online course to learn a new skill relevant to your goals.
-        - Step 2: Update your resume and LinkedIn profile to reflect your new skills.
-        - Step 3: Network with professionals in your desired field to explore opportunities.
+        - Step 1: Explore online courses on platforms like Coursera or Udemy to learn a new skill.
+        - Step 2: Build a portfolio or LinkedIn profile showcasing your skills and projects.
+        - Step 3: Look for remote opportunities on platforms like Upwork or connect with international companies in {user.get('country', 'your region')}.
 
-        **Motivational Message:** You're on the right track! Keep pushing forward, and your career goals are within reach!
+        **Motivational Message:** No matter where you are in your career, you have the power to shape your future. Keep learning, stay curious, and your goals are within reach!
         """
         st.error(f"Failed to generate career plan with ChatGPT: {str(e)}. Using fallback plan instead.")
 
@@ -268,13 +323,13 @@ if st.session_state.completed:
     """, unsafe_allow_html=True)
 
     # Product cards (as additional recommendations)
-    st.markdown("### Additional Recommendations")
+    st.markdown("### Additional Recommendations to Accelerate Your Journey")
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("""
+        st.markdown(f"""
         <div class="product-card" style="border-color: #2AB7CA">
-            <h3>AI Freelancer Kit (₹499)</h3>
+            <h3>AI Freelancer Kit ({currency}{freelancer_kit_price})</h3>
             <ul>
                 <li>Proven freelancing templates</li>
                 <li>Step-by-step client acquisition</li>
@@ -287,9 +342,9 @@ if st.session_state.completed:
             st.markdown("[Redirecting to payment...](https://rzp.io/rzp/t37swnF)")
     
     with col2:
-        st.markdown("""
+        st.markdown(f"""
         <div class="product-card" style="border-color: #FF6F61">
-            <h3>Career Plan (₹199)</h3>
+            <h3>Detailed Career Plan ({currency}{career_plan_price})</h3>
             <ul>
                 <li>Market salary analysis</li>
                 <li>Company recommendations</li>
@@ -298,14 +353,22 @@ if st.session_state.completed:
         </div>
         """, unsafe_allow_html=True)
         
-        if st.button("Get Career Plan", key="career"):
+        if st.button("Get Detailed Career Plan", key="career"):
             st.markdown("[Redirecting to payment...](https://rzp.io/rzp/FAsUJ9k)")
     
-    # Testimonials
+    # Testimonials (global examples)
+    testimonials = [
+        "“The career plan helped me land a remote job with a US company!” – Priya, Student, India",
+        "“I doubled my freelance income in 3 months with the AI Kit!” – Ahmed, Freelancer, UAE",
+        "“As a business owner, I learned how to use AI to grow my startup.” – Sarah, Business Owner, Canada",
+        "“The advice helped me transition to a tech role as a fresher!” – James, Fresher, UK",
+        "“I negotiated a 20% raise after following the career plan!” – Maria, Working Professional, Australia"
+    ]
+    selected_testimonial = random.choice(testimonials)
     st.markdown("---")
-    st.markdown("""
+    st.markdown(f"""
     <div style="text-align: center; padding: 20px; background: #E6F4FA; border-radius: 12px;">
-        <p><i>"The ₹199 plan helped me negotiate a 30% salary hike!"</i> - Rohan, Mumbai</p>
+        <p><i>{selected_testimonial}</i></p>
     </div>
     """, unsafe_allow_html=True)
     
