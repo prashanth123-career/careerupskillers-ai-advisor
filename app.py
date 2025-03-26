@@ -218,29 +218,14 @@ if 'user_data_sent' not in st.session_state:
 # Google Sheets URL
 google_sheets_url = "https://script.google.com/macros/s/AKfycbxJ8Zk87PKqaDNpQC0UgCFkSw55gT1LphbvH3rZlZ9nf7scD8nTgDU5dgv_hWTEHvnN6g/exec"
 
-# Simplified questions
-questions = [
-    ("👋 Hi there! I’m your AI Career Advisor. What’s your name?", "Let’s get to know each other!"),
-    ("📧 Great, {name}! Can I have your email to send you personalized career insights?", "We’ll use this to share job opportunities and tips."),
-    ("📞 What’s your phone number? (Select your country code first)", "This helps us connect with you for exclusive opportunities."),
-    ("💼 What’s your professional domain?", "This helps us tailor your career plan."),
-    ("📊 Are you a fresher, student, or experienced professional?", "This helps us customize your roadmap."),
-    ("🌍 Where are you located? (e.g., Mumbai, India)", "We’ll find opportunities near you."),
-    ("💰 What’s your current or expected salary? (Optional)", "This helps us compare with market rates. Enter numbers only (e.g., 50000)."),
-]
-
-keys = [
-    "name", "email", "phone", "domain", "employment_status", "location", "salary"
-]
+# Employment status options (updated as per request)
+employment_statuses = ["Student", "Fresher", "Working Professional", "Freelancer", "Business Owner"]
 
 # Domain options
 domains = [
     "Data Science", "Sales", "Marketing", "Accounting", "Developer", "Web Designer",
     "Software Testing", "Hardware Testing", "Cybersecurity", "BPO", "Other"
 ]
-
-# Employment status options
-employment_statuses = ["Fresher", "Student", "Experienced"]
 
 # Country codes for phone number
 dial_codes = {
@@ -315,6 +300,55 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# Base questions (will be customized based on employment status)
+base_questions = [
+    ("📊 What best describes your current status?", "This helps us customize your roadmap."),
+    ("👋 Hi there! I’m your AI Career Advisor. What’s your name?", "Let’s get to know each other!"),
+    ("📧 Great, {name}! Can I have your email to send you personalized career insights?", "We’ll use this to share job opportunities and tips."),
+    ("📞 What’s your phone number? (Select your country code first)", "This helps us connect with you for exclusive opportunities."),
+    ("💼 What’s your professional domain?", "This helps us tailor your career plan."),
+    ("🌍 Where are you located? (e.g., Mumbai, India)", "We’ll find opportunities near you."),
+]
+
+# Additional questions based on employment status
+additional_questions = {
+    "Student": [
+        ("🎓 What’s your field of study?", "This helps us suggest relevant career paths."),
+        ("📅 What year will you graduate?", "This helps us plan your next steps.")
+    ],
+    "Fresher": [
+        ("🎓 What’s your field of study?", "This helps us suggest relevant career paths."),
+        ("📅 What year did you graduate?", "This helps us plan your next steps.")
+    ],
+    "Working Professional": [
+        ("💰 What’s your current salary? (Optional)", "Enter numbers only (e.g., 50000)."),
+        ("💡 What’s your expected salary? (Optional)", "Enter a realistic number (e.g., 60000).")
+    ],
+    "Freelancer": [
+        ("💰 What’s your average monthly freelance earnings? (Optional)", "Enter numbers only (e.g., 50000)."),
+        ("💡 What’s your expected monthly freelance earnings? (Optional)", "Enter a realistic number (e.g., 60000).")
+    ],
+    "Business Owner": [
+        ("💰 What’s your average monthly business revenue? (Optional)", "Enter numbers only (e.g., 50000)."),
+        ("💡 What’s your expected monthly business revenue? (Optional)", "Enter a realistic number (e.g., 60000).")
+    ]
+}
+
+keys = [
+    "employment_status", "name", "email", "phone", "domain", "location",
+    "field_of_study", "graduation_year",  # For Student/Fresher
+    "current_salary", "expected_salary",  # For Working Professional
+    "current_earnings", "expected_earnings",  # For Freelancer
+    "current_revenue", "expected_revenue"  # For Business Owner
+]
+
+# Dynamically build the questions list based on employment status
+if "employment_status" in st.session_state.answers:
+    emp_status = st.session_state.answers["employment_status"]
+    questions = base_questions + additional_questions.get(emp_status, [])
+else:
+    questions = base_questions
+
 # Conversational Form Logic
 if not st.session_state.completed:
     total_questions = len(questions)
@@ -338,25 +372,32 @@ if not st.session_state.completed:
 
     with st.form(key=f"form_{st.session_state.q_index}"):
         user_input = None
-        if st.session_state.q_index == 0:  # Name
+        if st.session_state.q_index == 0:  # Employment Status
+            user_input = st.selectbox("", employment_statuses, key="employment_status_input")
+        elif st.session_state.q_index == 1:  # Name
             user_input = st.text_input("", placeholder="Enter your name", key=f"input_{st.session_state.q_index}")
-        elif st.session_state.q_index == 1:  # Email
+        elif st.session_state.q_index == 2:  # Email
             user_input = st.text_input("", placeholder="Enter your email", key=f"input_{st.session_state.q_index}")
-        elif st.session_state.q_index == 2:  # Phone Number
+        elif st.session_state.q_index == 3:  # Phone Number
             code = st.selectbox("Country Code", sorted(list(dial_codes.keys())), index=0, key="country_code_input")
             phone = st.text_input("", placeholder="Enter your phone number (e.g., 9876543210)", key="phone_input")
             user_input = f"{code} {phone}" if phone else None
-        elif st.session_state.q_index == 3:  # Domain
+        elif st.session_state.q_index == 4:  # Domain
             user_input = st.selectbox("", domains, key="domain_input")
             if user_input == "Other":
                 other_domain = st.text_input("Please specify your domain:", placeholder="Enter your domain", key="other_domain_input")
                 user_input = f"Other: {other_domain}" if other_domain else "Other"
-        elif st.session_state.q_index == 4:  # Employment Status
-            user_input = st.selectbox("", employment_statuses, key="employment_status_input")
         elif st.session_state.q_index == 5:  # Location
             user_input = st.text_input("", placeholder="e.g., Mumbai, India", key=f"input_{st.session_state.q_index}")
-        elif st.session_state.q_index == 6:  # Salary
-            user_input = st.text_input("", placeholder="Enter numbers only (e.g., 50000)", key=f"input_{st.session_state.q_index}")
+        elif st.session_state.q_index in [6, 7]:  # Field of Study, Graduation Year (Student/Fresher) or Salary/Earnings (Others)
+            emp_status = st.session_state.answers["employment_status"]
+            if emp_status in ["Student", "Fresher"]:
+                if st.session_state.q_index == 6:  # Field of Study
+                    user_input = st.text_input("", placeholder="e.g., Computer Science", key=f"input_{st.session_state.q_index}")
+                elif st.session_state.q_index == 7:  # Graduation Year
+                    user_input = st.text_input("", placeholder="e.g., 2023", key=f"input_{st.session_state.q_index}")
+            else:  # Working Professional, Freelancer, Business Owner
+                user_input = st.text_input("", placeholder="Enter numbers only (e.g., 50000)", key=f"input_{st.session_state.q_index}")
 
         col1, col2 = st.columns([1, 1])
         with col1:
@@ -366,20 +407,38 @@ if not st.session_state.completed:
 
         if submit_button:
             if user_input:
-                if st.session_state.q_index == 1:  # Email Validation
+                if st.session_state.q_index == 2:  # Email Validation
                     if "@" not in user_input or "." not in user_input:
                         st.error("Please enter a valid email address (e.g., example@domain.com).")
                         st.stop()
-                if st.session_state.q_index == 2:  # Phone Number Validation
+                if st.session_state.q_index == 3:  # Phone Number Validation
                     phone_part = user_input.split(" ")[1] if len(user_input.split(" ")) > 1 else ""
                     if not phone_part.isdigit() or len(phone_part) != 10:
                         st.error("Please enter a valid phone number (exactly 10 digits, e.g., 9876543210).")
                         st.stop()
-                if st.session_state.q_index == 6:  # Salary Validation
-                    cleaned_input = user_input.replace(',', '')
-                    if cleaned_input and not cleaned_input.isdigit():
-                        st.error("Please enter a valid salary (numbers only, e.g., 50000).")
-                        st.stop()
+                if st.session_state.q_index in [6, 7]:  # Salary/Earnings Validation
+                    emp_status = st.session_state.answers["employment_status"]
+                    if emp_status in ["Working Professional", "Freelancer", "Business Owner"]:
+                        cleaned_input = user_input.replace(',', '')
+                        if cleaned_input and not cleaned_input.isdigit():
+                            st.error("Please enter a valid number (e.g., 50000).")
+                            st.stop()
+                        if cleaned_input:
+                            # Check for 2-digit or 3-digit numbers
+                            if len(cleaned_input) < 4:
+                                st.error("Please enter a realistic amount (at least 4 digits, e.g., 1000 or higher).")
+                                st.stop()
+                            # Check for realistic expected salary/earnings (for index 7)
+                            if st.session_state.q_index == 7:
+                                current_key = "current_salary" if emp_status == "Working Professional" else "current_earnings" if emp_status == "Freelancer" else "current_revenue"
+                                expected_key = "expected_salary" if emp_status == "Working Professional" else "expected_earnings" if emp_status == "Freelancer" else "expected_revenue"
+                                current_value = st.session_state.answers.get(current_key)
+                                if current_value and current_value != "Skipped":
+                                    current_value = int(current_value.replace(',', ''))
+                                    expected_value = int(cleaned_input)
+                                    if expected_value > current_value * 3:  # Expected value shouldn't be more than 3x current
+                                        st.error("Your expected amount seems too high. Please enter a more realistic expectation (e.g., up to 3x your current amount).")
+                                        st.stop()
 
                 st.session_state.answers[keys[st.session_state.q_index]] = user_input
                 st.session_state.q_index += 1
@@ -420,10 +479,10 @@ if st.session_state.completed:
 
     # Brief Counseling Section
     domain = user.get('domain', 'Data Science')
-    employment_status = user.get('employment_status', 'Experienced')
+    employment_status = user.get('employment_status', 'Working Professional')
     location = user.get('location', 'your area')
 
-    # Tailored course recommendation based on domain
+    # Tailored course recommendation and career map based on employment status
     course_recommendations = {
         "Data Science": ("Data Science with Python (Coursera)", "https://www.coursera.org/learn/data-science-with-python"),
         "Developer": ("Python for Beginners (Udemy)", "https://www.udemy.com/course/python-for-beginners/"),
@@ -438,23 +497,55 @@ if st.session_state.completed:
     }
     course_name, course_link = course_recommendations.get(domain, ("Data Science with Python (Coursera)", "https://www.coursera.org/learn/data-science-with-python"))
 
+    # Customize course and career map for each employment status
+    if employment_status == "Business Owner":
+        course_name = "Scaling Your Business (Coursera)"
+        course_link = "https://www.coursera.org/learn/scaling-operations"
+        career_map = [
+            "Learn strategies to scale your business with the free course above.",
+            "Optimize your business operations using tools like Trello or QuickBooks.",
+            f"Expand your reach in {location} through digital marketing and networking."
+        ]
+    elif employment_status == "Freelancer":
+        course_name = "Freelancing 101 (Skillshare)"
+        course_link = "https://www.skillshare.com/classes/Freelancing-101/123456"
+        career_map = [
+            "Build your freelance skills with the free course above.",
+            "Create a portfolio on platforms like Upwork, Fiverr, or Behance.",
+            f"Find clients in {location} by networking on LinkedIn and local events."
+        ]
+    elif employment_status in ["Student", "Fresher"]:
+        course_name = course_recommendations.get(domain, ("Data Science with Python (Coursera)", "https://www.coursera.org/learn/data-science-with-python"))[0]
+        course_link = course_recommendations.get(domain, ("Data Science with Python (Coursera)", "https://www.coursera.org/learn/data-science-with-python"))[1]
+        career_map = [
+            "Start learning with the free course above to build foundational skills.",
+            "Create a portfolio showcasing your projects (e.g., GitHub for developers).",
+            f"Apply for internships or entry-level roles in {location} on platforms like LinkedIn."
+        ]
+    else:  # Working Professional
+        career_map = [
+            "Learn in-demand skills with the free course above.",
+            "Build a portfolio showcasing your work (e.g., GitHub for developers, Behance for designers).",
+            f"Apply to jobs or freelance gigs in {location} on platforms like LinkedIn, Upwork, or Fiverr."
+        ]
+
     st.markdown(f"""
     <div class="brief-counseling container fade-in">
         <h3>🎯 Quick Career Boost for {user.get('name', 'User')}</h3>
         <p>Here’s a quick start to elevate your career based on your inputs:</p>
         
         <h4>Free Course Recommendation:</h4>
-        <p>Since you’re in {domain}, I recommend starting with this free course:</p>
+        <p>Since you’re a {employment_status} in {domain}, I recommend starting with this free course:</p>
         <ul>
-            <li><strong>{course_name}:</strong> <a href="{course_link}" target="_blank">Enroll Now</a> – Kickstart your learning journey!</li>
+            <li><strong>{course_name}:</strong> <a href="{course_link}" target="_blank">Enroll Now</a> – Kickstart your journey!</li>
         </ul>
         
         <h4>Your Career Map Overview:</h4>
         <p>Here’s a simple roadmap to get you started:</p>
         <ul>
-            <li><strong>Step 1:</strong> Learn in-demand skills with the free course above.</li>
-            <li><strong>Step 2:</strong> Build a portfolio showcasing your work (e.g., GitHub for developers, Behance for designers).</li>
-            <li><strong>Step 3:</strong> Apply to jobs or freelance gigs in {location} on platforms like LinkedIn, Upwork, or Fiverr.</li>
+            <li><strong>Step 1:</strong> {career_map[0]}</li>
+            <li><strong>Step 2:</strong> {career_map[1]}</li>
+            <li><strong>Step 3:</strong> {career_map[2]}</li>
         </ul>
         
         <h4>Want a Detailed Plan?</h4>
