@@ -19,7 +19,8 @@ hide_streamlit_style = """
     header {visibility: hidden;}
     body {
         font-family: 'Inter', 'Roboto', sans-serif;
-        background: linear-gradient(135deg, #1A3550 0%, #2AB7CA 100%);
+        background: url('YOUR_BACKGROUND_IMAGE_URL') no-repeat center center fixed;
+        background-size: cover;
         color: #333333;
     }
     .container {
@@ -320,31 +321,8 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 # Load API key and Google Sheets URL
-try:
-    openai.api_key = st.secrets["OPENAI_API_KEY"]
-    google_sheets_url = st.secrets["GOOGLE_SHEETS_URL"]
-except KeyError as e:
-    st.error(
-        f"Missing secret: {str(e)}. Please ensure the following are defined:\n"
-        "- OPENAI_API_KEY: Your OpenAI API key\n"
-        "- GOOGLE_SHEETS_URL: The Google Sheets API URL\n\n"
-        "If running locally, add them to '.streamlit/secrets.toml'. "
-        "If deployed on Streamlit Cloud, add them in the app settings under 'Secrets'."
-    )
-    st.markdown(
-        "For more info, see: [Streamlit Secrets Management](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/secrets-management)"
-    )
-    st.stop()
-
-# Validate OpenAI API key
-try:
-    openai.Model.list()  # Make a simple API call to validate the key
-except openai.error.AuthenticationError:
-    st.error("Invalid OpenAI API key. Please check your OPENAI_API_KEY in secrets.")
-    st.stop()
-except Exception as e:
-    st.error(f"Failed to validate OpenAI API key: {str(e)}")
-    st.stop()
+openai.api_key = st.secrets["API_KEY"]
+google_sheets_url = st.secrets.get("GOOGLE_SHEETS_URL")
 
 # Country codes and currency map
 dial_codes = {
@@ -630,15 +608,12 @@ if st.session_state.completed:
     user["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     if not st.session_state.user_data_sent:
-        if google_sheets_url:
-            try:
-                response = requests.post(google_sheets_url, json=user)
-                response.raise_for_status()
-                st.session_state.user_data_sent = True
-            except Exception as e:
-                st.error(f"Failed to send user data: {str(e)}")
-        else:
-            st.error("Google Sheets URL is missing. Please ensure GOOGLE_SHEETS_URL is defined in secrets.")
+        try:
+            response = requests.post(google_sheets_url, json=user)
+            response.raise_for_status()
+            st.session_state.user_data_sent = True
+        except Exception as e:
+            st.error(f"Failed to send user data: {str(e)}")
 
     country_code = user['phone'].split()[0]
     country = dial_codes.get(country_code, "Unknown")
@@ -657,7 +632,6 @@ if st.session_state.completed:
     current_salary = int(salary_cleaned) if salary_cleaned else 0
 
     try:
-        time.sleep(1)  # Add a 1-second delay to avoid rate limiting
         session_seed = hash(st.session_state.session_id + user.get('name', '')) % 1000
         recent_companies = st.session_state.recent_companies[-10:]
 
@@ -839,20 +813,17 @@ if st.session_state.completed:
             "user_email": user.get('email', 'N/A'),
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
-        if google_sheets_url:
-            try:
-                response = requests.post(google_sheets_url, json=referral_data)
-                response.raise_for_status()
-                st.session_state.referral_data_sent = True
-            except Exception as e:
-                st.error(f"Failed to send referral data: {str(e)}")
-        else:
-            st.error("Google Sheets URL is missing. Please ensure GOOGLE_SHEETS_URL is defined in secrets.")
+        try:
+            response = requests.post(google_sheets_url, json=referral_data)
+            response.raise_for_status()
+            st.session_state.referral_data_sent = True
+        except Exception as e:
+            st.error(f"Failed to send referral data: {str(e)}")
 
     # Feedback Link
     st.markdown("""
     <div class="feedback container fade-in">
-        <p><strong>We’d love to hear your feedback!</strong> <a href="https://forms.gle/5kN3jXzB2zL9pWvJ6" target="_blank">Share your thoughts here</a>.</p>
+        <p><strong>We’d love to hear your feedback!</strong> <a href="https://forms.gle/your-feedback-form-link" target="_blank">Share your thoughts here</a>.</p>
     </div>
     """, unsafe_allow_html=True)
 
