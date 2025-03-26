@@ -115,6 +115,7 @@ st.markdown("""
         border-radius: 12px;
         margin-bottom: 20px;
         text-align: center;
+        display: block;  /* Ensure visibility */
     }
     .career-plan {
         background-color: #E6F4FA;
@@ -146,16 +147,16 @@ st.markdown("""
     }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header {visibility: hidden;}
+    header {visibility: visible;}  /* Ensure header is visible */
 </style>
 """, unsafe_allow_html=True)
 
-# Header section
+# Header section with corrected Contact Us and Call/WhatsApp links
 st.markdown("""
 <div class="info-section">
     <p>© 2025 CareerUpskillers | 
-    <a href="mailto:careerupskillers@gmail.com" style="color:white;">Contact Us</a> | 
-    <a href="tel:+917892116728" style="color:white;">Call/WhatsApp</a>
+    <a href="https://www.careerupskillers.com/post/the-ultimate-ai-career-guide-jobs-freelancing-and-startups#contact" style="color:white;">Contact Us</a> | 
+    <a href="https://wa.me/917892116728" style="color:white;">Call/WhatsApp</a>
     </p>
 </div>
 """, unsafe_allow_html=True)
@@ -176,7 +177,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Main header
+# Main header (ensuring visibility)
 st.markdown("""
 <div class="header">
     <h1>🌟 CareerUpskillers AI Advisor</h1>
@@ -184,14 +185,14 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Questions
+# Questions with examples for profession/field of study
 questions = [
     ("What's your name?", "We'll use this to personalize your experience"),
     ("What's your email address?", "We'll send your career insights here"),
     ("What's your phone number?", "We'll use this to contact you"),
     ("Which country are you currently based in?", "This helps us provide location-specific advice"),
     ("What’s your current career stage?", "This helps us tailor our recommendations"),
-    ("What's your current profession or field of study?", "Help us understand your background"),
+    ("What's your current profession or field of study?", "Help us understand your background (e.g., Software Engineering, Marketing, Data Science, Graphic Design, Business Management)"),
     ("What are your career goals?", "So we can tailor our recommendations")
 ]
 
@@ -322,7 +323,7 @@ if st.session_state.completed:
     </div>
     """, unsafe_allow_html=True)
 
-    # Product cards (as additional recommendations)
+    # Product cards (as additional recommendations) with updated points
     st.markdown("### Additional Recommendations to Accelerate Your Journey")
     col1, col2 = st.columns(2)
     
@@ -334,12 +335,15 @@ if st.session_state.completed:
                 <li>Proven freelancing templates</li>
                 <li>Step-by-step client acquisition</li>
                 <li>AI tools you can resell</li>
+                <li>Get free ready-to-use chatbot script (just run, start using, or resell)</li>
+                <li>Free video links</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
         
         if st.button("Get Freelancer Kit", key="freelancer"):
-            st.markdown("[Redirecting to payment...](https://rzp.io/rzp/t37swnF)")
+            # Directly redirect to payment page
+            st.markdown('<meta http-equiv="refresh" content="0;url=https://rzp.io/rzp/t37swnF">', unsafe_allow_html=True)
     
     with col2:
         st.markdown(f"""
@@ -349,26 +353,25 @@ if st.session_state.completed:
                 <li>Market salary analysis</li>
                 <li>Company recommendations</li>
                 <li>Interview preparation</li>
+                <li>Free courses to learn</li>
+                <li>Detailed career plan to follow</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
         
         if st.button("Get Detailed Career Plan", key="career"):
-            st.markdown("[Redirecting to payment...](https://rzp.io/rzp/FAsUJ9k)")
-    
-    # Testimonials (global examples)
-    testimonials = [
-        "“The career plan helped me land a remote job with a US company!” – Priya, Student, India",
-        "“I doubled my freelance income in 3 months with the AI Kit!” – Ahmed, Freelancer, UAE",
-        "“As a business owner, I learned how to use AI to grow my startup.” – Sarah, Business Owner, Canada",
-        "“The advice helped me transition to a tech role as a fresher!” – James, Fresher, UK",
-        "“I negotiated a 20% raise after following the career plan!” – Maria, Working Professional, Australia"
-    ]
-    selected_testimonial = random.choice(testimonials)
+            # Directly redirect to payment page
+            st.markdown('<meta http-equiv="refresh" content="0;url=https://rzp.io/rzp/FAsUJ9k">', unsafe_allow_html=True)
+
+    # Testimonials for both products
     st.markdown("---")
-    st.markdown(f"""
+    st.markdown("### What Our Users Say")
+    st.markdown("""
+    <div style="text-align: center; padding: 20px; background: #E6F4FA; border-radius: 12px; margin-bottom: 20px;">
+        <p><i>“The AI Freelancer Kit helped me double my income in just 3 months!” – Ahmed, Freelancer, UAE</i></p>
+    </div>
     <div style="text-align: center; padding: 20px; background: #E6F4FA; border-radius: 12px;">
-        <p><i>{selected_testimonial}</i></p>
+        <p><i>“The Detailed Career Plan gave me a clear path to follow and free courses to upskill!” – Priya, Student, India</i></p>
     </div>
     """, unsafe_allow_html=True)
     
