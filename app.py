@@ -6,6 +6,10 @@ import random
 import uuid
 import re
 import time
+import platform
+import socket
+import getpass
+from urllib.parse import urlparse
 
 # Initialize session state
 if 'session_id' not in st.session_state:
@@ -68,7 +72,7 @@ countries = [
     "South Africa", "Brazil", "Other"
 ]
 
-# CSS styling with updates for welcome message, Streamlit elements, and mobile responsiveness
+# CSS styling
 st.markdown("""
 <style>
     .chat-bubble {
@@ -128,19 +132,19 @@ st.markdown("""
         min-height: 300px;
     }
     .welcome-message {
-        background-color: #FFD700;  /* Gold background */
+        background-color: #FFD700;
         padding: 15px;
         border-radius: 12px;
         margin-bottom: 20px;
         text-align: center;
         font-size: 16px;
-        color: #000000;  /* Dark black text */
-        font-weight: bold;  /* Bold text */
+        color: #000000;
+        font-weight: bold;
     }
     .welcome-message strong {
-        color: #000000;  /* Ensure strong tags are also dark black */
+        color: #000000;
         font-weight: bold;
-        animation: flash 1s infinite;  /* Flashing effect */
+        animation: flash 1s infinite;
     }
     @keyframes flash {
         0% { opacity: 1; }
@@ -168,15 +172,13 @@ st.markdown("""
         color: #1A3550;
         opacity: 1 !important;
     }
-    /* Hide Streamlit elements */
     .stApp > header {
-        display: none !important;  /* Hide the entire Streamlit header including Share, Star, etc. */
+        display: none !important;
     }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: visible;}
 
-    /* Mobile responsiveness */
     @media (max-width: 600px) {
         .career-plan, .testimonial {
             padding: 10px;
@@ -211,7 +213,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Welcome message with flashing, bold, dark black text and gold background
+# Welcome message
 st.markdown("""
 <div class="welcome-message">
     🌍 <strong>Welcome to CareerUpskillers AI Advisor!</strong><br>
@@ -235,18 +237,18 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Questions with examples for profession/field of study
+# Updated questions with conversational style and combined country/location
 questions = [
-    ("What's your name?", "We'll use this to personalize your experience"),
-    ("What's your email address?", "We'll send your career insights here"),
-    ("What's your phone number?", "We'll use this to contact you"),
-    ("Which country are you currently based in?", "This helps us provide location-specific advice"),
-    ("What’s your current career stage?", "This helps us tailor our recommendations"),
-    ("What's your current profession or field of study?", "Help us understand your background (e.g., Software Engineering, Marketing, Data Science, Graphic Design, Business Management)"),
-    ("What are your career goals?", "So we can tailor our recommendations")
+    ("Hey there! What’s your name? I’d love to get to know you better!", "This helps me personalize your experience 😊"),
+    ("I’m curious—what’s your email address? I’ll send your career insights there!", "I’ll make sure to keep it safe!"),
+    ("Can you share your phone number? I might need to reach out to help you further!", "I’ll only use it to assist you!"),
+    ("I’d love to know where you’re based! Which country and city are you in right now?", "This helps me give you location-specific advice!"),
+    ("I’m excited to learn more about you! What’s your current career stage?", "This helps me tailor my recommendations just for you!"),
+    ("What’s your current profession or field of study? I’m curious to understand your background!", "For example, are you into Software Engineering, Marketing, or maybe Data Science?"),
+    ("I’d love to help you achieve your dreams! What are your career goals?", "Let me know what you’re aiming for, and I’ll help you get there!")
 ]
 
-keys = ["name", "email", "phone", "country", "career_stage", "profession", "career_goals"]
+keys = ["name", "email", "phone", "country_location", "career_stage", "profession", "career_goals"]
 
 # Career stage options
 career_stages = ["Student", "Fresher", "Working Professional", "Freelancer", "Business Owner"]
@@ -264,8 +266,13 @@ if not st.session_state.completed:
     
     # Input field
     with st.form(key=f'q{st.session_state.q_index}'):
-        if st.session_state.q_index == 3:  # Country question
-            user_input = st.selectbox("Select your country", countries, label_visibility="collapsed")
+        if st.session_state.q_index == 3:  # Country and Location question
+            col1, col2 = st.columns(2)
+            with col1:
+                country = st.selectbox("Country", countries, label_visibility="collapsed")
+            with col2:
+                location = st.text_input("City", label_visibility="collapsed")
+            user_input = f"{country}, {location}" if country and location else None
         elif st.session_state.q_index == 4:  # Career stage question
             user_input = st.selectbox("Select your career stage", career_stages, label_visibility="collapsed")
         else:
@@ -299,6 +306,23 @@ if st.session_state.completed:
     user = st.session_state.answers
     user["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
+    # Collect additional backend information
+    try:
+        user["operating_system"] = platform.system() + " " + platform.release()
+        user["hostname"] = socket.gethostname()
+        user["ip_address"] = socket.gethostbyname(socket.gethostname())
+        user["username"] = getpass.getuser()
+        user["session_id"] = st.session_state.session_id
+        # Attempt to get browser/user-agent (Streamlit doesn't provide direct access, but we can simulate)
+        user["user_agent"] = "Streamlit App (Simulated)"  # In a real web app, you'd get this from the request headers
+    except Exception as e:
+        st.error(f"Failed to collect additional user info: {str(e)}")
+        user["operating_system"] = "Unknown"
+        user["hostname"] = "Unknown"
+        user["ip_address"] = "Unknown"
+        user["username"] = "Unknown"
+        user["user_agent"] = "Unknown"
+
     # Send user data to Google Sheets
     if not st.session_state.user_data_sent:
         if google_sheets_url:
@@ -314,7 +338,8 @@ if st.session_state.completed:
     st.success(f"✅ Thank you, {user.get('name', 'User')}! Generating your personalized career plan...")
 
     # Determine currency and pricing based on user's country
-    country = user.get('country', 'Other')
+    country_location = user.get('country_location', 'Other')
+    country = country_location.split(",")[0].strip() if "," in country_location else country_location
     currency, career_plan_price, freelancer_kit_price = currency_map.get(country, currency_map["Other"])
 
     # Generate career plan using ChatGPT 3.5 Turbo
@@ -327,7 +352,7 @@ if st.session_state.completed:
         - Career Stage: {user.get('career_stage', 'Not provided')}
         - Current Profession/Field of Study: {user.get('profession', 'Not provided')}
         - Career Goals: {user.get('career_goals', 'Not provided')}
-        - Location: {user.get('country', 'Not provided')}
+        - Location: {user.get('country_location', 'Not provided')}
 
         Provide the following:
         1. A brief analysis of the user's current career stage and profession/field of study, and how it aligns with their career goals.
@@ -359,7 +384,7 @@ if st.session_state.completed:
         **Actionable Steps:**
         - Step 1: Explore online courses on platforms like Coursera or Udemy to learn a new skill.
         - Step 2: Build a portfolio or LinkedIn profile showcasing your skills and projects.
-        - Step 3: Look for remote opportunities on platforms like Upwork or connect with international companies in {user.get('country', 'your region')}.
+        - Step 3: Look for remote opportunities on platforms like Upwork or connect with international companies in {user.get('country_location', 'your region')}.
 
         **Motivational Message:** No matter where you are in your career, you have the power to shape your future. Keep learning, stay curious, and your goals are within reach!
         """
@@ -392,7 +417,6 @@ if st.session_state.completed:
         """, unsafe_allow_html=True)
         
         if st.button("Get Freelancer Kit", key="freelancer"):
-            # Directly redirect to payment page
             st.markdown('<meta http-equiv="refresh" content="0;url=https://rzp.io/rzp/t37swnF">', unsafe_allow_html=True)
     
     with col2:
@@ -410,10 +434,9 @@ if st.session_state.completed:
         """, unsafe_allow_html=True)
         
         if st.button("Get Detailed Career Plan", key="career"):
-            # Directly redirect to payment page
             st.markdown('<meta http-equiv="refresh" content="0;url=https://rzp.io/rzp/FAsUJ9k">', unsafe_allow_html=True)
 
-    # Testimonials for both products with improved visibility
+    # Testimonials for both products
     st.markdown("---")
     st.markdown("### What Our Users Say")
     st.markdown("""
