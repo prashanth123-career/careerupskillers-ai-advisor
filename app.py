@@ -215,7 +215,10 @@ if 'slots_left' not in st.session_state:
 if 'user_data_sent' not in st.session_state:
     st.session_state.user_data_sent = False
 
-# Simplified questions (reduced and smarter)
+# Google Sheets URL
+google_sheets_url = "https://script.google.com/macros/s/AKfycbxJ8Zk87PKqaDNpQC0UgCFkSw55gT1LphbvH3rZlZ9nf7scD8nTgDU5dgv_hWTEHvnN6g/exec"
+
+# Simplified questions
 questions = [
     ("👋 Hi there! I’m your AI Career Advisor. What’s your name?", "Let’s get to know each other!"),
     ("📧 Great, {name}! Can I have your email to send you personalized career insights?", "We’ll use this to share job opportunities and tips."),
@@ -397,15 +400,16 @@ if st.session_state.completed:
     user["session_id"] = st.session_state.session_id
     user["referral_link"] = f"https://www.careerupskillers.com?ref={st.session_state.session_id}"
 
+    # Send data to Google Sheets
     if not st.session_state.user_data_sent:
         try:
-            # Replace with your Google Sheets URL or API endpoint
-            google_sheets_url = "YOUR_GOOGLE_SHEETS_URL"
             response = requests.post(google_sheets_url, json=user)
             response.raise_for_status()
             st.session_state.user_data_sent = True
+            st.success("Your data has been successfully submitted to our system!")
         except Exception as e:
             st.error(f"Failed to send user data: {str(e)}")
+            st.warning("Don’t worry, you can still proceed to see your career insights.")
 
     # Post-Submission Message
     st.markdown(f"""
