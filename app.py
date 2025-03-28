@@ -237,15 +237,15 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Updated questions with conversational style and combined country/location
+# Updated questions with examples for all fields
 questions = [
-    ("Hey there! What’s your name? I’d love to get to know you better!", "This helps me personalize your experience 😊"),
-    ("I’m curious—what’s your email address? I’ll send your career insights there!", "I’ll make sure to keep it safe!"),
-    ("Can you share your phone number? I might need to reach out to help you further!", "I’ll only use it to assist you!"),
-    ("I’d love to know where you’re based! Which country and city are you in right now?", "This helps me give you location-specific advice!"),
-    ("I’m excited to learn more about you! What’s your current career stage?", "This helps me tailor my recommendations just for you!"),
+    ("Hey there! What’s your name? I’d love to get to know you better!", "For example, are you John from the USA or Priya from India? This helps me personalize your experience 😊"),
+    ("I’m curious—what’s your email address? I’ll send your career insights there!", "For example, something like john.doe@gmail.com or priya.sharma@outlook.com. I’ll make sure to keep it safe!"),
+    ("Can you share your phone number? I might need to reach out to help you further!", "For example, +12025550123 if you’re in the USA, or +919876543210 if you’re in India. I’ll only use it to assist you!"),
+    ("I’d love to know where you’re based! Which country and city are you in right now?", "For example, USA, New York or India, Mumbai. This helps me give you location-specific advice!"),
+    ("I’m excited to learn more about you! What’s your current career stage?", "This helps me tailor my recommendations just for you! Are you a Student, Fresher, or perhaps a Freelancer?"),
     ("What’s your current profession or field of study? I’m curious to understand your background!", "For example, are you into Software Engineering, Marketing, or maybe Data Science?"),
-    ("I’d love to help you achieve your dreams! What are your career goals?", "Let me know what you’re aiming for, and I’ll help you get there!")
+    ("I’d love to help you achieve your dreams! What are your career goals?", "For example, are you aiming to become a Data Scientist, start your own business, or land a job at a global tech company? Let me know what you’re aiming for, and I’ll help you get there!")
 ]
 
 keys = ["name", "email", "phone", "country_location", "career_stage", "profession", "career_goals"]
@@ -313,8 +313,7 @@ if st.session_state.completed:
         user["ip_address"] = socket.gethostbyname(socket.gethostname())
         user["username"] = getpass.getuser()
         user["session_id"] = st.session_state.session_id
-        # Attempt to get browser/user-agent (Streamlit doesn't provide direct access, but we can simulate)
-        user["user_agent"] = "Streamlit App (Simulated)"  # In a real web app, you'd get this from the request headers
+        user["user_agent"] = "Streamlit App (Simulated)"
     except Exception as e:
         st.error(f"Failed to collect additional user info: {str(e)}")
         user["operating_system"] = "Unknown"
