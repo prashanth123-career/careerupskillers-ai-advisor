@@ -72,7 +72,7 @@ countries = [
     "South Africa", "Brazil", "Other"
 ]
 
-# CSS styling with added styles for promotional section
+# CSS styling with updated purchase button styles
 st.markdown("""
 <style>
     .chat-bubble {
@@ -188,6 +188,18 @@ st.markdown("""
         transform: scale(1.05);
         transition: transform 0.2s;
     }
+    .stButton.purchase-button>button {
+        background: linear-gradient(90deg, #FF4500 0%, #FF6347 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+    .stButton.purchase-button>button:hover {
+        transform: scale(1.05);
+        transition: transform 0.2s;
+    }
     @keyframes flash {
         0% { opacity: 1; }
         50% { opacity: 0.5; }
@@ -280,7 +292,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Promotional Section
+# Promotional Section with Functional Buttons
 st.markdown("""
 <div class="promo-section">
     <h2>Unlock Your Freelancer Success: Use AI Tools, Strategic Plans, and Free Learning Resources for a Career Transformation! 🚀✨</h2>
@@ -298,10 +310,17 @@ st.markdown("""
     <p>Contact us for personalized career advice. Share your thoughts and let’s grow together!</p>
     <p>Follow the kit and start earning – don’t only rely on jobs as it’s uncertain! Just spend 8 hours on a weekend and start a new earning stream. Half of our students have quit their jobs within six months of purchasing!</p>
     <p>#Freelancer #CareerGrowth #AItools</p>
-    <button class="purchase-button" onclick="window.location.href='https://rzp.io/rzp/t37swnF'">Purchase AI Freelancer Kit Now (₹499)</button>
-    <button class="purchase-button" onclick="window.location.href='https://rzp.io/rzp/FAsUJ9k'">Purchase Detailed Career Plan Now (₹199)</button>
 </div>
 """, unsafe_allow_html=True)
+
+# Add Purchase Buttons Using st.button
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("Purchase AI Freelancer Kit Now (₹499)", key="promo_freelancer", help="Click to purchase the AI Freelancer Kit"):
+        st.markdown('<meta http-equiv="refresh" content="0;url=https://rzp.io/rzp/t37swnF">', unsafe_allow_html=True)
+with col2:
+    if st.button("Purchase Detailed Career Plan Now (₹199)", key="promo_career", help="Click to purchase the Detailed Career Plan"):
+        st.markdown('<meta http-equiv="refresh" content="0;url=https://rzp.io/rzp/FAsUJ9k">', unsafe_allow_html=True)
 
 # Flash alert
 st.markdown(f"""
