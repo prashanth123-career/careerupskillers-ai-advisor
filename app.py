@@ -72,7 +72,7 @@ countries = [
     "South Africa", "Brazil", "Other"
 ]
 
-# CSS styling
+# CSS styling with added style for double-click instruction
 st.markdown("""
 <style>
     .chat-bubble {
@@ -172,6 +172,13 @@ st.markdown("""
         color: #1A3550;
         opacity: 1 !important;
     }
+    .double-click-instruction {
+        color: #FF4500;  /* Orange-red color to stand out */
+        font-weight: bold;
+        font-size: 14px;
+        margin-top: 10px;
+        text-align: center;
+    }
     .stApp > header {
         display: none !important;
     }
@@ -192,6 +199,9 @@ st.markdown("""
         .stButton>button {
             font-size: 14px;
             padding: 8px 16px;
+        }
+        .double-click-instruction {
+            font-size: 12px;
         }
     }
 </style>
@@ -237,7 +247,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Updated questions with examples for all fields
+# Questions with examples
 questions = [
     ("Hey there! What’s your name? I’d love to get to know you better!", "For example, are you John from the USA or Priya from India? This helps me personalize your experience 😊"),
     ("I’m curious—what’s your email address? I’ll send your career insights there!", "For example, something like john.doe@gmail.com or priya.sharma@outlook.com. I’ll make sure to keep it safe!"),
@@ -277,6 +287,10 @@ if not st.session_state.completed:
             user_input = st.selectbox("Select your career stage", career_stages, label_visibility="collapsed")
         else:
             user_input = st.text_input("Your answer", label_visibility="collapsed")
+        
+        # Add double-click instruction
+        st.markdown('<div class="double-click-instruction">Please double-click the "Next" button after submitting your answer!</div>', 
+                    unsafe_allow_html=True)
         
         if st.form_submit_button("Next"):
             if user_input:
