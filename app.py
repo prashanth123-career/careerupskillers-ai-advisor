@@ -72,7 +72,7 @@ countries = [
     "South Africa", "Brazil", "Other"
 ]
 
-# CSS styling with added style for double-click instruction
+# CSS styling with added styles for promotional section
 st.markdown("""
 <style>
     .chat-bubble {
@@ -146,6 +146,48 @@ st.markdown("""
         font-weight: bold;
         animation: flash 1s infinite;
     }
+    .promo-section {
+        background-color: #E6F4FA;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .promo-section h2 {
+        color: #1A3550;
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+    .promo-section p {
+        color: #1A3550;
+        font-size: 16px;
+        margin: 5px 0;
+    }
+    .promo-section ul {
+        text-align: left;
+        margin: 10px auto;
+        max-width: 600px;
+    }
+    .promo-section li {
+        color: #1A3550;
+        font-size: 16px;
+        margin: 5px 0;
+    }
+    .purchase-button {
+        background: linear-gradient(90deg, #FF4500 0%, #FF6347 100%);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        margin: 10px;
+    }
+    .purchase-button:hover {
+        transform: scale(1.05);
+        transition: transform 0.2s;
+    }
     @keyframes flash {
         0% { opacity: 1; }
         50% { opacity: 0.5; }
@@ -173,7 +215,7 @@ st.markdown("""
         opacity: 1 !important;
     }
     .double-click-instruction {
-        color: #FF4500;  /* Orange-red color to stand out */
+        color: #FF4500;
         font-weight: bold;
         font-size: 14px;
         margin-top: 10px;
@@ -187,7 +229,7 @@ st.markdown("""
     header {visibility: visible;}
 
     @media (max-width: 600px) {
-        .career-plan, .testimonial {
+        .career-plan, .testimonial, .promo-section {
             padding: 10px;
             font-size: 14px;
             min-height: 200px;
@@ -196,12 +238,18 @@ st.markdown("""
             padding: 10px;
             font-size: 14px;
         }
-        .stButton>button {
+        .stButton>button, .purchase-button {
             font-size: 14px;
             padding: 8px 16px;
         }
         .double-click-instruction {
             font-size: 12px;
+        }
+        .promo-section h2 {
+            font-size: 20px;
+        }
+        .promo-section p, .promo-section li {
+            font-size: 14px;
         }
     }
 </style>
@@ -229,6 +277,29 @@ st.markdown("""
     🌍 <strong>Welcome to CareerUpskillers AI Advisor!</strong><br>
     Whether you're a <strong>student</strong>, <strong>fresher</strong>, <strong>working professional</strong>, 
     <strong>freelancer</strong>, or <strong>business owner</strong>, we’re here to help you achieve your career dreams—anywhere in the world!
+</div>
+""", unsafe_allow_html=True)
+
+# Promotional Section
+st.markdown("""
+<div class="promo-section">
+    <h2>Unlock Your Freelancer Success: Use AI Tools, Strategic Plans, and Free Learning Resources for a Career Transformation! 🚀✨</h2>
+    <p>Discover More and Share Your Dreams!</p>
+    <h3>3 Steps to Enhance Your Freelance Journey:</h3>
+    <ul>
+        <li>1. Use our AI Freelancer Kit for ready-to-use templates and tools.</li>
+        <li>2. Get our Detailed Career Plan for market insights and strategies.</li>
+        <li>3. Leverage our free video links to expand your skills.</li>
+    </ul>
+    <p><strong>Free Ready-to-Use Chatbot Script Included!</strong></p>
+    <p>Join 3,000+ happy buyers around the globe! Get a ₹10,000 worth AI Starter Tool for just ₹499 and receive free AI career counseling. For detailed career counseling, pay only ₹199 to get market insights, skills to upskill, salary comparisons, and companies to apply to.</p>
+    <p>For ₹499, get an AI Career Roadmap with YouTube links, AI job market insights with YouTube links, a free AI chatbot script ready to use, free AI tools proposal templates for clients, a freelance platform guide, a getting started guide for non-techies, niche selection strategy, top AI tools and platforms.</p>
+    <p><strong>Guaranteed Money-Making Guide with 3,000+ Community Users – User-Friendly for Techies and Non-Techies!</strong></p>
+    <p>Contact us for personalized career advice. Share your thoughts and let’s grow together!</p>
+    <p>Follow the kit and start earning – don’t only rely on jobs as it’s uncertain! Just spend 8 hours on a weekend and start a new earning stream. Half of our students have quit their jobs within six months of purchasing!</p>
+    <p>#Freelancer #CareerGrowth #AItools</p>
+    <button class="purchase-button" onclick="window.location.href='https://rzp.io/rzp/t37swnF'">Purchase AI Freelancer Kit Now (₹499)</button>
+    <button class="purchase-button" onclick="window.location.href='https://rzp.io/rzp/FAsUJ9k'">Purchase Detailed Career Plan Now (₹199)</button>
 </div>
 """, unsafe_allow_html=True)
 
